@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center">
+    <div class="p-5 mb-4 bg-dark rounded-3">
+        <img src="https://images.unsplash.com/photo-1517074009205-d9ca5d8b4a63" 
+             alt="Golf Course" 
+             class="img-fluid rounded mb-4" 
+             style="max-height: 400px; object-fit: cover;">
+        <h1 class="display-4">Welcome to Golf Score Tracker</h1>
+        <p class="lead">Keep track of your golf scores, analyze your performance, and improve your game.</p>
+        <a href="{{ url_for('game') }}" class="btn btn-success btn-lg">
+            <i data-feather="play"></i> Start New Game
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card bg-dark">
+                <div class="card-body">
+                    <i data-feather="edit-2" class="mb-3"></i>
+                    <h5 class="card-title">Track Scores</h5>
+                    <p class="card-text">Record your scores hole by hole as you play.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-dark">
+                <div class="card-body">
+                    <i data-feather="calendar" class="mb-3"></i>
+                    <h5 class="card-title">View History</h5>
+                    <p class="card-text">Review your past games and progress over time.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-dark">
+                <div class="card-body">
+                    <i data-feather="bar-chart-2" class="mb-3"></i>
+                    <h5 class="card-title">Analyze Stats</h5>
+                    <p class="card-text">Get insights into your performance with detailed statistics.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
