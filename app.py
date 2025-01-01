@@ -27,18 +27,32 @@ def home():
     return render_template('home.html')
 
 @app.route('/game', methods=['GET', 'POST'])
-def game():
+@app.route('/game/<int:game_id>', methods=['GET', 'POST'])
+def game(game_id=None):
     from models import Game, Player, PlayerGame, Score
+
+    # If editing existing game, load it
+    existing_game = None
+    if game_id:
+        existing_game = Game.query.get_or_404(game_id)
+
     if request.method == 'POST':
         player_names = request.form.getlist('player_names[]')
         if not player_names:
             flash('Please add at least one player', 'danger')
             return redirect(url_for('game'))
 
-        # Create new game
-        new_game = Game(date=datetime.now())
-        db.session.add(new_game)
-        db.session.flush()
+        # Create new game or use existing
+        if existing_game:
+            game = existing_game
+            # Clear existing scores to update them
+            for player_game in game.players:
+                Score.query.filter_by(player_game_id=player_game.id).delete()
+            PlayerGame.query.filter_by(game_id=game.id).delete()
+        else:
+            game = Game(date=datetime.now())
+            db.session.add(game)
+            db.session.flush()
 
         # Process each player's scores
         for idx, player_name in enumerate(player_names):
@@ -53,7 +67,7 @@ def game():
                 db.session.flush()
 
             # Create player game record
-            player_game = PlayerGame(player_id=player.id, game_id=new_game.id)
+            player_game = PlayerGame(player_id=player.id, game_id=game.id)
             db.session.add(player_game)
             db.session.flush()
 
@@ -72,7 +86,7 @@ def game():
         flash('Game saved successfully!', 'success')
         return redirect(url_for('history'))
 
-    return render_template('game.html')
+    return render_template('game.html', game=existing_game)
 
 @app.route('/history')
 def history():

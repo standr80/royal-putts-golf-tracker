@@ -12,7 +12,7 @@
                     <tr>
                         <th>Date</th>
                         <th>Players</th>
-                        <th>Details</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -25,10 +25,15 @@
                             {% endfor %}
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-info" type="button" data-bs-toggle="collapse" 
-                                    data-bs-target="#game{{ game.id }}">
-                                <i data-feather="eye"></i> View Details
-                            </button>
+                            <div class="btn-group">
+                                <a href="{{ url_for('game', game_id=game.id) }}" class="btn btn-sm btn-warning">
+                                    <i data-feather="edit-2"></i> Edit Game
+                                </a>
+                                <button class="btn btn-sm btn-info" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#game{{ game.id }}">
+                                    <i data-feather="eye"></i> View Details
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     <tr>
