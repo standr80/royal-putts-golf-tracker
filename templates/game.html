@@ -18,6 +18,7 @@
                     <div id="players-container">
                         {% if game %}
                             {% for player_game in game.players %}
+                            {% set player_index = loop.index0 %}
                             <div class="player-section mb-4">
                                 <div class="row mb-3">
                                     <div class="col-md-4">
@@ -39,7 +40,7 @@
                                             {% set score = player_game.scores|selectattr('hole_number', 'equalto', hole)|first %}
                                             <input type="number" 
                                                    class="form-control score-input" 
-                                                   name="scores_{{ loop.parent.loop.index0 }}_{{ hole }}"
+                                                   name="scores_{{ player_index }}_{{ hole }}"
                                                    min="1" 
                                                    max="20"
                                                    value="{{ score.strokes if score else '' }}">
