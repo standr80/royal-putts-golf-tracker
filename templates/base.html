@@ -28,12 +28,14 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/find-game">Find Game</a>
                     </li>
+                    {% if request.path.startswith('/game/') and not request.path == '/game' %}
                     <li class="nav-item">
                         <a class="nav-link" href="/history">History</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/stats">Stats</a>
                     </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
