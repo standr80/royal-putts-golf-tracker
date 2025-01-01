@@ -4,6 +4,23 @@
 <div class="row">
     <div class="col-md-10 mx-auto">
         <h2 class="mb-4">{% if game %}Edit Game{% else %}New Game{% endif %}</h2>
+
+        {% if game %}
+        <div class="alert alert-success mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="alert-heading mb-2">Game Code: <strong>{{ game.game_code }}</strong></h4>
+                    <p class="mb-0">Share this code with other players to let them find this game.</p>
+                </div>
+                <a href="https://wa.me/?text=Join%20my%20golf%20game!%20Use%20code%20{{ game.game_code }}%20at%20{{ request.host_url }}"
+                   target="_blank" 
+                   class="btn btn-success">
+                    <i data-feather="share-2"></i> Share via WhatsApp
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
         <form method="POST" class="needs-validation" novalidate>
             <div class="card bg-dark mb-4">
                 <div class="card-body">
