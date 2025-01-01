@@ -100,11 +100,25 @@ def stats():
     players = Player.query.all()
 
     player_stats = {}
+    hole_averages = {}
+
     for player in players:
         games_played = len(player.games)
         if games_played > 0:
             avg_score = player.average_score
             best_score = min((game.total_score for game in player.games), default=0)
+
+            # Calculate average strokes per hole
+            hole_scores = {i: [] for i in range(1, 19)}
+            for game in player.games:
+                for score in game.scores:
+                    hole_scores[score.hole_number].append(score.strokes)
+
+            hole_averages[player.name] = [
+                round(sum(hole_scores[hole])/len(hole_scores[hole]), 1)
+                if hole_scores[hole] else 0
+                for hole in range(1, 19)
+            ]
 
             player_stats[player.name] = {
                 'games_played': games_played,
@@ -112,7 +126,10 @@ def stats():
                 'best_score': best_score
             }
 
-    return render_template('stats.html', player_stats=player_stats)
+    return render_template('stats.html', 
+                         player_stats=player_stats, 
+                         hole_averages=hole_averages,
+                         players=list(hole_averages.keys()))
 
 with app.app_context():
     import models

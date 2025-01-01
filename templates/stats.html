@@ -54,4 +54,57 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statsChart = document.getElementById('statsChart');
+        if (statsChart) {
+            const ctx = statsChart.getContext('2d');
+            const players = {{ players|tojson }};
+            const holeAverages = {{ hole_averages|tojson }};
+
+            const datasets = players.map((player, index) => ({
+                label: player,
+                data: holeAverages[player],
+                borderColor: `hsl(${index * 360/players.length}, 70%, 50%)`,
+                tension: 0.1
+            }));
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 18}, (_, i) => `Hole ${i + 1}`),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Strokes'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Hole Number'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Average Strokes per Hole'
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
