@@ -29,8 +29,9 @@
                         <a class="nav-link" href="/find-game">Find Game</a>
                     </li>
                     {% if request.path.startswith('/game/') and not request.path == '/game' %}
+                    {% set game_code = request.path.split('/')[-1] %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/history">History</a>
+                        <a class="nav-link" href="{{ url_for('history', game_code=game_code) }}">History</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/stats">Stats</a>

@@ -92,9 +92,17 @@ def game(game_code=None):
     return render_template('game.html', game=existing_game)
 
 @app.route('/history')
-def history():
+@app.route('/history/<game_code>')
+def history(game_code=None):
     from models import Game
-    games = Game.query.order_by(Game.date.desc()).all()
+    if game_code:
+        games = Game.query.filter_by(game_code=game_code).all()
+        if not games:
+            flash('Game not found', 'danger')
+            return redirect(url_for('find_game'))
+    else:
+        games = Game.query.order_by(Game.date.desc()).all()
+
     return render_template('history.html', games=games)
 
 @app.route('/stats')
