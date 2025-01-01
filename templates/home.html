@@ -9,9 +9,14 @@
              style="max-height: 400px; object-fit: cover;">
         <h1 class="display-4">Welcome to Golf Score Tracker</h1>
         <p class="lead">Keep track of your golf scores, analyze your performance, and improve your game.</p>
-        <a href="{{ url_for('game') }}" class="btn btn-success btn-lg">
-            <i data-feather="play"></i> Start New Game
-        </a>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('game') }}" class="btn btn-success btn-lg">
+                <i data-feather="play"></i> Start New Game
+            </a>
+            <a href="{{ url_for('find_game') }}" class="btn btn-primary btn-lg">
+                <i data-feather="search"></i> Find Game
+            </a>
+        </div>
     </div>
 
     <div class="row g-4">
