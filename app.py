@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
@@ -27,14 +27,14 @@ def home():
     return render_template('home.html')
 
 @app.route('/game', methods=['GET', 'POST'])
-@app.route('/game/<int:game_id>', methods=['GET', 'POST'])
-def game(game_id=None):
+@app.route('/game/<game_code>', methods=['GET', 'POST'])
+def game(game_code=None):
     from models import Game, Player, PlayerGame, Score
 
     # If editing existing game, load it
     existing_game = None
-    if game_id:
-        existing_game = Game.query.get_or_404(game_id)
+    if game_code:
+        existing_game = Game.query.filter_by(game_code=game_code).first_or_404()
 
     if request.method == 'POST':
         player_names = request.form.getlist('player_names[]')
@@ -50,7 +50,10 @@ def game(game_id=None):
                 Score.query.filter_by(player_game_id=player_game.id).delete()
             PlayerGame.query.filter_by(game_id=game.id).delete()
         else:
-            game = Game(date=datetime.now())
+            game = Game(
+                game_code=Game.generate_unique_code(),
+                date=datetime.now()
+            )
             db.session.add(game)
             db.session.flush()
 
@@ -83,8 +86,8 @@ def game(game_id=None):
                     db.session.add(score_entry)
 
         db.session.commit()
-        flash('Game saved successfully!', 'success')
-        return redirect(url_for('history'))
+        flash(f'Game saved successfully! Game Code: {game.game_code}', 'success')
+        return redirect(url_for('game', game_code=game.game_code))
 
     return render_template('game.html', game=existing_game)
 
@@ -130,6 +133,18 @@ def stats():
                          player_stats=player_stats, 
                          hole_averages=hole_averages,
                          players=list(hole_averages.keys()))
+
+@app.route('/find-game', methods=['GET', 'POST'])
+def find_game():
+    from models import Game
+    if request.method == 'POST':
+        game_code = request.form.get('game_code')
+        if game_code:
+            game = Game.query.filter_by(game_code=game_code).first()
+            if game:
+                return redirect(url_for('game', game_code=game.game_code))
+            flash('Game not found', 'danger')
+    return render_template('find_game.html')
 
 with app.app_context():
     import models

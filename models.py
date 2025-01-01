@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime
+import random
 
 class Player(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -13,8 +14,16 @@ class Player(db.Model):
 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    game_code = db.Column(db.String(6), unique=True, nullable=False, index=True)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     players = db.relationship('PlayerGame', backref='game', lazy=True)
+
+    @staticmethod
+    def generate_unique_code():
+        while True:
+            code = str(random.randint(100000, 999999))
+            if not Game.query.filter_by(game_code=code).first():
+                return code
 
 class PlayerGame(db.Model):
     id = db.Column(db.Integer, primary_key=True)

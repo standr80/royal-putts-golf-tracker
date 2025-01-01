@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card bg-dark">
+            <div class="card-body">
+                <h2 class="card-title mb-4">Find Game</h2>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="game_code" class="form-label">Enter Game Code</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="game_code" 
+                               name="game_code" 
+                               pattern="[0-9]{6}" 
+                               maxlength="6" 
+                               required>
+                        <div class="form-text">Enter the 6-digit game code</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="search"></i> Find Game
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
