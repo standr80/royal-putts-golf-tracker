@@ -10,9 +10,21 @@
             <table class="table table-dark table-hover">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Game Code</th>
-                        <th>Players</th>
+                        <th>
+                            <div class="mb-2">Date</div>
+                            <input type="text" class="form-control form-control-sm filter-input" 
+                                   data-column="0" placeholder="Filter date...">
+                        </th>
+                        <th>
+                            <div class="mb-2">Game Code</div>
+                            <input type="text" class="form-control form-control-sm filter-input" 
+                                   data-column="1" placeholder="Filter code...">
+                        </th>
+                        <th>
+                            <div class="mb-2">Players</div>
+                            <input type="text" class="form-control form-control-sm filter-input" 
+                                   data-column="2" placeholder="Filter players...">
+                        </th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -43,4 +55,32 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterInputs = document.querySelectorAll('.filter-input');
+    const tableRows = document.querySelectorAll('tbody tr');
+
+    function filterTable() {
+        const filters = Array.from(filterInputs).map(input => ({
+            column: parseInt(input.dataset.column),
+            value: input.value.toLowerCase()
+        }));
+
+        tableRows.forEach(row => {
+            const cells = row.getElementsByTagName('td');
+            const shouldShow = filters.every(filter => {
+                const cellText = cells[filter.column].textContent.toLowerCase();
+                return cellText.includes(filter.value);
+            });
+
+            row.style.display = shouldShow ? '' : 'none';
+        });
+    }
+
+    filterInputs.forEach(input => {
+        input.addEventListener('input', filterTable);
+    });
+});
+</script>
 {% endblock %}
