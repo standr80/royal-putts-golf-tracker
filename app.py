@@ -3,7 +3,7 @@ import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf.csrf import CSRFProtect
 
@@ -16,33 +16,33 @@ db = SQLAlchemy(model_class=Base)
 csrf = CSRFProtect()  # Initialize without app
 login_manager = LoginManager()  # Initialize login manager at module level
 
-def create_app():
-    app = Flask(__name__)
-
-    # Configure app
-    app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+# create the app
+app = Flask(__name__)
+# Configure app with all necessary settings
+app.config.update(
+    SECRET_KEY=os.environ.get("FLASK_SECRET_KEY") or os.urandom(32),
+    SQLALCHEMY_DATABASE_URI=os.environ.get("DATABASE_URL"),
+    SQLALCHEMY_ENGINE_OPTIONS={
         "pool_recycle": 300,
         "pool_pre_ping": True,
-    }
-    app.config['WTF_CSRF_ENABLED'] = True
+    },
+    WTF_CSRF_ENABLED=True,
+    WTF_CSRF_SECRET_KEY=os.environ.get("FLASK_SECRET_KEY") or os.urandom(32),
+    SESSION_COOKIE_SECURE=False,  # Set to True in production
+    SESSION_COOKIE_HTTPONLY=True,
+    PERMANENT_SESSION_LIFETIME=timedelta(minutes=30)
+)
 
-    # Initialize extensions
-    db.init_app(app)
-    csrf.init_app(app)
-    login_manager.init_app(app)
-    login_manager.login_view = 'admin_login'
+# Initialize extensions with app
+db.init_app(app)
+csrf.init_app(app)
+login_manager.init_app(app)
+login_manager.login_view = 'admin_login'
 
-    # Set up user loader
-    @login_manager.user_loader
-    def load_user(user_id):
-        from models import Admin
-        return Admin.query.get(int(user_id))
-
-    return app
-
-app = create_app()
+@login_manager.user_loader
+def load_user(user_id):
+    from models import Admin
+    return Admin.query.get(int(user_id))
 
 @app.route('/')
 def home():
@@ -178,18 +178,21 @@ def find_game():
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    from forms import LoginForm
     if current_user.is_authenticated:
         return redirect(url_for('admin_dashboard'))
 
+    from forms import LoginForm
     form = LoginForm()
+
     if form.validate_on_submit():
         from models import Admin
         admin = Admin.query.filter_by(username=form.username.data).first()
         if admin and admin.check_password(form.password.data):
             login_user(admin)
+            flash('Login successful!', 'success')
             return redirect(url_for('admin_dashboard'))
         flash('Invalid username or password', 'danger')
+
     return render_template('admin/login.html', form=form)
 
 @app.route('/admin/dashboard')
@@ -217,7 +220,9 @@ def admin_logout():
     return redirect(url_for('admin_login'))
 
 with app.app_context():
-    import models
+    # Make sure to import the models here or their tables won't be created
+    import models  # noqa: F401
+
     db.create_all()
 
     # Create initial admin user if none exists

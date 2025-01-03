@@ -6,8 +6,8 @@
         <div class="card bg-dark">
             <div class="card-body">
                 <h2 class="card-title mb-4">Admin Login</h2>
-                <form method="POST">
-                    {{ form.hidden_tag() }}
+                <form method="POST" action="{{ url_for('admin_login') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="mb-3">
                         {{ form.username.label(class="form-label") }}
                         {{ form.username(class="form-control") }}
