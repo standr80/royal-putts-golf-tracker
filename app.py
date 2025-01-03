@@ -22,6 +22,16 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 db.init_app(app)
 
+@app.template_filter('ordinal_date')
+def ordinal_date(dt):
+    """Format date as '3rd January 2025'"""
+    day = dt.day
+    if 10 <= day % 100 <= 20:
+        suffix = 'th'
+    else:
+        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
+    return f"{day}{suffix} {dt.strftime('%B %Y')}"
+
 @app.before_request
 def load_game_details():
     """Load game details for the navigation menu if in game context"""

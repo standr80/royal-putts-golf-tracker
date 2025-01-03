@@ -21,7 +21,7 @@
                 <tbody>
                     {% for game in games %}
                     <tr>
-                        <td>{{ game.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ game.date|ordinal_date }}</td>
                         <td><code class="bg-dark">{{ game.game_code }}</code></td>
                         <td>
                             {% for player_game in game.players %}
