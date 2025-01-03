@@ -43,27 +43,68 @@
                             {% endfor %}
                         </td>
                     </tr>
-                    <tr>
-                        <td colspan="5" class="p-0">
-                            <div class="collapse" id="game{{ game.id }}">
-                                <div class="card card-body bg-dark">
-                                    {% for player_game in game.players %}
-                                    <div class="mb-3">
-                                        <h6>{{ player_game.player.name }}</h6>
-                                        <div class="row">
-                                            {% for score in player_game.scores %}
-                                            <div class="col-md-2 col-4">
-                                                <small>Hole {{ score.hole_number }}: {{ score.strokes }}</small>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
                     {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Outstanding Achievements Section -->
+        <h3 class="mt-5 mb-4">Outstanding Achievements</h3>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th>Achievement</th>
+                        <th>Player</th>
+                        <th>Details</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set lowest_score = None %}
+                    {% set best_player = None %}
+                    {% set best_game = None %}
+
+                    {% for game in games %}
+                        {% for player_game in game.players %}
+                            {% if lowest_score is none or player_game.total_score < lowest_score %}
+                                {% set lowest_score = player_game.total_score %}
+                                {% set best_player = player_game.player %}
+                                {% set best_game = game %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% if best_player %}
+                    <tr>
+                        <td>Best Score</td>
+                        <td>{{ best_player.name }}</td>
+                        <td>{{ lowest_score }} strokes</td>
+                        <td>{{ best_game.date|ordinal_date }}</td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- Most Games Played -->
+                    {% set games_played = {} %}
+                    {% for game in games %}
+                        {% for player_game in game.players %}
+                            {% if player_game.player.name in games_played %}
+                                {% set _ = games_played.update({player_game.player.name: games_played[player_game.player.name] + 1}) %}
+                            {% else %}
+                                {% set _ = games_played.update({player_game.player.name: 1}) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% if games_played %}
+                        {% set most_games_player = games_played|dictsort(by='value')|reverse|first %}
+                        <tr>
+                            <td>Most Games Played</td>
+                            <td>{{ most_games_player[0] }}</td>
+                            <td>{{ most_games_player[1] }} games</td>
+                            <td>All time</td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
