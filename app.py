@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, render_template, request, redirect, url_for, flash, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, g
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
@@ -21,6 +21,17 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 }
 
 db.init_app(app)
+
+@app.before_request
+def load_game_details():
+    """Load game details for the navigation menu if in game context"""
+    path_parts = request.path.split('/')
+    if len(path_parts) > 2 and path_parts[1] in ['game', 'history', 'stats']:
+        game_code = path_parts[2]
+        from models import Game
+        g.games = [Game.query.filter_by(game_code=game_code).first()]
+    else:
+        g.games = []
 
 @app.route('/')
 def home():
@@ -165,6 +176,12 @@ def find_game():
                 return redirect(url_for('game', game_code=game.game_code))
             flash('Game not found', 'danger')
     return render_template('find_game.html')
+
+
+@app.context_processor
+def inject_games():
+    """Make games available in all templates"""
+    return dict(games=getattr(g, 'games', []))
 
 with app.app_context():
     import models

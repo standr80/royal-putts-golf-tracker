@@ -47,11 +47,44 @@
                             <i data-feather="bar-chart-2"></i> Stats
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <button class="btn btn-link nav-link" type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#gameDetails{{ game_code }}">
+                            <i data-feather="eye"></i> View Details
+                        </button>
+                    </li>
                 </ul>
                 {% endif %}
             </div>
         </div>
     </nav>
+
+    {% if request.path.startswith('/game/') or request.path.startswith('/history/') or request.path.startswith('/stats/') %}
+    {% set game_code = request.path.split('/')[-1] %}
+    <div class="collapse" id="gameDetails{{ game_code }}">
+        <div class="container mt-3">
+            <div class="card bg-dark">
+                <div class="card-body">
+                    {% for game in games if game.game_code == game_code %}
+                        {% for player_game in game.players %}
+                        <div class="mb-3">
+                            <h6>{{ player_game.player.name }}</h6>
+                            <div class="row g-2">
+                                {% for score in player_game.scores %}
+                                <div class="col-md-2 col-4">
+                                    <small>Hole {{ score.hole_number }}: {{ score.strokes }}</small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <div class="container mt-4">
         {% with messages = get_flashed_messages(with_categories=true) %}
