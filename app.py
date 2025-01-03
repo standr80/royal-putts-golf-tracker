@@ -152,7 +152,7 @@ def find_game():
             if game:
                 return redirect(url_for('game', game_code=game.game_code))
             flash('Game not found', 'danger')
-    return render_template('find_game.html')
+    return render_template('find-game.html')
 
 with app.app_context():
     import models
