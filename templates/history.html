@@ -87,23 +87,35 @@
                     {% endfor %}
 
                     {% if hole_in_ones %}
-                        {% set best_hole_in_one = {'player': '', 'count': 0, 'game': none} %}
+                        {% set max_holes = {'count': 0} %}
+                        {% set best_players = [] %}
+
+                        {# First find the maximum number of holes in one #}
                         {% for player_name, data in hole_in_ones.items() %}
-                            {% if data.count > best_hole_in_one.count %}
-                                {% set _ = best_hole_in_one.update({
-                                    'player': player_name,
+                            {% if data.count > max_holes.count %}
+                                {% set _ = max_holes.update({'count': data.count}) %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {# Then collect all players who achieved that maximum #}
+                        {% for player_name, data in hole_in_ones.items() %}
+                            {% if data.count == max_holes.count %}
+                                {% set _ = best_players.append({
+                                    'name': player_name,
                                     'count': data.count,
                                     'game': data.game
                                 }) %}
                             {% endif %}
                         {% endfor %}
 
-                        <tr>
-                            <td>Most Holes in One</td>
-                            <td>{{ best_hole_in_one.player }}</td>
-                            <td>{{ best_hole_in_one.player }} putted {{ best_hole_in_one.count }} holes in one!</td>
-                            <td>{{ best_hole_in_one.game.date|ordinal_date }}</td>
-                        </tr>
+                        {% for player in best_players %}
+                            <tr>
+                                <td>Most Holes in One</td>
+                                <td>{{ player.name }}</td>
+                                <td>{{ player.name }} putted {{ player.count }} holes in one!</td>
+                                <td>{{ player.game.date|ordinal_date }}</td>
+                            </tr>
+                        {% endfor %}
                     {% endif %}
                 </tbody>
             </table>
