@@ -18,7 +18,7 @@
                             data-game-code="{{ game.game_code }}">
                         <i data-feather="copy"></i> Copy Game Code to Clipboard
                     </button>
-                    <a href="https://wa.me/?text=Join%20my%20golf%20game!%20Use%20code%20{{ game.game_code }}%20at%20{{ request.host_url }}"
+                    <a href="https://wa.me/?text=Join%20my%20golf%20game!%20Click%20here%20to%20access%20the%20game:%20{{ request.host_url[:-1] }}{{ url_for('game', game_code=game.game_code) }}"
                        target="_blank" 
                        class="btn btn-success">
                         <i data-feather="share-2"></i> Share Game Code via WhatsApp
