@@ -61,68 +61,44 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% set lowest_score = None %}
-                    {% set best_player = None %}
-                    {% set best_game = None %}
-                    {% set highest_score = None %}
-                    {% set worst_player = None %}
-                    {% set worst_game = None %}
-                    {% set hole_in_ones = [] %}
+                    {% set hole_in_ones = {} %}
+                    {% set player_game_dates = {} %}
 
+                    {# Count hole-in-ones for each player #}
                     {% for game in games %}
                         {% for player_game in game.players %}
-                            {# Track best and worst scores #}
-                            {% if lowest_score is none or player_game.total_score < lowest_score %}
-                                {% set lowest_score = player_game.total_score %}
-                                {% set best_player = player_game.player %}
-                                {% set best_game = game %}
-                            {% endif %}
-                            {% if highest_score is none or player_game.total_score > highest_score %}
-                                {% set highest_score = player_game.total_score %}
-                                {% set worst_player = player_game.player %}
-                                {% set worst_game = game %}
-                            {% endif %}
-
-                            {# Track hole in ones #}
+                            {% set hole_in_one_count = 0 %}
                             {% for score in player_game.scores %}
                                 {% if score.strokes == 1 %}
-                                    {% set _ = hole_in_ones.append({
-                                        'player': player_game.player,
-                                        'game': game,
-                                        'hole': score.hole_number
-                                    }) %}
+                                    {% set hole_in_one_count = hole_in_one_count + 1 %}
                                 {% endif %}
                             {% endfor %}
+
+                            {% if hole_in_one_count > 0 %}
+                                {% if player_game.player.name in hole_in_ones %}
+                                    {% set _ = hole_in_ones.update({
+                                        player_game.player.name: hole_in_ones[player_game.player.name] + hole_in_one_count
+                                    }) %}
+                                {% else %}
+                                    {% set _ = hole_in_ones.update({
+                                        player_game.player.name: hole_in_one_count
+                                    }) %}
+                                    {% set _ = player_game_dates.update({
+                                        player_game.player.name: game.date
+                                    }) %}
+                                {% endif %}
+                            {% endif %}
                         {% endfor %}
                     {% endfor %}
 
-                    {% if best_player %}
-                    <tr>
-                        <td>Best Score</td>
-                        <td>{{ best_player.name }}</td>
-                        <td>{{ lowest_score }} strokes</td>
-                        <td>{{ best_game.date|ordinal_date }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% if worst_player %}
-                    <tr>
-                        <td>Worst Player!</td>
-                        <td>{{ worst_player.name }}</td>
-                        <td>{{ highest_score }} strokes</td>
-                        <td>{{ worst_game.date|ordinal_date }}</td>
-                    </tr>
-                    {% endif %}
-
                     {% if hole_in_ones %}
-                        {% for achievement in hole_in_ones %}
+                        {% set most_holes_player = hole_in_ones|dictsort(by='value')|reverse|first %}
                         <tr>
-                            <td>Hole in One!</td>
-                            <td>{{ achievement.player.name }}</td>
-                            <td>Hole {{ achievement.hole }}</td>
-                            <td>{{ achievement.game.date|ordinal_date }}</td>
+                            <td>Most Holes in One</td>
+                            <td>{{ most_holes_player[0] }}</td>
+                            <td>{{ most_holes_player[0] }} putted {{ most_holes_player[1] }} holes in one!</td>
+                            <td>{{ player_game_dates[most_holes_player[0]]|ordinal_date }}</td>
                         </tr>
-                        {% endfor %}
                     {% endif %}
                 </tbody>
             </table>
