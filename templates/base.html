@@ -18,7 +18,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="/">Home</a>
                     </li>
@@ -28,16 +28,27 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/find-game">Find Game</a>
                     </li>
-                    {% if request.path.startswith('/game/') and not request.path == '/game' %}
-                    {% set game_code = request.path.split('/')[-1] %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('history', game_code=game_code) }}">History</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/stats">Stats</a>
-                    </li>
-                    {% endif %}
                 </ul>
+                {% if request.path.startswith('/game/') or request.path.startswith('/history/') or request.path.startswith('/stats/') %}
+                {% set game_code = request.path.split('/')[-1] %}
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('game', game_code=game_code) }}">
+                            <i data-feather="edit-2"></i> Edit Game
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('history', game_code=game_code) }}">
+                            <i data-feather="clock"></i> History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('stats', game_code=game_code) }}">
+                            <i data-feather="bar-chart-2"></i> Stats
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
             </div>
         </div>
     </nav>
