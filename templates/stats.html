@@ -8,18 +8,40 @@
         </h2>
 
         {% if player_stats %}
-        <div class="card bg-dark">
-            <div class="card-body">
-                <h5 class="card-title mb-4">
-                    {% if game_code %}
-                        Game Performance by Hole
-                    {% else %}
-                        Overall Score Trends
-                    {% endif %}
-                </h5>
-                <canvas id="statsChart"></canvas>
+            {% if game_code %}
+            <div class="card bg-dark mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Detailed Scores</h5>
+                    {% for game in games if game.game_code == game_code %}
+                        {% for player_game in game.players %}
+                        <div class="mb-3">
+                            <h6>{{ player_game.player.name }}</h6>
+                            <div class="row g-2">
+                                {% for score in player_game.scores %}
+                                <div class="col-md-2 col-4">
+                                    <small>Hole {{ score.hole_number }}: {{ score.strokes }}</small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
-        </div>
+            {% endif %}
+
+            <div class="card bg-dark">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        {% if game_code %}
+                            Game Performance by Hole
+                        {% else %}
+                            Overall Score Trends
+                        {% endif %}
+                    </h5>
+                    <canvas id="statsChart"></canvas>
+                </div>
+            </div>
         {% else %}
         <div class="alert alert-info">
             <i data-feather="info"></i> 
