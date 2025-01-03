@@ -16,7 +16,6 @@
                         <th>Game Code</th>
                         <th>Players</th>
                         <th>Ranking</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,23 +36,9 @@
                             </div>
                             {% endfor %}
                         </td>
-                        <td>
-                            <div class="btn-group">
-                                <a href="{{ url_for('game', game_code=game.game_code) }}" class="btn btn-sm btn-warning">
-                                    <i data-feather="edit-2"></i> Edit Game
-                                </a>
-                                <a href="{{ url_for('stats', game_code=game.game_code) }}" class="btn btn-sm btn-info">
-                                    <i data-feather="bar-chart-2"></i> Game Stats
-                                </a>
-                                <button class="btn btn-sm btn-info" type="button" data-bs-toggle="collapse" 
-                                        data-bs-target="#game{{ game.id }}">
-                                    <i data-feather="eye"></i> View Details
-                                </button>
-                            </div>
-                        </td>
                     </tr>
                     <tr>
-                        <td colspan="5" class="p-0">
+                        <td colspan="4" class="p-0">
                             <div class="collapse" id="game{{ game.id }}">
                                 <div class="card card-body bg-dark">
                                     {% for player_game in game.players %}
