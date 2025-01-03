@@ -188,6 +188,13 @@ def find_game():
     return render_template('find_game.html')
 
 
+@app.route('/admin')
+def admin():
+    """Admin dashboard to view all games"""
+    from models import Game
+    games = Game.query.order_by(Game.date.desc()).all()
+    return render_template('admin.html', games=games)
+
 @app.context_processor
 def inject_games():
     """Make games available in all templates"""
