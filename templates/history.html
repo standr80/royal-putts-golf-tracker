@@ -64,14 +64,35 @@
                     {% set lowest_score = None %}
                     {% set best_player = None %}
                     {% set best_game = None %}
+                    {% set highest_score = None %}
+                    {% set worst_player = None %}
+                    {% set worst_game = None %}
+                    {% set hole_in_ones = [] %}
 
                     {% for game in games %}
                         {% for player_game in game.players %}
+                            {# Track best and worst scores #}
                             {% if lowest_score is none or player_game.total_score < lowest_score %}
                                 {% set lowest_score = player_game.total_score %}
                                 {% set best_player = player_game.player %}
                                 {% set best_game = game %}
                             {% endif %}
+                            {% if highest_score is none or player_game.total_score > highest_score %}
+                                {% set highest_score = player_game.total_score %}
+                                {% set worst_player = player_game.player %}
+                                {% set worst_game = game %}
+                            {% endif %}
+
+                            {# Track hole in ones #}
+                            {% for score in player_game.scores %}
+                                {% if score.strokes == 1 %}
+                                    {% set _ = hole_in_ones.append({
+                                        'player': player_game.player,
+                                        'game': game,
+                                        'hole': score.hole_number
+                                    }) %}
+                                {% endif %}
+                            {% endfor %}
                         {% endfor %}
                     {% endfor %}
 
@@ -84,26 +105,24 @@
                     </tr>
                     {% endif %}
 
-                    <!-- Most Games Played -->
-                    {% set games_played = {} %}
-                    {% for game in games %}
-                        {% for player_game in game.players %}
-                            {% if player_game.player.name in games_played %}
-                                {% set _ = games_played.update({player_game.player.name: games_played[player_game.player.name] + 1}) %}
-                            {% else %}
-                                {% set _ = games_played.update({player_game.player.name: 1}) %}
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
+                    {% if worst_player %}
+                    <tr>
+                        <td>Worst Player!</td>
+                        <td>{{ worst_player.name }}</td>
+                        <td>{{ highest_score }} strokes</td>
+                        <td>{{ worst_game.date|ordinal_date }}</td>
+                    </tr>
+                    {% endif %}
 
-                    {% if games_played %}
-                        {% set most_games_player = games_played|dictsort(by='value')|reverse|first %}
+                    {% if hole_in_ones %}
+                        {% for achievement in hole_in_ones %}
                         <tr>
-                            <td>Most Games Played</td>
-                            <td>{{ most_games_player[0] }}</td>
-                            <td>{{ most_games_player[1] }} games</td>
-                            <td>All time</td>
+                            <td>Hole in One!</td>
+                            <td>{{ achievement.player.name }}</td>
+                            <td>Hole {{ achievement.hole }}</td>
+                            <td>{{ achievement.game.date|ordinal_date }}</td>
                         </tr>
+                        {% endfor %}
                     {% endif %}
                 </tbody>
             </table>
