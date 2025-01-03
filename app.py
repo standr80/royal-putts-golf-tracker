@@ -91,37 +91,37 @@ def game(game_code=None):
 
     return render_template('game.html', game=existing_game)
 
-@app.route('/history')
-@app.route('/history/<game_code>')
-def history(game_code=None):
-    from models import Game
-    if game_code:
-        games = Game.query.filter_by(game_code=game_code).all()
-        if not games:
-            flash('Game not found', 'danger')
-            return redirect(url_for('find_game'))
-    else:
-        games = Game.query.order_by(Game.date.desc()).all()
-
-    return render_template('history.html', games=games)
-
 @app.route('/stats')
-def stats():
-    from models import Player, PlayerGame, Score
-    players = Player.query.all()
+@app.route('/stats/<game_code>')
+def stats(game_code=None):
+    from models import Player, PlayerGame, Score, Game
+
+    if game_code:
+        # Get specific game
+        game = Game.query.filter_by(game_code=game_code).first_or_404()
+        players = [pg.player for pg in game.players]
+    else:
+        players = Player.query.all()
 
     player_stats = {}
     hole_averages = {}
 
     for player in players:
-        games_played = len(player.games)
+        # Filter games for specific game if game_code provided
+        if game_code:
+            player_games = [pg for pg in player.games if pg.game.game_code == game_code]
+        else:
+            player_games = player.games
+
+        games_played = len(player_games)
         if games_played > 0:
-            avg_score = player.average_score
-            best_score = min((game.total_score for game in player.games), default=0)
+            total_scores = [game.total_score for game in player_games]
+            avg_score = sum(total_scores) / len(total_scores)
+            best_score = min(total_scores)
 
             # Calculate average strokes per hole
             hole_scores = {i: [] for i in range(1, 19)}
-            for game in player.games:
+            for game in player_games:
                 for score in game.scores:
                     hole_scores[score.hole_number].append(score.strokes)
 
@@ -140,7 +140,19 @@ def stats():
     return render_template('stats.html', 
                          player_stats=player_stats, 
                          hole_averages=hole_averages,
-                         players=list(hole_averages.keys()))
+                         players=list(hole_averages.keys()),
+                         game_code=game_code)
+
+@app.route('/history')
+@app.route('/history/<game_code>')
+def history(game_code=None):
+    from models import Game
+    if game_code:
+        games = [Game.query.filter_by(game_code=game_code).first_or_404()]
+    else:
+        games = Game.query.order_by(Game.date.desc()).all()
+
+    return render_template('history.html', games=games, game_code=game_code)
 
 @app.route('/find-game', methods=['GET', 'POST'])
 def find_game():

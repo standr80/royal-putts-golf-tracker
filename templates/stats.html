@@ -3,7 +3,9 @@
 {% block content %}
 <div class="row">
     <div class="col-md-10 mx-auto">
-        <h2 class="mb-4">Player Statistics</h2>
+        <h2 class="mb-4">
+            {% if game_code %}Game {{ game_code }} Statistics{% else %}Overall Player Statistics{% endif %}
+        </h2>
 
         {% if player_stats %}
         <div class="row g-4 mb-4">
@@ -41,17 +43,30 @@
         </div>
         {% else %}
         <div class="alert alert-info">
-            <i data-feather="info"></i> No player statistics available yet. 
-            <a href="{{ url_for('game') }}" class="alert-link">Start playing</a> to see your stats!
+            <i data-feather="info"></i> 
+            {% if game_code %}
+                No statistics available for this game yet.
+            {% else %}
+                No player statistics available yet. 
+                <a href="{{ url_for('game') }}" class="alert-link">Start playing</a> to see your stats!
+            {% endif %}
         </div>
         {% endif %}
 
+        {% if player_stats %}
         <div class="card bg-dark">
             <div class="card-body">
-                <h5 class="card-title mb-4">Score Trends</h5>
+                <h5 class="card-title mb-4">
+                    {% if game_code %}
+                        Game Performance by Hole
+                    {% else %}
+                        Overall Score Trends
+                    {% endif %}
+                </h5>
                 <canvas id="statsChart"></canvas>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 
@@ -83,7 +98,7 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Average Strokes'
+                                text: 'Strokes'
                             }
                         },
                         x: {
@@ -99,7 +114,7 @@
                         },
                         title: {
                             display: true,
-                            text: 'Average Strokes per Hole'
+                            text: {% if game_code %}'Performance by Hole'{% else %}'Average Strokes per Hole'{% endif %}
                         }
                     }
                 }
