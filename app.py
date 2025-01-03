@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, abo
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -21,6 +22,16 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 }
 
 db.init_app(app)
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'admin_login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    from models import Admin
+    return Admin.query.get(int(user_id))
 
 @app.route('/')
 def home():
@@ -154,6 +165,54 @@ def find_game():
             flash('Game not found', 'danger')
     return render_template('find_game.html')
 
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    from forms import LoginForm
+    if current_user.is_authenticated:
+        return redirect(url_for('admin_dashboard'))
+
+    form = LoginForm()
+    if form.validate_on_submit():
+        from models import Admin
+        admin = Admin.query.filter_by(username=form.username.data).first()
+        if admin and admin.check_password(form.password.data):
+            login_user(admin)
+            return redirect(url_for('admin_dashboard'))
+        flash('Invalid username or password', 'danger')
+    return render_template('admin/login.html', form=form)
+
+@app.route('/admin/dashboard')
+@login_required
+def admin_dashboard():
+    from models import Game, Player
+    total_games = Game.query.count()
+    total_players = Player.query.count()
+    games_today = Game.query.filter(
+        Game.date >= datetime.now().replace(hour=0, minute=0, second=0)
+    ).count()
+    recent_games = Game.query.order_by(Game.date.desc()).limit(5).all()
+
+    return render_template('admin/dashboard.html',
+                         total_games=total_games,
+                         total_players=total_players,
+                         games_today=games_today,
+                         recent_games=recent_games)
+
+@app.route('/admin/logout')
+@login_required
+def admin_logout():
+    logout_user()
+    flash('You have been logged out', 'info')
+    return redirect(url_for('admin_login'))
+
 with app.app_context():
     import models
     db.create_all()
+
+    # Create initial admin user if none exists
+    from models import Admin
+    if not Admin.query.first():
+        admin = Admin(username='admin', email='admin@example.com')
+        admin.set_password('admin')
+        db.session.add(admin)
+        db.session.commit()
