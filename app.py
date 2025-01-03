@@ -13,29 +13,36 @@ class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
-app = Flask(__name__)
+csrf = CSRFProtect()  # Initialize without app
+login_manager = LoginManager()  # Initialize login manager at module level
 
-# Setup a strong secret key for both Flask session and CSRF protection
-app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
+def create_app():
+    app = Flask(__name__)
 
-# Initialize extensions
-db.init_app(app)
-csrf = CSRFProtect(app)
+    # Configure app
+    app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+    }
+    app.config['WTF_CSRF_ENABLED'] = True
 
-# Initialize Flask-Login
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'admin_login'
+    # Initialize extensions
+    db.init_app(app)
+    csrf.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'admin_login'
 
-@login_manager.user_loader
-def load_user(user_id):
-    from models import Admin
-    return Admin.query.get(int(user_id))
+    # Set up user loader
+    @login_manager.user_loader
+    def load_user(user_id):
+        from models import Admin
+        return Admin.query.get(int(user_id))
+
+    return app
+
+app = create_app()
 
 @app.route('/')
 def home():
