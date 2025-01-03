@@ -1,6 +1,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     let playerCount = 1;
 
+    // Copy game code to clipboard
+    document.getElementById('copy-game-code')?.addEventListener('click', function() {
+        const gameCode = this.getAttribute('data-game-code');
+        navigator.clipboard.writeText(gameCode).then(() => {
+            // Show success feedback
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i data-feather="check"></i> Copied!';
+            feather.replace();
+
+            // Reset button text after 2 seconds
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                feather.replace();
+            }, 2000);
+        });
+    });
+
     // Add new player section
     document.getElementById('add-player')?.addEventListener('click', function() {
         const playersContainer = document.getElementById('players-container');

@@ -12,11 +12,18 @@
                     <h4 class="alert-heading mb-2">Game Code: <strong>{{ game.game_code }}</strong></h4>
                     <p class="mb-0">Share this code with other players to let them find this game.</p>
                 </div>
-                <a href="https://wa.me/?text=Join%20my%20golf%20game!%20Use%20code%20{{ game.game_code }}%20at%20{{ request.host_url }}"
-                   target="_blank" 
-                   class="btn btn-success">
-                    <i data-feather="share-2"></i> Share via WhatsApp
-                </a>
+                <div class="d-flex gap-2">
+                    <button id="copy-game-code" 
+                            class="btn btn-light" 
+                            data-game-code="{{ game.game_code }}">
+                        <i data-feather="copy"></i> Copy Code
+                    </button>
+                    <a href="https://wa.me/?text=Join%20my%20golf%20game!%20Use%20code%20{{ game.game_code }}%20at%20{{ request.host_url }}"
+                       target="_blank" 
+                       class="btn btn-success">
+                        <i data-feather="share-2"></i> Share via WhatsApp
+                    </a>
+                </div>
             </div>
         </div>
         {% endif %}
@@ -126,3 +133,27 @@
     </div>
 </div>
 {% endblock %}
+
+<script>
+  document.getElementById('copy-game-code').addEventListener('click', function() {
+    const gameCode = this.dataset.gameCode;
+    navigator.clipboard.writeText(gameCode)
+      .then(() => {
+        this.classList.add('btn-success');
+        this.classList.remove('btn-light');
+        this.innerText = 'Copied!';
+        setTimeout(() => {
+          this.classList.remove('btn-success');
+          this.classList.add('btn-light');
+          this.innerText = '<i data-feather="copy"></i> Copy Code';
+          feather.replace(); // Re-render Feather icons
+        }, 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy: ', err);
+        // Handle copy error (e.g., display an error message)
+      });
+  });
+
+  feather.replace();
+</script>
