@@ -7,17 +7,17 @@
             <div class="card-body">
                 <h2 class="card-title mb-4">Admin Login</h2>
                 <form method="POST" action="{{ url_for('admin_login') }}">
-                    {{ form.hidden_tag() }}
+                    {{ form.csrf_token }}
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
-                        {{ form.username(class="form-control") }}
+                        {{ form.username(class="form-control", id="username") }}
                         {% for error in form.username.errors %}
                             <div class="text-danger">{{ error }}</div>
                         {% endfor %}
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
-                        {{ form.password(class="form-control") }}
+                        {{ form.password(class="form-control", id="password") }}
                         {% for error in form.password.errors %}
                             <div class="text-danger">{{ error }}</div>
                         {% endfor %}

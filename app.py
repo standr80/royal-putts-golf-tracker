@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_wtf.csrf import CSRFProtect
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -14,12 +15,16 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 app = Flask(__name__)
 
-app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "golf-tracker-secret"
+# Setup a strong secret key for both Flask session and CSRF protection
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
+
+# Initialize CSRF protection
+csrf = CSRFProtect(app)
 
 db.init_app(app)
 
@@ -216,3 +221,4 @@ with app.app_context():
         admin.set_password('admin')
         db.session.add(admin)
         db.session.commit()
+        print("Created admin user")
