@@ -8,52 +8,6 @@
         </h2>
 
         {% if player_stats %}
-        <div class="row g-4 mb-4">
-            {% for player_name, stats in player_stats.items() %}
-            <div class="col-md-6">
-                <div class="card bg-dark">
-                    <div class="card-header">
-                        <h5 class="mb-0">{{ player_name }}</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-4">
-                                <div class="text-center">
-                                    <h6>Games Played</h6>
-                                    <h3>{{ stats.games_played }}</h3>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="text-center">
-                                    <h6>Average Score</h6>
-                                    <h3>{{ stats.avg_score }}</h3>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="text-center">
-                                    <h6>Best Score</h6>
-                                    <h3>{{ stats.best_score }}</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="alert alert-info">
-            <i data-feather="info"></i> 
-            {% if game_code %}
-                No statistics available for this game yet.
-            {% else %}
-                No player statistics available yet. 
-                <a href="{{ url_for('game') }}" class="alert-link">Start playing</a> to see your stats!
-            {% endif %}
-        </div>
-        {% endif %}
-
-        {% if player_stats %}
         <div class="card bg-dark">
             <div class="card-body">
                 <h5 class="card-title mb-4">
@@ -65,6 +19,16 @@
                 </h5>
                 <canvas id="statsChart"></canvas>
             </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i data-feather="info"></i> 
+            {% if game_code %}
+                No statistics available for this game yet.
+            {% else %}
+                No player statistics available yet. 
+                <a href="{{ url_for('game') }}" class="alert-link">Start playing</a> to see your stats!
+            {% endif %}
         </div>
         {% endif %}
     </div>
