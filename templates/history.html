@@ -15,6 +15,7 @@
                         <th>Date</th>
                         <th>Game Code</th>
                         <th>Players</th>
+                        <th>Ranking</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -26,6 +27,14 @@
                         <td>
                             {% for player_game in game.players %}
                             <div>{{ player_game.player.name }}: {{ player_game.total_score }}</div>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% set sorted_players = game.players|sort(attribute='total_score') %}
+                            {% for player_game in sorted_players %}
+                            <div>
+                                {{ loop.index }}: {{ player_game.player.name }}
+                            </div>
                             {% endfor %}
                         </td>
                         <td>
@@ -44,7 +53,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4" class="p-0">
+                        <td colspan="5" class="p-0">
                             <div class="collapse" id="game{{ game.id }}">
                                 <div class="card card-body bg-dark">
                                     {% for player_game in game.players %}
