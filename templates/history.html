@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-md-10 mx-auto">
         <h2 class="mb-4">
-            {% if game_code %}Game {{ game_code }} History{% else %}Game History{% endif %}
+            {% if game_code %}Game {{ game_code }} Results{% else %}Game Results{% endif %}
         </h2>
 
         {% if games %}
@@ -15,6 +15,7 @@
                         <th>Date</th>
                         <th>Game Code</th>
                         <th>Players</th>
+                        <th>Hole Scores</th>
                         <th>Ranking</th>
                     </tr>
                 </thead>
@@ -23,6 +24,11 @@
                     <tr>
                         <td>{{ game.date|ordinal_date }}</td>
                         <td><code class="bg-dark">{{ game.game_code }}</code></td>
+                        <td>
+                            {% for player_game in game.players %}
+                            <div>{{ player_game.player.name }}</div>
+                            {% endfor %}
+                        </td>
                         <td>
                             {% for player_game in game.players %}
                             <div>{{ player_game.player.name }}: {{ player_game.total_score }}</div>
@@ -38,7 +44,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4" class="p-0">
+                        <td colspan="5" class="p-0">
                             <div class="collapse" id="game{{ game.id }}">
                                 <div class="card card-body bg-dark">
                                     {% for player_game in game.players %}
