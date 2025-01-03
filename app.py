@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, render_template, request, redirect, url_for, flash, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime, timedelta
@@ -13,8 +13,8 @@ class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
-csrf = CSRFProtect()  # Initialize without app
-login_manager = LoginManager()  # Initialize login manager at module level
+csrf = CSRFProtect()
+login_manager = LoginManager()
 
 # create the app
 app = Flask(__name__)
@@ -33,9 +33,9 @@ app.config.update(
     PERMANENT_SESSION_LIFETIME=timedelta(minutes=30)
 )
 
-# Initialize extensions with app
+# Initialize extensions with app - order matters
+csrf.init_app(app)  # Initialize CSRF protection first
 db.init_app(app)
-csrf.init_app(app)
 login_manager.init_app(app)
 login_manager.login_view = 'admin_login'
 
@@ -43,6 +43,11 @@ login_manager.login_view = 'admin_login'
 def load_user(user_id):
     from models import Admin
     return Admin.query.get(int(user_id))
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(minutes=30)
 
 @app.route('/')
 def home():
