@@ -67,18 +67,21 @@
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set hole_in_one_count = namespace(value=0) %}
+                            {% set hole_numbers = [] %}
                             {% for score in player_game.scores %}
                                 {% if score.strokes == 1 %}
                                     {% set hole_in_one_count.value = hole_in_one_count.value + 1 %}
+                                    {% set _ = hole_numbers.append(score.hole_number) %}
                                 {% endif %}
                             {% endfor %}
 
                             {% if hole_in_one_count.value > 0 %}
-                                {% if player_game.player.name not in hole_in_ones or hole_in_one_count.value > hole_in_ones[player_game.player.name].count %}
+                                {% if player_game.player.name not in hole_in_ones or hole_in_one_count.value >= hole_in_ones[player_game.player.name].count %}
                                     {% set _ = hole_in_ones.update({
                                         player_game.player.name: {
                                             'count': hole_in_one_count.value,
-                                            'game': game
+                                            'game': game,
+                                            'holes': hole_numbers|sort
                                         }
                                     }) %}
                                 {% endif %}
@@ -103,7 +106,8 @@
                                 {% set _ = best_players.append({
                                     'name': player_name,
                                     'count': data.count,
-                                    'game': data.game
+                                    'game': data.game,
+                                    'holes': data.holes
                                 }) %}
                             {% endif %}
                         {% endfor %}
@@ -112,7 +116,7 @@
                             <tr>
                                 <td>Most Holes in One</td>
                                 <td>{{ player.name }}</td>
-                                <td>{{ player.name }} putted {{ player.count }} holes in one!</td>
+                                <td>{{ player.name }} scored {{ player.count }} holes in one on holes {% for hole in player.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
                                 <td>{{ player.game.date|ordinal_date }}</td>
                             </tr>
                         {% endfor %}
