@@ -16,7 +16,7 @@
                     <button id="copy-game-code" 
                             class="btn btn-light" 
                             data-game-code="{{ game.game_code }}">
-                        <i data-feather="copy"></i> Copy Game Code
+                        <i data-feather="copy"></i> Copy Game Code to Clipboard
                     </button>
                     <a href="https://wa.me/?text=Join%20my%20golf%20game!%20Use%20code%20{{ game.game_code }}%20at%20{{ request.host_url }}"
                        target="_blank" 
@@ -145,7 +145,7 @@
         setTimeout(() => {
           this.classList.remove('btn-success');
           this.classList.add('btn-light');
-          this.innerText = '<i data-feather="copy"></i> Copy Game Code';
+          this.innerText = '<i data-feather="copy"></i> Copy Game Code to Clipboard';
           feather.replace(); // Re-render Feather icons
         }, 2000);
       })
