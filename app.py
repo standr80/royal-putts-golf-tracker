@@ -16,17 +16,16 @@ db = SQLAlchemy(model_class=Base)
 app = Flask(__name__)
 
 # Setup a strong secret key for both Flask session and CSRF protection
-app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
+app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
 
-# Initialize CSRF protection
-csrf = CSRFProtect(app)
-
+# Initialize extensions
 db.init_app(app)
+csrf = CSRFProtect(app)
 
 # Initialize Flask-Login
 login_manager = LoginManager()
