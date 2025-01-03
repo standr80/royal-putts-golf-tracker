@@ -62,29 +62,24 @@
                 </thead>
                 <tbody>
                     {% set hole_in_ones = {} %}
-                    {% set player_game_dates = {} %}
+                    {% set player_dates = {} %}
 
-                    {# Count hole-in-ones for each player #}
                     {% for game in games %}
                         {% for player_game in game.players %}
-                            {% set hole_in_one_count = 0 %}
+                            {% set hole_in_one_count = namespace(value=0) %}
                             {% for score in player_game.scores %}
                                 {% if score.strokes == 1 %}
-                                    {% set hole_in_one_count = hole_in_one_count + 1 %}
+                                    {% set hole_in_one_count.value = hole_in_one_count.value + 1 %}
                                 {% endif %}
                             {% endfor %}
 
-                            {% if hole_in_one_count > 0 %}
-                                {% if player_game.player.name in hole_in_ones %}
+                            {% if hole_in_one_count.value > 0 %}
+                                {% if player_game.player.name not in hole_in_ones or hole_in_one_count.value > hole_in_ones[player_game.player.name].count %}
                                     {% set _ = hole_in_ones.update({
-                                        player_game.player.name: hole_in_ones[player_game.player.name] + hole_in_one_count
-                                    }) %}
-                                {% else %}
-                                    {% set _ = hole_in_ones.update({
-                                        player_game.player.name: hole_in_one_count
-                                    }) %}
-                                    {% set _ = player_game_dates.update({
-                                        player_game.player.name: game.date
+                                        player_game.player.name: {
+                                            'count': hole_in_one_count.value,
+                                            'game': game
+                                        }
                                     }) %}
                                 {% endif %}
                             {% endif %}
@@ -92,12 +87,22 @@
                     {% endfor %}
 
                     {% if hole_in_ones %}
-                        {% set most_holes_player = hole_in_ones|dictsort(by='value')|reverse|first %}
+                        {% set best_hole_in_one = {'player': '', 'count': 0, 'game': none} %}
+                        {% for player_name, data in hole_in_ones.items() %}
+                            {% if data.count > best_hole_in_one.count %}
+                                {% set _ = best_hole_in_one.update({
+                                    'player': player_name,
+                                    'count': data.count,
+                                    'game': data.game
+                                }) %}
+                            {% endif %}
+                        {% endfor %}
+
                         <tr>
                             <td>Most Holes in One</td>
-                            <td>{{ most_holes_player[0] }}</td>
-                            <td>{{ most_holes_player[0] }} putted {{ most_holes_player[1] }} holes in one!</td>
-                            <td>{{ player_game_dates[most_holes_player[0]]|ordinal_date }}</td>
+                            <td>{{ best_hole_in_one.player }}</td>
+                            <td>{{ best_hole_in_one.player }} putted {{ best_hole_in_one.count }} holes in one!</td>
+                            <td>{{ best_hole_in_one.game.date|ordinal_date }}</td>
                         </tr>
                     {% endif %}
                 </tbody>
