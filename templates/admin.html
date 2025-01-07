@@ -39,6 +39,13 @@
             </div>
         </div>
 
+        <!-- Course Setup Link -->
+        <div class="d-flex justify-content-end mb-4">
+            <a href="{{ url_for('course_setup') }}" class="btn btn-success">
+                <i data-feather="settings"></i> Course Setup
+            </a>
+        </div>
+
         {% if games %}
         <div class="table-responsive">
             <table class="table table-dark table-hover">

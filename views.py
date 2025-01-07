@@ -216,6 +216,11 @@ def register_routes(app):
                 flash('Game not found', 'danger')
         return render_template('find_game.html')
 
+    @app.route('/admin/course-setup')
+    def course_setup():
+        """Admin page for golf course setup and configuration"""
+        return render_template('admin/course_setup.html')
+
     @app.route('/admin')
     def admin():
         """Admin dashboard to view all games with pagination and search"""
