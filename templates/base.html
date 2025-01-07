@@ -33,9 +33,19 @@
 <body class="bg-dark">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
+            {% if request.path.startswith('/game/') or request.path.startswith('/history/') or request.path.startswith('/stats/') or request.path.startswith('/scoring/') %}
+            {% set game_code = request.path.split('/')[-1] %}
+            {% if request.path.startswith('/scoring/') %}
+                {% set game_code = game.game_code %}
+            {% endif %}
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('game', game_code=game_code) }}">
+                <i data-feather="flag" class="me-2"></i> Golf Tracker
+            </a>
+            {% else %}
             <a class="navbar-brand d-flex align-items-center" href="/">
                 <i data-feather="flag" class="me-2"></i> Golf Tracker
             </a>
+            {% endif %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
