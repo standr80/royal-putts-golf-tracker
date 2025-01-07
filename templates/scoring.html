@@ -37,14 +37,14 @@
                             </thead>
                             <tbody>
                                 {% for player_game in game.players %}
-                                    {% set cumulative_score = 0 %}
+                                    {% set cumulative_score = namespace(value=0) %}
                                     {% for score in player_game.scores %}
                                         {% if score.hole_number <= current_hole %}
-                                            {% set cumulative_score = cumulative_score + score.strokes %}
+                                            {% set cumulative_score.value = cumulative_score.value + score.strokes %}
                                         {% endif %}
                                     {% endfor %}
                                     <tr>
-                                        <td>{{ cumulative_score }}</td>
+                                        <td>{{ cumulative_score.value }}</td>
                                         <td>{{ player_game.player.name }}</td>
                                         <td>
                                             {% set current_score = none %}
