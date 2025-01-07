@@ -109,10 +109,9 @@ def register_routes(app):
 
         # Get current hole information
         current_hole_info = None
-        for hole in game.course.holes:
-            if hole.name == f"Hole {current_hole}":
-                current_hole_info = hole
-                break
+        sorted_holes = sorted(game.course.holes, key=lambda x: x.name)
+        if 0 <= current_hole - 1 < len(sorted_holes):
+            current_hole_info = sorted_holes[current_hole - 1]
 
         # Create a dictionary of current hole scores
         current_hole_scores = {}
