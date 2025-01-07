@@ -239,8 +239,13 @@ def register_routes(app):
                 db.or_(
                     Game.game_code.ilike(f'%{search_term}%'),
                     Player.name.ilike(f'%{search_term}%'),
-                    # Convert date to string format for search
-                    db.cast(Game.date, db.String).ilike(f'%{search_term}%')
+                    # Search for date components (day, month, year)
+                    db.func.to_char(Game.date, 'DD').ilike(f'%{search_term}%'),
+                    db.func.to_char(Game.date, 'Month').ilike(f'%{search_term}%'),
+                    db.func.to_char(Game.date, 'YYYY').ilike(f'%{search_term}%'),
+                    # Search for formatted date strings
+                    db.func.to_char(Game.date, 'DD Month YYYY').ilike(f'%{search_term}%'),
+                    db.func.to_char(Game.date, 'DDth Month YYYY').ilike(f'%{search_term}%')
                 )
             ).distinct()
 
