@@ -5,13 +5,19 @@
     <div class="col-md-10 mx-auto">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Admin Dashboard</h2>
-            <div class="d-flex align-items-center gap-2">
-                <label for="per_page" class="form-label mb-0">Games per page:</label>
-                <select id="per_page" class="form-select" style="width: auto;" onchange="changePageSize(this.value)">
-                    {% for size in allowed_per_page %}
-                        <option value="{{ size }}" {% if size == per_page %}selected{% endif %}>{{ size }}</option>
-                    {% endfor %}
-                </select>
+            <!-- Course Setup Link -->
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('course_setup') }}" class="btn btn-success">
+                    <i data-feather="settings"></i> Course Setup
+                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <label for="per_page" class="form-label mb-0">Games per page:</label>
+                    <select id="per_page" class="form-select" style="width: auto;" onchange="changePageSize(this.value)">
+                        {% for size in allowed_per_page %}
+                            <option value="{{ size }}" {% if size == per_page %}selected{% endif %}>{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -37,13 +43,6 @@
                     {% endif %}
                 </form>
             </div>
-        </div>
-
-        <!-- Course Setup Link -->
-        <div class="d-flex justify-content-end mb-4">
-            <a href="{{ url_for('course_setup') }}" class="btn btn-success">
-                <i data-feather="settings"></i> Course Setup
-            </a>
         </div>
 
         {% if games %}
