@@ -5,7 +5,7 @@ import random
 class Player(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    games = db.relationship('PlayerGame', backref='player', lazy=True)
+    games = db.relationship('PlayerGame', backref='player', lazy=True, cascade="all, delete-orphan")
 
     @property
     def average_score(self):
@@ -16,7 +16,7 @@ class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     game_code = db.Column(db.String(6), unique=True, nullable=False, index=True)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    players = db.relationship('PlayerGame', backref='game', lazy=True)
+    players = db.relationship('PlayerGame', backref='game', lazy=True, cascade="all, delete-orphan")
 
     @staticmethod
     def generate_unique_code():
@@ -29,7 +29,7 @@ class PlayerGame(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
-    scores = db.relationship('Score', backref='player_game', lazy=True)
+    scores = db.relationship('Score', backref='player_game', lazy=True, cascade="all, delete-orphan")
 
     @property
     def total_score(self):

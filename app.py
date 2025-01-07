@@ -1,9 +1,9 @@
-import os
-import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, g
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
+import logging
+import os
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -50,7 +50,7 @@ def home():
 @app.route('/game', methods=['GET', 'POST'])
 @app.route('/game/<game_code>', methods=['GET', 'POST'])
 def game(game_code=None):
-    from models import Game, Player, PlayerGame
+    from models import Game, Player, PlayerGame, Score
 
     # If editing existing game, load it
     existing_game = None
@@ -66,7 +66,10 @@ def game(game_code=None):
         # Create new game or use existing
         if existing_game:
             game = existing_game
-            # Clear existing player games to update them
+            # First delete scores, then player_games due to foreign key constraint
+            for player_game in game.players:
+                Score.query.filter_by(player_game_id=player_game.id).delete()
+            db.session.commit()  # Commit the score deletions first
             PlayerGame.query.filter_by(game_id=game.id).delete()
         else:
             game = Game(
@@ -132,7 +135,7 @@ def scoring(game_code):
 @app.route('/stats')
 @app.route('/stats/<game_code>')
 def stats(game_code=None):
-    from models import Player, PlayerGame, Score, Game
+    from models import Game, Player, PlayerGame, Score
 
     if game_code:
         # Get specific game
@@ -175,8 +178,8 @@ def stats(game_code=None):
                 'best_score': best_score
             }
 
-    return render_template('stats.html', 
-                         player_stats=player_stats, 
+    return render_template('stats.html',
+                         player_stats=player_stats,
                          hole_averages=hole_averages,
                          players=list(hole_averages.keys()),
                          game_code=game_code)
@@ -203,7 +206,6 @@ def find_game():
                 return redirect(url_for('game', game_code=game.game_code))
             flash('Game not found', 'danger')
     return render_template('find_game.html')
-
 
 @app.route('/admin')
 def admin():
