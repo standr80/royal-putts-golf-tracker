@@ -6,12 +6,12 @@
         <h2 class="mb-4">Enter Game Scores</h2>
 
         <div class="alert alert-success mb-4">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
                     <h4 class="alert-heading mb-2">Game Code: <strong>{{ game.game_code }}</strong></h4>
                     <p class="mb-0">Share this code with other players to let them find this game.</p>
                 </div>
-                <div class="d-flex gap-2">
+                <div>
                     <button id="copy-game-code" 
                             class="btn btn-light" 
                             data-game-code="{{ game.game_code }}">
@@ -44,14 +44,16 @@
                                         {% endif %}
                                     {% endfor %}
                                     <tr>
-                                        <td>{{ cumulative_score.value }}</td>
-                                        <td>{{ player_game.player.name }}</td>
-                                        <td>
+                                        <td class="align-middle">{{ cumulative_score.value }}</td>
+                                        <td class="align-middle">{{ player_game.player.name }}</td>
+                                        <td style="min-width: 120px;">
                                             <input type="number" 
-                                                   class="form-control score-input" 
+                                                   class="form-control form-control-lg score-input" 
                                                    name="scores_{{ player_game.id }}"
                                                    min="1" 
                                                    max="20"
+                                                   pattern="\d*"
+                                                   inputmode="numeric"
                                                    value="{{ current_hole_scores.get(player_game.id, '') }}">
                                             <div class="invalid-feedback">
                                                 Valid score: 1-20
@@ -63,10 +65,10 @@
                         </table>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
                         {% if current_hole > 1 %}
                         <a href="{{ url_for('scoring', game_code=game.game_code, hole=current_hole-1) }}" 
-                           class="btn btn-secondary">
+                           class="btn btn-secondary btn-lg">
                             <i data-feather="arrow-left"></i> Previous Hole
                         </a>
                         {% else %}
@@ -77,23 +79,25 @@
                             <label for="goto-hole" class="form-label mb-0">Go to Hole:</label>
                             <input type="number" 
                                    id="goto-hole" 
-                                   class="form-control" 
+                                   class="form-control form-control-lg" 
                                    min="1" 
                                    max="18" 
-                                   style="width: 70px;">
+                                   pattern="\d*"
+                                   inputmode="numeric"
+                                   style="width: 80px;">
                             <button type="button" 
-                                    class="btn btn-primary" 
+                                    class="btn btn-primary btn-lg" 
                                     onclick="goToHole()">
                                 <i data-feather="arrow-right-circle"></i> Go
                             </button>
                         </div>
 
                         {% if current_hole < 18 %}
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary btn-lg">
                             Next Hole <i data-feather="arrow-right"></i>
                         </button>
                         {% else %}
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn btn-success btn-lg">
                             <i data-feather="save"></i> Finish Game
                         </button>
                         {% endif %}
@@ -106,7 +110,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Copy game code functionality
+    // Copy game code functionality with touch feedback
     const copyGameCodeBtn = document.getElementById('copy-game-code');
     if (copyGameCodeBtn) {
         copyGameCodeBtn.addEventListener('click', function() {
@@ -114,9 +118,14 @@ document.addEventListener('DOMContentLoaded', function() {
             navigator.clipboard.writeText(gameCode).then(() => {
                 const originalText = this.innerHTML;
                 this.innerHTML = '<i data-feather="check"></i> Copied!';
+                this.classList.add('btn-success');
+                this.classList.remove('btn-light');
                 feather.replace();
+
                 setTimeout(() => {
                     this.innerHTML = originalText;
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-light');
                     feather.replace();
                 }, 2000);
             });
@@ -131,6 +140,17 @@ document.addEventListener('DOMContentLoaded', function() {
             event.stopPropagation();
         }
         form.classList.add('was-validated');
+    });
+
+    // Add touch ripple effect to buttons
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.98)';
+        });
+        button.addEventListener('touchend', function() {
+            this.style.transform = 'scale(1)';
+        });
     });
 
     feather.replace();
