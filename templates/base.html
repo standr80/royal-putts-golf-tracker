@@ -17,11 +17,13 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                touch-action: manipulation;
             }
 
             input, select, .form-control {
                 min-height: 48px;
-                font-size: 16px; /* Prevent iOS zoom */
+                font-size: 16px !important; /* Prevent iOS zoom */
+                touch-action: manipulation;
             }
 
             .table td, .table th {
@@ -34,9 +36,15 @@
             }
 
             /* Touch feedback */
-            .btn:active, .nav-link:active {
+            .btn:active:not(.disabled), 
+            .nav-link:active {
                 transform: scale(0.98);
                 transition: transform 0.1s;
+            }
+
+            /* Improved touch targets */
+            .navbar-nav .nav-link {
+                margin: 0.5rem 0;
             }
         }
 
@@ -51,7 +59,8 @@
             position: relative;
             overflow: hidden;
             transform: translate3d(0, 0, 0);
-            transition: background 0.3s;
+            transition: background 0.3s, transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
         }
     </style>
 </head>
@@ -133,7 +142,7 @@
             feather.replace();
 
             // Add touch feedback to all buttons
-            document.querySelectorAll('.btn').forEach(btn => {
+            document.querySelectorAll('.btn:not(.disabled)').forEach(btn => {
                 btn.addEventListener('touchstart', function() {
                     this.style.transform = 'scale(0.98)';
                 });
