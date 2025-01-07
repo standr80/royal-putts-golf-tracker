@@ -16,12 +16,12 @@
                     <button id="copy-game-code" 
                             class="btn btn-light" 
                             data-game-code="{{ game.game_code }}">
-                        <i data-feather="copy"></i> Copy Game Code to Clipboard
+                        <i data-feather="copy"></i> Copy Game Code
                     </button>
                     <a href="https://wa.me/?text=Join%20my%20golf%20game!%20Click%20here%20to%20access%20the%20game:%20{{ request.host_url[:-1] }}{{ url_for('game', game_code=game.game_code) }}"
                        target="_blank" 
                        class="btn btn-success">
-                        <i data-feather="share-2"></i> Share Game Code via WhatsApp
+                        <i data-feather="share-2"></i> Share via WhatsApp
                     </a>
                 </div>
             </div>
@@ -31,103 +31,91 @@
         <form method="POST" class="needs-validation" novalidate>
             <div class="card bg-dark mb-4">
                 <div class="card-body">
-                    <div class="row">
+                    <div class="row mb-4">
                         <div class="col-12">
                             <div class="alert alert-info">
-                                <i data-feather="info"></i> Enter player names and their scores
+                                <i data-feather="info"></i> Enter scores for <span id="current-hole">Hole 1</span>
                             </div>
                         </div>
                     </div>
 
-                    <div id="players-container">
-                        {% if game %}
-                            {% for player_game in game.players %}
-                            {% set player_index = loop.index0 %}
-                            <div class="player-section mb-4">
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Player Name</label>
-                                            <input type="text" class="form-control" name="player_names[]" 
-                                                   value="{{ player_game.player.name }}" required>
-                                            <div class="invalid-feedback">
-                                                Please enter a player name
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row g-3">
-                                    {% for hole in range(1, 19) %}
-                                    <div class="col-md-2 col-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Hole {{ hole }}</label>
-                                            {% set score = player_game.scores|selectattr('hole_number', 'equalto', hole)|first %}
-                                            <input type="number" 
-                                                   class="form-control score-input" 
-                                                   name="scores_{{ player_index }}_{{ hole }}"
-                                                   min="1" 
-                                                   max="20"
-                                                   value="{{ score.strokes if score else '' }}">
-                                            <div class="invalid-feedback">
-                                                Please enter a valid score (1-20)
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                {% if not loop.last %}
-                                <hr class="my-4">
-                                {% endif %}
+                    <div id="hole-cards">
+                        {% for hole in range(1, 19) %}
+                        <div class="hole-section" id="hole-{{ hole }}" {% if hole > 1 %}style="display: none;"{% endif %}>
+                            <div class="table-responsive">
+                                <table class="table table-dark">
+                                    <thead>
+                                        <tr>
+                                            <th>Score</th>
+                                            <th>Player</th>
+                                            <th>Strokes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="players-for-hole-{{ hole }}">
+                                        {% if game %}
+                                            {% for player_game in game.players %}
+                                            <tr>
+                                                <td class="cumulative-score">0</td>
+                                                <td>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           name="player_names[]" 
+                                                           value="{{ player_game.player.name }}" 
+                                                           required>
+                                                </td>
+                                                <td>
+                                                    {% set score = player_game.scores|selectattr('hole_number', 'equalto', hole)|first %}
+                                                    <input type="number" 
+                                                           class="form-control score-input" 
+                                                           name="scores_{{ loop.index0 }}_{{ hole }}"
+                                                           min="1" 
+                                                           max="20"
+                                                           value="{{ score.strokes if score else '' }}">
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td class="cumulative-score">0</td>
+                                                <td>
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           name="player_names[]" 
+                                                           required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" 
+                                                           class="form-control score-input" 
+                                                           name="scores_0_{{ hole }}"
+                                                           min="1" 
+                                                           max="20">
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
                             </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="player-section mb-4">
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Player Name</label>
-                                            <input type="text" class="form-control" name="player_names[]" required>
-                                            <div class="invalid-feedback">
-                                                Please enter a player name
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row g-3">
-                                    {% for hole in range(1, 19) %}
-                                    <div class="col-md-2 col-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Hole {{ hole }}</label>
-                                            <input type="number" 
-                                                   class="form-control score-input" 
-                                                   name="scores_0_{{ hole }}"
-                                                   min="1" 
-                                                   max="20">
-                                            <div class="invalid-feedback">
-                                                Please enter a valid score (1-20)
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        {% endif %}
+                        </div>
+                        {% endfor %}
                     </div>
 
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <button type="button" class="btn btn-secondary" id="add-player">
-                                <i data-feather="user-plus"></i> Add Another Player
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-secondary" id="add-player">
+                            <i data-feather="user-plus"></i> Add Player
+                        </button>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary" id="prev-hole" style="display: none;">
+                                <i data-feather="arrow-left"></i> Previous Hole
+                            </button>
+                            <button type="button" class="btn btn-primary" id="next-hole">
+                                Next Hole <i data-feather="arrow-right"></i>
+                            </button>
+                            <button type="submit" class="btn btn-success" id="save-game" style="display: none;">
+                                <i data-feather="save"></i> Save Game
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-success btn-lg">
-                    <i data-feather="save"></i> Save Game
-                </button>
             </div>
         </form>
     </div>
@@ -145,13 +133,12 @@
         setTimeout(() => {
           this.classList.remove('btn-success');
           this.classList.add('btn-light');
-          this.innerText = '<i data-feather="copy"></i> Copy Game Code to Clipboard';
-          feather.replace(); // Re-render Feather icons
+          this.innerText = '<i data-feather="copy"></i> Copy Game Code';
+          feather.replace(); 
         }, 2000);
       })
       .catch(err => {
         console.error('Failed to copy: ', err);
-        // Handle copy error (e.g., display an error message)
       });
   });
 

@@ -1,16 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
-    let playerCount = 1;
+    let currentHole = 1;
+    const totalHoles = 18;
+
+    // Initialize feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
 
     // Copy game code to clipboard
     document.getElementById('copy-game-code')?.addEventListener('click', function() {
         const gameCode = this.getAttribute('data-game-code');
         navigator.clipboard.writeText(gameCode).then(() => {
-            // Show success feedback
             const originalText = this.innerHTML;
             this.innerHTML = '<i data-feather="check"></i> Copied!';
             feather.replace();
 
-            // Reset button text after 2 seconds
             setTimeout(() => {
                 this.innerHTML = originalText;
                 feather.replace();
@@ -18,43 +22,85 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add new player section
-    document.getElementById('add-player')?.addEventListener('click', function() {
-        const playersContainer = document.getElementById('players-container');
-        const playerTemplate = document.querySelector('.player-section').cloneNode(true);
-
-        // Update input names for the new player
-        const inputs = playerTemplate.querySelectorAll('input');
-        inputs.forEach(input => {
-            if (input.name.startsWith('scores_')) {
-                input.name = input.name.replace('scores_0', `scores_${playerCount}`);
-                input.value = '';
+    // Function to update cumulative scores
+    function updateCumulativeScores() {
+        const playerRows = document.querySelectorAll(`#players-for-hole-${currentHole} tr`);
+        playerRows.forEach((row, playerIndex) => {
+            let total = 0;
+            for (let hole = 1; hole <= currentHole; hole++) {
+                const scoreInput = document.querySelector(`input[name="scores_${playerIndex}_${hole}"]`);
+                if (scoreInput && scoreInput.value) {
+                    total += parseInt(scoreInput.value);
+                }
             }
+            row.querySelector('.cumulative-score').textContent = total;
         });
+    }
 
-        // Add separator between players
-        const separator = document.createElement('hr');
-        separator.className = 'my-4';
-        playersContainer.appendChild(separator);
+    // Add new player
+    document.getElementById('add-player')?.addEventListener('click', function() {
+        const playerCount = document.querySelectorAll(`#players-for-hole-1 tr`).length;
 
-        playersContainer.appendChild(playerTemplate);
-        playerCount++;
-
-        // Reinitialize Feather icons
-        feather.replace();
+        // Add player row to each hole's table
+        for (let hole = 1; hole <= totalHoles; hole++) {
+            const tbody = document.getElementById(`players-for-hole-${hole}`);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="cumulative-score">0</td>
+                <td>
+                    <input type="text" 
+                           class="form-control" 
+                           name="player_names[]" 
+                           required>
+                </td>
+                <td>
+                    <input type="number" 
+                           class="form-control score-input" 
+                           name="scores_${playerCount}_${hole}"
+                           min="1" 
+                           max="20">
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
     });
 
-    // Calculate total for each player
-    function calculatePlayerTotal(playerSection) {
-        let total = 0;
-        const scoreInputs = playerSection.querySelectorAll('.score-input');
-        scoreInputs.forEach(input => {
-            if (input.value) {
-                total += parseInt(input.value);
+    // Navigate between holes
+    document.getElementById('next-hole')?.addEventListener('click', function() {
+        if (currentHole < totalHoles) {
+            document.getElementById(`hole-${currentHole}`).style.display = 'none';
+            currentHole++;
+            document.getElementById(`hole-${currentHole}`).style.display = 'block';
+            document.getElementById('current-hole').textContent = `Hole ${currentHole}`;
+
+            // Show/hide navigation buttons
+            document.getElementById('prev-hole').style.display = 'block';
+            if (currentHole === totalHoles) {
+                this.style.display = 'none';
+                document.getElementById('save-game').style.display = 'block';
             }
-        });
-        return total;
-    }
+
+            updateCumulativeScores();
+        }
+    });
+
+    document.getElementById('prev-hole')?.addEventListener('click', function() {
+        if (currentHole > 1) {
+            document.getElementById(`hole-${currentHole}`).style.display = 'none';
+            currentHole--;
+            document.getElementById(`hole-${currentHole}`).style.display = 'block';
+            document.getElementById('current-hole').textContent = `Hole ${currentHole}`;
+
+            // Show/hide navigation buttons
+            document.getElementById('next-hole').style.display = 'block';
+            document.getElementById('save-game').style.display = 'none';
+            if (currentHole === 1) {
+                this.style.display = 'none';
+            }
+
+            updateCumulativeScores();
+        }
+    });
 
     // Input validation for scores
     document.addEventListener('input', function(e) {
@@ -64,34 +110,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.target.classList.add('is-invalid');
             } else {
                 e.target.classList.remove('is-invalid');
+                updateCumulativeScores();
             }
         }
     });
-
-    // Initialize charts if on stats page
-    const statsChart = document.getElementById('statsChart');
-    if (statsChart) {
-        const ctx = statsChart.getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Hole 1', 'Hole 2', 'Hole 3', 'Hole 4', 'Hole 5', 'Hole 6', 'Hole 7', 'Hole 8', 'Hole 9',
-                        'Hole 10', 'Hole 11', 'Hole 12', 'Hole 13', 'Hole 14', 'Hole 15', 'Hole 16', 'Hole 17', 'Hole 18'],
-                datasets: [{
-                    label: 'Average Strokes per Hole',
-                    data: Array(18).fill(4),
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    }
 });
