@@ -265,7 +265,7 @@ def register_routes(app):
         hole_name = request.form.get('hole_name', '').strip()
         hole_par = request.form.get('hole_par', type=int)
 
-        if hole_name and hole_par and 3 <= hole_par <= 6:
+        if hole_name and hole_par:
             from app import db
             try:
                 hole = Hole(name=hole_name, par=hole_par, course_id=course.id)
@@ -276,7 +276,7 @@ def register_routes(app):
                 db.session.rollback()
                 flash(f'Error adding hole: {str(e)}', 'danger')
         else:
-            flash('Please provide a valid hole name and par value (3-6).', 'danger')
+            flash('Please provide a hole name and par value.', 'danger')
 
         return redirect(url_for('course_settings', course_id=course_id))
 
@@ -292,7 +292,7 @@ def register_routes(app):
         try:
             if hole_name:
                 hole.name = hole_name
-            if hole_par and 3 <= hole_par <= 6:
+            if hole_par is not None:
                 hole.par = hole_par
             db.session.commit()
             flash(f'Hole updated successfully.', 'success')
