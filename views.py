@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, abort, g
-from models import Game, Player, PlayerGame, Score, Course
+from models import Game, Player, PlayerGame, Score, Course, Hole
 from datetime import datetime
 
 def register_routes(app):
@@ -258,20 +258,65 @@ def register_routes(app):
 
         return render_template('admin/course_settings.html', course=course)
 
-    @app.route('/admin/course/<int:course_id>/delete', methods=['POST'])
-    def delete_course(course_id):
-        """Delete a course"""
+    @app.route('/admin/course/<int:course_id>/hole/add', methods=['POST'])
+    def add_hole(course_id):
+        """Add a new hole to a course"""
         course = Course.query.get_or_404(course_id)
+        hole_name = request.form.get('hole_name', '').strip()
+        hole_par = request.form.get('hole_par', type=int)
+
+        if hole_name and hole_par and 3 <= hole_par <= 6:
+            from app import db
+            try:
+                hole = Hole(name=hole_name, par=hole_par, course_id=course.id)
+                db.session.add(hole)
+                db.session.commit()
+                flash(f'Hole "{hole_name}" has been added successfully.', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error adding hole: {str(e)}', 'danger')
+        else:
+            flash('Please provide a valid hole name and par value (3-6).', 'danger')
+
+        return redirect(url_for('course_settings', course_id=course_id))
+
+    @app.route('/admin/course/<int:course_id>/hole/<int:hole_id>/update', methods=['POST'])
+    def update_hole(course_id, hole_id):
+        """Update a hole's details"""
+        hole = Hole.query.filter_by(id=hole_id, course_id=course_id).first_or_404()
+
+        hole_name = request.form.get('hole_name', '').strip()
+        hole_par = request.form.get('hole_par', type=int)
+
+        if hole_name:
+            from app import db
+            try:
+                if hole_name:
+                    hole.name = hole_name
+                if hole_par and 3 <= hole_par <= 6:
+                    hole.par = hole_par
+                db.session.commit()
+                flash(f'Hole updated successfully.', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error updating hole: {str(e)}', 'danger')
+
+        return redirect(url_for('course_settings', course_id=course_id))
+
+    @app.route('/admin/course/<int:course_id>/hole/<int:hole_id>/delete', methods=['POST'])
+    def delete_hole(course_id, hole_id):
+        """Delete a hole"""
+        hole = Hole.query.filter_by(id=hole_id, course_id=course_id).first_or_404()
         from app import db
         try:
-            db.session.delete(course)
+            db.session.delete(hole)
             db.session.commit()
-            flash(f'Course "{course.name}" has been deleted successfully.', 'success')
+            flash(f'Hole "{hole.name}" has been deleted successfully.', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error deleting course: {str(e)}', 'danger')
+            flash(f'Error deleting hole: {str(e)}', 'danger')
 
-        return redirect(url_for('course_setup'))
+        return redirect(url_for('course_settings', course_id=course_id))
 
     @app.route('/admin')
     def admin():
@@ -330,3 +375,18 @@ def register_routes(app):
                              search_term=search_term,
                              sort_by=sort_by,
                              order=order)
+
+    @app.route('/admin/course/<int:course_id>/delete', methods=['POST'])
+    def delete_course(course_id):
+        """Delete a course"""
+        course = Course.query.get_or_404(course_id)
+        from app import db
+        try:
+            db.session.delete(course)
+            db.session.commit()
+            flash(f'Course "{course.name}" has been deleted successfully.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error deleting course: {str(e)}', 'danger')
+
+        return redirect(url_for('course_setup'))
