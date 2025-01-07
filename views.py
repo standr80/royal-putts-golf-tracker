@@ -218,7 +218,7 @@ def register_routes(app):
 
     @app.route('/admin')
     def admin():
-        """Admin dashboard to view all games with pagination"""
+        """Admin dashboard to view all games with pagination and search"""
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
 
@@ -227,8 +227,25 @@ def register_routes(app):
         if per_page not in allowed_per_page:
             per_page = 10
 
-        # Get paginated games
-        pagination = Game.query.order_by(Game.date.desc()).paginate(
+        # Get base query
+        query = Game.query
+
+        # Apply search filters if provided
+        search_term = request.args.get('search', '').strip()
+        if search_term:
+            # Search in game codes and player names
+            from app import db
+            query = query.join(PlayerGame).join(Player).filter(
+                db.or_(
+                    Game.game_code.ilike(f'%{search_term}%'),
+                    Player.name.ilike(f'%{search_term}%'),
+                    # Convert date to string format for search
+                    db.cast(Game.date, db.String).ilike(f'%{search_term}%')
+                )
+            ).distinct()
+
+        # Order and paginate results
+        pagination = query.order_by(Game.date.desc()).paginate(
             page=page, 
             per_page=per_page,
             error_out=False
@@ -239,4 +256,5 @@ def register_routes(app):
                              games=games,
                              pagination=pagination,
                              per_page=per_page,
-                             allowed_per_page=allowed_per_page)
+                             allowed_per_page=allowed_per_page,
+                             search_term=search_term)
