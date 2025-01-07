@@ -1,19 +1,22 @@
+import os
+import logging
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, g
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-from datetime import datetime
-import logging
-import os
 
+# Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Initialize Flask app and database
 class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
 app = Flask(__name__)
 
+# Configure app
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "golf-tracker-secret"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
@@ -21,6 +24,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
 }
 
+# Initialize extensions
 db.init_app(app)
 
 @app.template_filter('ordinal_date')
@@ -36,13 +40,14 @@ def ordinal_date(dt):
 @app.before_request
 def load_game_details():
     """Load game details for the navigation menu if in game context"""
+    g.games = []
     path_parts = request.path.split('/')
-    if len(path_parts) > 2 and path_parts[1] in ['game', 'history', 'stats']:
+    if len(path_parts) > 2 and path_parts[1] in ['game', 'history', 'stats', 'scoring']:
         game_code = path_parts[2]
         from models import Game
-        g.games = [Game.query.filter_by(game_code=game_code).first()]
-    else:
-        g.games = []
+        game = Game.query.filter_by(game_code=game_code).first()
+        if game:
+            g.games = [game]
 
 @app.route('/')
 def home():
@@ -296,6 +301,12 @@ def inject_games():
     """Make games available in all templates"""
     return dict(games=getattr(g, 'games', []))
 
+# Import models and create tables
 with app.app_context():
-    import models
-    db.create_all()
+    try:
+        import models
+        db.create_all()
+        logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Error creating database tables: {str(e)}")
+        raise

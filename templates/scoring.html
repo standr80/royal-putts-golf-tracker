@@ -66,16 +66,12 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
-                        {% if current_hole > 1 %}
-                        <a href="{{ url_for('scoring', game_code=game.game_code, hole=current_hole-1) }}" 
-                           class="btn btn-secondary btn-lg">
-                            <i data-feather="arrow-left"></i> Previous Hole
-                        </a>
-                        {% else %}
-                        <button class="btn btn-secondary btn-lg" disabled>
+                        <button type="button" class="btn btn-secondary btn-lg disabled"
+                                {% if current_hole > 1 %}
+                                onclick="window.location.href='{{ url_for('scoring', game_code=game.game_code, hole=current_hole-1) }}'"
+                                {% endif %}>
                             <i data-feather="arrow-left"></i> Previous Hole
                         </button>
-                        {% endif %}
 
                         <div class="d-flex align-items-center gap-2">
                             <label for="goto-hole" class="form-label mb-0">Go to Hole:</label>
@@ -112,6 +108,17 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Add touch feedback to all buttons
+    const buttons = document.querySelectorAll('.btn:not(.disabled)');
+    buttons.forEach(button => {
+        button.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.98)';
+        });
+        button.addEventListener('touchend', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+
     // Copy game code functionality with touch feedback
     const copyGameCodeBtn = document.getElementById('copy-game-code');
     if (copyGameCodeBtn) {
@@ -142,17 +149,6 @@ document.addEventListener('DOMContentLoaded', function() {
             event.stopPropagation();
         }
         form.classList.add('was-validated');
-    });
-
-    // Add touch ripple effect to buttons
-    const buttons = document.querySelectorAll('.btn');
-    buttons.forEach(button => {
-        button.addEventListener('touchstart', function() {
-            this.style.transform = 'scale(0.98)';
-        });
-        button.addEventListener('touchend', function() {
-            this.style.transform = 'scale(1)';
-        });
     });
 
     feather.replace();
