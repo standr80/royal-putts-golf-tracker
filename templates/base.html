@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Golf Score Tracker</title>
+    <title>Scores 'n' More!</title>
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
     <!-- Add Feather Icons CSS and JS -->
     <script src="https://unpkg.com/feather-icons"></script>
@@ -28,6 +28,13 @@
                 padding: 0.75rem;
             }
         }
+
+        /* Logo styling */
+        .navbar-brand img {
+            height: 30px;
+            width: auto;
+            margin-right: 0.5rem;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -39,11 +46,11 @@
                 {% set game_code = game.game_code %}
             {% endif %}
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('game', game_code=game_code) }}">
-                <i data-feather="flag" class="me-2"></i> Golf Tracker
+                <img src="{{ url_for('static', filename='assets/PutterFinger_Mascot_Centre.png') }}" alt="Scores 'n' More! Logo"> Scores 'n' More!
             </a>
             {% else %}
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <i data-feather="flag" class="me-2"></i> Golf Tracker
+                <img src="{{ url_for('static', filename='assets/PutterFinger_Mascot_Centre.png') }}" alt="Scores 'n' More! Logo"> Scores 'n' More!
             </a>
             {% endif %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
