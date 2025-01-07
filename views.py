@@ -414,3 +414,57 @@ def register_routes(app):
             flash(f'Error deleting course: {str(e)}', 'danger')
 
         return redirect(url_for('course_setup'))
+
+    @app.route('/player-comparison')
+    def player_comparison():
+        """Compare performance metrics between selected players"""
+        # Get all players for the selection dropdown
+        all_players = Player.query.order_by(Player.name).all()
+
+        # Get selected player IDs from query parameters
+        selected_player_ids = request.args.getlist('player_ids', type=int)
+        selected_players = [p for p in all_players if p.id in selected_player_ids]
+
+        stats = {}
+        hole_averages = {}
+        max_holes = 0
+
+        if selected_players:
+            for player in selected_players:
+                # Calculate basic stats
+                games_played = len(player.games)
+                if games_played > 0:
+                    total_scores = [game.total_score for game in player.games]
+                    avg_score = sum(total_scores) / len(total_scores)
+                    best_score = min(total_scores)
+
+                    # Calculate hole-by-hole averages
+                    hole_scores = {}
+                    for game in player.games:
+                        for score in game.scores:
+                            if score.hole_number not in hole_scores:
+                                hole_scores[score.hole_number] = []
+                            hole_scores[score.hole_number].append(score.strokes)
+                            max_holes = max(max_holes, score.hole_number)
+
+                    # Calculate average for each hole
+                    hole_avgs = []
+                    for hole in range(1, max_holes + 1):
+                        scores = hole_scores.get(hole, [])
+                        avg = sum(scores) / len(scores) if scores else 0
+                        hole_avgs.append(round(avg, 1))
+
+                    stats[player.id] = {
+                        'games_played': games_played,
+                        'avg_score': avg_score,
+                        'best_score': best_score
+                    }
+                    hole_averages[player.id] = hole_avgs
+
+        return render_template('player_comparison.html',
+                             all_players=all_players,
+                             selected_players=selected_players,
+                             selected_player_ids=selected_player_ids,
+                             stats=stats,
+                             hole_averages=hole_averages,
+                             max_holes=max_holes)

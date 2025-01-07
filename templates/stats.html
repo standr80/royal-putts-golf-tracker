@@ -3,9 +3,14 @@
 {% block content %}
 <div class="row">
     <div class="col-md-10 mx-auto">
-        <h2 class="mb-4">
-            {% if game_code %}Game {{ game_code }} Statistics{% else %}Overall Player Statistics{% endif %}
-        </h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                {% if game_code %}Game {{ game_code }} Statistics{% else %}Overall Player Statistics{% endif %}
+            </h2>
+            <a href="{{ url_for('player_comparison') }}" class="btn btn-primary">
+                <i data-feather="users"></i> Compare Players
+            </a>
+        </div>
 
         {% if player_stats %}
             {% if game_code %}

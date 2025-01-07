@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Player Performance Comparison</h2>
+            <a href="{{ url_for('stats') }}" class="btn btn-secondary">
+                <i data-feather="arrow-left"></i> Back to Stats
+            </a>
+        </div>
+
+        <!-- Player Selection Form -->
+        <div class="card bg-dark mb-4">
+            <div class="card-body">
+                <form method="GET" class="mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-10">
+                            <select name="player_ids" class="form-select" multiple required>
+                                {% for player in all_players %}
+                                <option value="{{ player.id }}" 
+                                        {% if player.id in selected_player_ids %}selected{% endif %}>
+                                    {{ player.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i data-feather="refresh-cw"></i> Compare
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                {% if selected_players %}
+                <!-- Performance Metrics -->
+                <div class="table-responsive mb-4">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                {% for player in selected_players %}
+                                <th>{{ player.name }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Games Played</td>
+                                {% for player in selected_players %}
+                                <td>{{ stats[player.id]['games_played'] }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td>Average Score</td>
+                                {% for player in selected_players %}
+                                <td>{{ "%.1f"|format(stats[player.id]['avg_score']) }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td>Best Score</td>
+                                {% for player in selected_players %}
+                                <td>{{ stats[player.id]['best_score'] }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Hole-by-Hole Performance Chart -->
+                <div class="mb-4">
+                    <h5 class="card-title">Hole-by-Hole Average Performance</h5>
+                    <canvas id="holePerformanceChart"></canvas>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if selected_players %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('holePerformanceChart').getContext('2d');
+    
+    const chartData = {
+        labels: Array.from({length: {{ max_holes }}}, (_, i) => `Hole ${i + 1}`),
+        datasets: [
+            {% for player in selected_players %}
+            {
+                label: '{{ player.name }}',
+                data: {{ hole_averages[player.id]|tojson }},
+                borderWidth: 2,
+                tension: 0.1
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    };
+
+    new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Average Strokes'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        }
+    });
+});
+
+feather.replace();
+</script>
+{% endif %}
+{% endblock %}
