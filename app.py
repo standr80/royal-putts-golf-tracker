@@ -20,8 +20,8 @@ def create_app():
     """Application factory function"""
     app = Flask(__name__)
 
-    # Configure the app
-    app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "golf-tracker-secret"
+    # Configure the app with a strong secret key for sessions
+    app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(24)
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
