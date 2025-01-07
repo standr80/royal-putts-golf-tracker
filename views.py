@@ -1,9 +1,6 @@
-from flask import render_template, request, redirect, url_for, flash, abort, g, session
+from flask import render_template, request, redirect, url_for, flash, abort, g
 from models import Game, Player, PlayerGame, Score
 from datetime import datetime
-import logging
-
-logger = logging.getLogger(__name__)
 
 def register_routes(app):
     @app.route('/')
@@ -33,7 +30,7 @@ def register_routes(app):
 
                 # Process player changes
                 from app import db
-
+                
                 # Remove players that are no longer in the game
                 for player_name, player_game in current_player_names.items():
                     if player_name not in new_player_names:
@@ -62,10 +59,6 @@ def register_routes(app):
                 from app import db
                 db.session.add(game)
                 db.session.flush()
-
-                # Store the game code in session
-                session['last_game_code'] = game.game_code
-                logger.info(f"Stored game code in session: {game.game_code}")
 
                 # Process each player
                 for player_name in player_names:
@@ -221,10 +214,7 @@ def register_routes(app):
                 if game:
                     return redirect(url_for('game', game_code=game.game_code))
                 flash('Game not found', 'danger')
-        # Get the last game code from session
-        last_game_code = session.get('last_game_code', '')
-        logger.info(f"Retrieved last game code from session: {last_game_code}")
-        return render_template('find_game.html', last_game_code=last_game_code)
+        return render_template('find_game.html')
 
     @app.route('/admin')
     def admin():
