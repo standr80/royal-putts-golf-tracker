@@ -139,13 +139,16 @@ def scoring(game_code):
 
     logger.debug(f"Current hole: {current_hole}")
 
-    # Log existing scores for debugging
+    # Create a dictionary of current hole scores
+    current_hole_scores = {}
     for player_game in game.players:
-        existing_scores = Score.query.filter_by(
+        score = Score.query.filter_by(
             player_game_id=player_game.id,
             hole_number=current_hole
-        ).all()
-        logger.debug(f"Player {player_game.player.name} existing scores for hole {current_hole}: {[score.strokes for score in existing_scores]}")
+        ).first()
+        if score:
+            current_hole_scores[player_game.id] = score.strokes
+            logger.debug(f"Player {player_game.player.name} score for hole {current_hole}: {score.strokes}")
 
     if request.method == 'POST':
         logger.debug(f"Processing POST request for hole {current_hole}")
@@ -203,7 +206,7 @@ def scoring(game_code):
             flash('Error saving scores. Please try again.', 'danger')
             return redirect(url_for('scoring', game_code=game_code, hole=current_hole))
 
-    return render_template('scoring.html', game=game, current_hole=current_hole)
+    return render_template('scoring.html', game=game, current_hole=current_hole, current_hole_scores=current_hole_scores)
 
 @app.route('/stats')
 @app.route('/stats/<game_code>')
