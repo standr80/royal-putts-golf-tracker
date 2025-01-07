@@ -33,45 +33,47 @@
 <body class="bg-dark">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                <i data-feather="flag" class="me-2"></i> Golf Tracker
-            </a>
+            {% if games %}
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('game', game_code=games[0].game_code) }}">
+                    <i data-feather="flag" class="me-2"></i> Golf Tracker
+                </a>
+            {% else %}
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
+                    <i data-feather="flag" class="me-2"></i> Golf Tracker
+                </a>
+            {% endif %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/game' %}active{% endif %}" href="/game">New Game</a>
+                        <a class="nav-link {% if request.path == '/game' %}active{% endif %}" href="{{ url_for('game') }}">New Game</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/find-game' %}active{% endif %}" href="/find-game">Find Game</a>
+                        <a class="nav-link {% if request.path == '/find-game' %}active{% endif %}" href="{{ url_for('find_game') }}">Find Game</a>
                     </li>
                 </ul>
-                {% if request.path.startswith('/game/') or request.path.startswith('/history/') or request.path.startswith('/stats/') or request.path.startswith('/scoring/') %}
-                {% set game_code = request.path.split('/')[-1] %}
-                {% if request.path.startswith('/scoring/') %}
-                    {% set game_code = game.game_code %}
-                {% endif %}
+                {% if games %}
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link {% if request.path.startswith('/game/') %}active{% endif %}" 
-                           href="{{ url_for('game', game_code=game_code) }}">
+                           href="{{ url_for('game', game_code=games[0].game_code) }}">
                             <i data-feather="edit-2"></i> Edit Game Score Card
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.path.startswith('/history/') %}active{% endif %}"
-                           href="{{ url_for('history', game_code=game_code) }}">
+                           href="{{ url_for('history', game_code=games[0].game_code) }}">
                             <i data-feather="clock"></i> Results
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.path.startswith('/stats/') %}active{% endif %}"
-                           href="{{ url_for('stats', game_code=game_code) }}">
+                           href="{{ url_for('stats', game_code=games[0].game_code) }}">
                             <i data-feather="bar-chart-2"></i> Stats
                         </a>
                     </li>
