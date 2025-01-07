@@ -1,22 +1,22 @@
 from app import app
-import socket
+import logging
+import os
 
-def is_port_in_use(port):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        try:
-            s.bind(('0.0.0.0', port))
-            return False
-        except socket.error:
-            return True
+# Set up logging with more detailed format
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
-    port = 5000
-    # Try alternate ports if 5000 is in use
-    while is_port_in_use(port) and port < 5010:
-        port += 1
-
-    if port < 5010:
+    try:
+        port = int(os.environ.get('PORT', 5000))
+        logger.info(f"Starting Flask server on port {port}")
         app.run(host="0.0.0.0", port=port, debug=True)
-    else:
-        print("Could not find an available port between 5000-5009")
+    except Exception as e:
+        logger.error(f"Failed to start server: {str(e)}")
+        # Print stack trace for debugging
+        import traceback
+        logger.error(traceback.format_exc())
         exit(1)

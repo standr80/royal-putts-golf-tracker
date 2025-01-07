@@ -17,7 +17,8 @@
                         <div class="mb-3">
                             <h6>{{ player_game.player.name }}</h6>
                             <div class="row g-2">
-                                {% for score in player_game.scores|sort(attribute='hole_number') %}
+                                {% set scores = player_game.scores|sort(attribute='hole_number') %}
+                                {% for score in scores %}
                                 <div class="col-md-2 col-4">
                                     <small>Hole {{ score.hole_number }}: {{ score.strokes }}</small>
                                 </div>
