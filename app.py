@@ -138,7 +138,7 @@ def scoring(game_code):
         try:
             # Process scores for the current hole
             for player_game in game.players:
-                score_key = f'scores_{player_game.id}_{current_hole}'
+                score_key = f'scores_{player_game.id}'
                 score_value = request.form.get(score_key)
 
                 if score_value and score_value.strip():

@@ -26,8 +26,6 @@
                 <h5 class="card-title mb-4">Hole {{ current_hole }}</h5>
 
                 <form method="POST" class="needs-validation" novalidate>
-                    <input type="hidden" name="current_hole" value="{{ current_hole }}">
-
                     <div class="table-responsive">
                         <table class="table table-dark">
                             <thead>
@@ -57,7 +55,7 @@
                                             {% endfor %}
                                             <input type="number" 
                                                    class="form-control score-input" 
-                                                   name="scores_{{ player_game.id }}_{{ current_hole }}"
+                                                   name="scores_{{ player_game.id }}"
                                                    min="1" 
                                                    max="20"
                                                    value="{{ current_score.strokes if current_score else '' }}"
