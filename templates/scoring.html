@@ -23,7 +23,14 @@
 
         <div class="card bg-dark mb-4">
             <div class="card-body">
-                <h5 class="card-title mb-4">{{ game.course.name }} - Hole {{ current_hole }}</h5>
+                <h5 class="card-title mb-4">
+                    {{ game.course.name }} - Hole {{ current_hole }} - 
+                    {% if current_hole_info %}
+                        {{ current_hole_info.name }} - Par {{ current_hole_info.par }}
+                    {% else %}
+                        Hole {{ current_hole }}
+                    {% endif %}
+                </h5>
 
                 <form method="POST" class="needs-validation" novalidate>
                     <div class="table-responsive">

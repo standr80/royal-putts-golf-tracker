@@ -107,6 +107,13 @@ def register_routes(app):
         except ValueError:
             current_hole = 1
 
+        # Get current hole information
+        current_hole_info = None
+        for hole in game.course.holes:
+            if hole.name == f"Hole {current_hole}":
+                current_hole_info = hole
+                break
+
         # Create a dictionary of current hole scores
         current_hole_scores = {}
         for player_game in game.players:
@@ -163,6 +170,7 @@ def register_routes(app):
         return render_template('scoring.html', 
                             game=game, 
                             current_hole=current_hole,
+                            current_hole_info=current_hole_info,
                             max_holes=max_holes,
                             current_hole_scores=current_hole_scores)
 
