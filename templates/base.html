@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Scores 'n' More!</title>
+    <title>Royal Putts</title>
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
     <!-- Add Feather Icons CSS and JS -->
     <script src="https://unpkg.com/feather-icons"></script>
@@ -31,7 +31,7 @@
 
         /* Logo styling */
         .navbar-brand img {
-            height: 30px;
+            height: 40px;
             width: auto;
             margin-right: 0.5rem;
         }
@@ -46,11 +46,11 @@
                 {% set game_code = game.game_code %}
             {% endif %}
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('game', game_code=game_code) }}">
-                <img src="{{ url_for('static', filename='assets/PutterFinger_Mascot_Centre.png') }}" alt="Scores 'n' More! Logo"> Scores 'n' More!
+                <img src="{{ url_for('static', filename='assets/royal_putts_logo.png') }}" alt="Royal Putts Logo">
             </a>
             {% else %}
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="{{ url_for('static', filename='assets/PutterFinger_Mascot_Centre.png') }}" alt="Scores 'n' More! Logo"> Scores 'n' More!
+                <img src="{{ url_for('static', filename='assets/royal_putts_logo.png') }}" alt="Royal Putts Logo">
             </a>
             {% endif %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
