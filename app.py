@@ -6,6 +6,7 @@ import logging
 import os
 
 logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class Base(DeclarativeBase):
     pass
@@ -126,7 +127,9 @@ def game(game_code=None):
 def scoring(game_code):
     from models import Game, Score
 
+    logger.debug(f"Accessing scoring route for game: {game_code}")
     game = Game.query.filter_by(game_code=game_code).first_or_404()
+
     try:
         current_hole = int(request.args.get('hole', '1'))
         if current_hole < 1 or current_hole > 18:
@@ -135,11 +138,15 @@ def scoring(game_code):
         current_hole = 1
 
     if request.method == 'POST':
+        logger.debug(f"Processing POST request for hole {current_hole}")
+        logger.debug(f"Form data: {request.form}")
+
         try:
             # Process scores for the current hole
             for player_game in game.players:
                 score_key = f'scores_{player_game.id}'
                 score_value = request.form.get(score_key)
+                logger.debug(f"Processing score for player_game {player_game.id}: {score_value}")
 
                 if score_value and score_value.strip():
                     try:
@@ -151,33 +158,38 @@ def scoring(game_code):
                                 hole_number=current_hole
                             ).first()
 
+                            logger.debug(f"Existing score for hole {current_hole}: {existing_score}")
+
                             if existing_score:
-                                # Update existing score
+                                logger.debug(f"Updating existing score to {score_value}")
                                 existing_score.strokes = score_value
                             else:
-                                # Create new score
+                                logger.debug(f"Creating new score entry: {score_value}")
                                 score_entry = Score(
                                     player_game_id=player_game.id,
                                     hole_number=current_hole,
                                     strokes=score_value
                                 )
                                 db.session.add(score_entry)
+
+                            db.session.flush()  # Flush changes to get any DB errors early
                     except ValueError:
                         flash(f'Invalid score value for {player_game.player.name}', 'danger')
                         return redirect(url_for('scoring', game_code=game_code, hole=current_hole))
 
+            logger.debug("Committing all score changes to database")
             db.session.commit()
+            logger.debug("Successfully committed all changes")
 
             if current_hole < 18:
-                # Redirect to next hole
                 return redirect(url_for('scoring', game_code=game_code, hole=current_hole + 1))
             else:
-                # Game complete, redirect to history
                 flash('Game scores saved successfully!', 'success')
                 return redirect(url_for('history', game_code=game_code))
 
         except Exception as e:
-            app.logger.error(f"Error saving scores: {str(e)}")
+            logger.error(f"Error saving scores: {str(e)}")
+            db.session.rollback()  # Rollback on error
             flash('Error saving scores. Please try again.', 'danger')
             return redirect(url_for('scoring', game_code=game_code, hole=current_hole))
 
