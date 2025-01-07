@@ -30,8 +30,11 @@
                         <a class="nav-link" href="/find-game">Find Game</a>
                     </li>
                 </ul>
-                {% if request.path.startswith('/game/') or request.path.startswith('/history/') or request.path.startswith('/stats/') %}
+                {% if request.path.startswith('/game/') or request.path.startswith('/history/') or request.path.startswith('/stats/') or request.path.startswith('/scoring/') %}
                 {% set game_code = request.path.split('/')[-1] %}
+                {% if request.path.startswith('/scoring/') %}
+                    {% set game_code = game.game_code %}
+                {% endif %}
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('game', game_code=game_code) }}">
