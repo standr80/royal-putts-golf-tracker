@@ -218,6 +218,25 @@ def register_routes(app):
 
     @app.route('/admin')
     def admin():
-        """Admin dashboard to view all games"""
-        games = Game.query.order_by(Game.date.desc()).all()
-        return render_template('admin.html', games=games)
+        """Admin dashboard to view all games with pagination"""
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+
+        # Ensure per_page is one of the allowed values
+        allowed_per_page = [10, 20, 30, 40, 50]
+        if per_page not in allowed_per_page:
+            per_page = 10
+
+        # Get paginated games
+        pagination = Game.query.order_by(Game.date.desc()).paginate(
+            page=page, 
+            per_page=per_page,
+            error_out=False
+        )
+
+        games = pagination.items
+        return render_template('admin.html', 
+                             games=games,
+                             pagination=pagination,
+                             per_page=per_page,
+                             allowed_per_page=allowed_per_page)
