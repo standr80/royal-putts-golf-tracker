@@ -43,16 +43,16 @@
                                             {% set cumulative_score.value = cumulative_score.value + score.strokes %}
                                         {% endif %}
                                     {% endfor %}
+                                    {% set current_hole_score = none %}
+                                    {% for score in player_game.scores %}
+                                        {% if score.hole_number == current_hole %}
+                                            {% set current_hole_score = score.strokes %}
+                                        {% endif %}
+                                    {% endfor %}
                                     <tr>
                                         <td>{{ cumulative_score.value }}</td>
                                         <td>{{ player_game.player.name }}</td>
                                         <td>
-                                            {% set current_hole_score = none %}
-                                            {% for score in player_game.scores %}
-                                                {% if score.hole_number == current_hole %}
-                                                    {% set current_hole_score = score.strokes %}
-                                                {% endif %}
-                                            {% endfor %}
                                             <input type="number" 
                                                    class="form-control score-input" 
                                                    name="scores_{{ player_game.id }}"
