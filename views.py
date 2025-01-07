@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, abort, g
-from models import Game, Player, PlayerGame, Score
+from models import Game, Player, PlayerGame, Score, Course
 from datetime import datetime
 
 def register_routes(app):
@@ -216,10 +216,32 @@ def register_routes(app):
                 flash('Game not found', 'danger')
         return render_template('find_game.html')
 
-    @app.route('/admin/course-setup')
+    @app.route('/admin/course-setup', methods=['GET', 'POST'])
     def course_setup():
         """Admin page for golf course setup and configuration"""
-        return render_template('admin/course_setup.html')
+        if request.method == 'POST':
+            course_name = request.form.get('course_name', '').strip()
+            if course_name:
+                from app import db
+                try:
+                    course = Course(name=course_name)
+                    db.session.add(course)
+                    db.session.commit()
+                    flash(f'Course "{course_name}" has been created successfully.', 'success')
+                    return redirect(url_for('course_setup'))
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f'Error creating course: {str(e)}', 'danger')
+                    return redirect(url_for('course_setup'))
+
+        courses = Course.query.order_by(Course.name).all()
+        return render_template('admin/course_setup.html', courses=courses)
+
+    @app.route('/admin/course/<int:course_id>/settings')
+    def course_settings(course_id):
+        """Settings page for a specific course"""
+        course = Course.query.get_or_404(course_id)
+        return render_template('admin/course_settings.html', course=course)
 
     @app.route('/admin')
     def admin():

@@ -10,15 +10,50 @@
             </a>
         </div>
 
-        <div class="card bg-dark">
+        <div class="card bg-dark mb-4">
             <div class="card-body">
-                <h5 class="card-title mb-4">Course Configuration</h5>
-                <div class="alert alert-info">
-                    <i data-feather="info"></i> Configure golf course details and settings here.
-                </div>
-                <!-- Course setup form will be added here -->
+                <h5 class="card-title mb-4">Add New Course</h5>
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-8">
+                            <label for="course_name" class="form-label">Course Name</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="course_name" 
+                                   name="course_name" 
+                                   required>
+                            <div class="invalid-feedback">
+                                Please enter a course name.
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i data-feather="plus"></i> New Course
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
+
+        {% if courses %}
+        <div class="card bg-dark">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Existing Courses</h5>
+                <div class="list-group">
+                    {% for course in courses %}
+                    <a href="{{ url_for('course_settings', course_id=course.id) }}" 
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        {{ course.name }}
+                        <span class="badge bg-primary rounded-pill">
+                            <i data-feather="settings" class="me-1"></i> Settings
+                        </span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
