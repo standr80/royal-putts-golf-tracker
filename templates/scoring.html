@@ -23,7 +23,7 @@
 
         <div class="card bg-dark mb-4">
             <div class="card-body">
-                <h5 class="card-title mb-4">Hole {{ current_hole }}</h5>
+                <h5 class="card-title mb-4">{{ game.course.name }} - Hole {{ current_hole }}</h5>
 
                 <form method="POST" class="needs-validation" novalidate>
                     <div class="table-responsive">
@@ -83,7 +83,7 @@
                                    id="goto-hole" 
                                    class="form-control form-control-lg" 
                                    min="1" 
-                                   max="18" 
+                                   max="{{ max_holes }}" 
                                    pattern="\d*"
                                    inputmode="numeric"
                                    style="width: 80px;">
@@ -94,7 +94,7 @@
                             </button>
                         </div>
 
-                        {% if current_hole < 18 %}
+                        {% if current_hole < max_holes %}
                             <button type="submit" class="btn btn-primary btn-lg">
                                 Next Hole <i data-feather="arrow-right"></i>
                             </button>
@@ -162,10 +162,11 @@ document.addEventListener('DOMContentLoaded', function() {
 function goToHole() {
     const holeInput = document.getElementById('goto-hole');
     const hole = parseInt(holeInput.value);
-    if (hole >= 1 && hole <= 18) {
+    const maxHoles = {{ max_holes }};
+    if (hole >= 1 && hole <= maxHoles) {
         window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
     } else {
-        alert('Please enter a valid hole number (1-18)');
+        alert(`Please enter a valid hole number (1-${maxHoles})`);
     }
 }
 </script>

@@ -10,6 +10,9 @@ def register_routes(app):
     @app.route('/game', methods=['GET', 'POST'])
     @app.route('/game/<game_code>', methods=['GET', 'POST'])
     def game(game_code=None):
+        # Get all available courses
+        courses = Course.query.order_by(Course.name).all()
+
         # If editing existing game, load it
         existing_game = None
         if game_code:
@@ -17,13 +20,20 @@ def register_routes(app):
 
         if request.method == 'POST':
             player_names = request.form.getlist('player_names[]')
+            course_id = request.form.get('course_id', type=int)
+
             if not player_names:
                 flash('Please add at least one player', 'danger')
+                return redirect(url_for('game'))
+
+            if not course_id:
+                flash('Please select a course', 'danger')
                 return redirect(url_for('game'))
 
             # Create new game or use existing
             if existing_game:
                 game = existing_game
+                game.course_id = course_id
                 # Get current player names for comparison
                 current_player_names = {pg.player.name: pg for pg in game.players}
                 new_player_names = {name.strip() for name in player_names if name.strip()}
@@ -54,7 +64,8 @@ def register_routes(app):
                 # Create a new game
                 game = Game(
                     game_code=Game.generate_unique_code(),
-                    date=datetime.now()
+                    date=datetime.now(),
+                    course_id=course_id
                 )
                 from app import db
                 db.session.add(game)
@@ -77,15 +88,21 @@ def register_routes(app):
                 db.session.commit()
                 return redirect(url_for('scoring', game_code=game.game_code))
 
-        return render_template('game.html', game=existing_game)
+        return render_template('game.html', game=existing_game, courses=courses)
 
     @app.route('/scoring/<game_code>', methods=['GET', 'POST'])
     def scoring(game_code):
         game = Game.query.filter_by(game_code=game_code).first_or_404()
 
+        # Get the number of holes from the course
+        max_holes = len(game.course.holes)
+        if max_holes == 0:
+            flash('This course has no holes configured. Please set up holes first.', 'danger')
+            return redirect(url_for('game', game_code=game_code))
+
         try:
             current_hole = int(request.args.get('hole', '1'))
-            if current_hole < 1 or current_hole > 18:
+            if current_hole < 1 or current_hole > max_holes:
                 current_hole = 1
         except ValueError:
             current_hole = 1
@@ -132,7 +149,7 @@ def register_routes(app):
 
                 db.session.commit()
 
-                if current_hole < 18:
+                if current_hole < max_holes:
                     return redirect(url_for('scoring', game_code=game_code, hole=current_hole + 1))
                 else:
                     flash('Game scores saved successfully!', 'success')
@@ -145,7 +162,8 @@ def register_routes(app):
 
         return render_template('scoring.html', 
                             game=game, 
-                            current_hole=current_hole, 
+                            current_hole=current_hole,
+                            max_holes=max_holes,
                             current_hole_scores=current_hole_scores)
 
     @app.route('/stats')

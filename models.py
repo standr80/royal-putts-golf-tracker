@@ -8,6 +8,7 @@ class Course(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     holes = db.relationship('Hole', backref='course', lazy=True, cascade="all, delete-orphan")
+    games = db.relationship('Game', backref='course', lazy=True)
 
 class Hole(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,6 +32,7 @@ class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     game_code = db.Column(db.String(6), unique=True, nullable=False, index=True)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
     players = db.relationship('PlayerGame', backref='game', lazy=True, cascade="all, delete-orphan")
 
     @staticmethod

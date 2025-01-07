@@ -26,6 +26,22 @@
         <div class="card bg-dark">
             <div class="card-body">
                 <form method="POST" class="needs-validation" novalidate>
+                    <!-- Course Selection -->
+                    <div class="mb-4">
+                        <label for="course_id" class="form-label">Select Course</label>
+                        <select class="form-select" id="course_id" name="course_id" required>
+                            <option value="">Choose Course</option>
+                            {% for course in courses %}
+                            <option value="{{ course.id }}" {% if game and game.course_id == course.id %}selected{% endif %}>
+                                {{ course.name }} ({{ course.holes|length }} holes)
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a course.
+                        </div>
+                    </div>
+
                     <div class="mb-4">
                         <h5 class="card-title">Player Names</h5>
                         <div class="alert alert-info">
