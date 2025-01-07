@@ -288,18 +288,17 @@ def register_routes(app):
         hole_name = request.form.get('hole_name', '').strip()
         hole_par = request.form.get('hole_par', type=int)
 
-        if hole_name:
-            from app import db
-            try:
-                if hole_name:
-                    hole.name = hole_name
-                if hole_par and 3 <= hole_par <= 6:
-                    hole.par = hole_par
-                db.session.commit()
-                flash(f'Hole updated successfully.', 'success')
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Error updating hole: {str(e)}', 'danger')
+        from app import db
+        try:
+            if hole_name:
+                hole.name = hole_name
+            if hole_par and 3 <= hole_par <= 6:
+                hole.par = hole_par
+            db.session.commit()
+            flash(f'Hole updated successfully.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating hole: {str(e)}', 'danger')
 
         return redirect(url_for('course_settings', course_id=course_id))
 
