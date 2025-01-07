@@ -63,7 +63,7 @@
                         </table>
                     </div>
 
-                    <div class="d-flex justify-content-between mt-4">
+                    <div class="d-flex justify-content-between align-items-center mt-4">
                         {% if current_hole > 1 %}
                         <a href="{{ url_for('scoring', game_code=game.game_code, hole=current_hole-1) }}" 
                            class="btn btn-secondary">
@@ -72,6 +72,21 @@
                         {% else %}
                         <div></div>
                         {% endif %}
+
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="goto-hole" class="form-label mb-0">Go to Hole:</label>
+                            <input type="number" 
+                                   id="goto-hole" 
+                                   class="form-control" 
+                                   min="1" 
+                                   max="18" 
+                                   style="width: 70px;">
+                            <button type="button" 
+                                    class="btn btn-primary" 
+                                    onclick="goToHole()">
+                                <i data-feather="arrow-right-circle"></i> Go
+                            </button>
+                        </div>
 
                         {% if current_hole < 18 %}
                         <button type="submit" class="btn btn-primary">
@@ -120,5 +135,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     feather.replace();
 });
+
+// Function to handle hole navigation
+function goToHole() {
+    const holeInput = document.getElementById('goto-hole');
+    const hole = parseInt(holeInput.value);
+    if (hole >= 1 && hole <= 18) {
+        window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
+    } else {
+        alert('Please enter a valid hole number (1-18)');
+    }
+}
 </script>
 {% endblock %}
