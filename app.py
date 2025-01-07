@@ -158,37 +158,38 @@ def scoring(game_code):
             # Process scores for the current hole
             for player_game in game.players:
                 score_key = f'scores_{player_game.id}'
-                score_value = request.form.get(score_key)
+                score_value = request.form.get(score_key, '').strip()
                 logger.debug(f"Processing score for player_game {player_game.id}: {score_value}")
 
-                if score_value and score_value.strip():
-                    try:
-                        score_value = int(score_value)
-                        if 1 <= score_value <= 20:  # Valid score range
-                            # Get existing score for this hole if it exists
-                            existing_score = Score.query.filter_by(
-                                player_game_id=player_game.id,
-                                hole_number=current_hole
-                            ).first()
+                # Set score to 0 if empty or invalid
+                try:
+                    score_value = int(score_value) if score_value else 0
+                    if score_value < 0 or score_value > 20:  # Ensure score is in valid range
+                        score_value = 0
+                except ValueError:
+                    score_value = 0
 
-                            logger.debug(f"Existing score for hole {current_hole}: {existing_score}")
+                # Get existing score for this hole if it exists
+                existing_score = Score.query.filter_by(
+                    player_game_id=player_game.id,
+                    hole_number=current_hole
+                ).first()
 
-                            if existing_score:
-                                logger.debug(f"Updating existing score to {score_value}")
-                                existing_score.strokes = score_value
-                            else:
-                                logger.debug(f"Creating new score entry: {score_value}")
-                                score_entry = Score(
-                                    player_game_id=player_game.id,
-                                    hole_number=current_hole,
-                                    strokes=score_value
-                                )
-                                db.session.add(score_entry)
+                logger.debug(f"Existing score for hole {current_hole}: {existing_score}")
 
-                            db.session.flush()  # Flush changes to get any DB errors early
-                    except ValueError:
-                        flash(f'Invalid score value for {player_game.player.name}', 'danger')
-                        return redirect(url_for('scoring', game_code=game_code, hole=current_hole))
+                if existing_score:
+                    logger.debug(f"Updating existing score to {score_value}")
+                    existing_score.strokes = score_value
+                else:
+                    logger.debug(f"Creating new score entry: {score_value}")
+                    score_entry = Score(
+                        player_game_id=player_game.id,
+                        hole_number=current_hole,
+                        strokes=score_value
+                    )
+                    db.session.add(score_entry)
+
+                db.session.flush()  # Flush changes to get any DB errors early
 
             logger.debug("Committing all score changes to database")
             db.session.commit()
