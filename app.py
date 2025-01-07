@@ -73,7 +73,7 @@ def game(game_code=None):
             # Remove players that are no longer in the game
             for player_name, player_game in current_player_names.items():
                 if player_name not in new_player_names:
-                    # This will automatically delete associated scores due to cascade
+                    # Delete player_game but keep the player record
                     db.session.delete(player_game)
 
             # Add new players that weren't in the game before
@@ -124,33 +124,37 @@ def game(game_code=None):
 
 @app.route('/scoring/<game_code>', methods=['GET', 'POST'])
 def scoring(game_code):
-    from models import Game, Player, PlayerGame, Score
+    from models import Game, Score
 
     game = Game.query.filter_by(game_code=game_code).first_or_404()
 
     if request.method == 'POST':
-        # Clear existing scores for this game
+        # Process all form data
         for player_game in game.players:
-            Score.query.filter_by(player_game_id=player_game.id).delete()
+            existing_scores = {score.hole_number: score for score in player_game.scores}
 
-        # Add new scores
-        for idx, player_game in enumerate(game.players):
             for hole in range(1, 19):
-                score = request.form.get(f'scores_{idx}_{hole}')
-                if score:
-                    score_entry = Score(
-                        player_game_id=player_game.id,
-                        hole_number=hole,
-                        strokes=int(score)
-                    )
-                    db.session.add(score_entry)
+                score_key = f'scores_{player_game.id}_{hole}'
+                score_value = request.form.get(score_key)
+
+                if score_value and score_value.strip():
+                    if hole in existing_scores:
+                        # Update existing score
+                        existing_scores[hole].strokes = int(score_value)
+                    else:
+                        # Create new score
+                        score_entry = Score(
+                            player_game_id=player_game.id,
+                            hole_number=hole,
+                            strokes=int(score_value)
+                        )
+                        db.session.add(score_entry)
 
         db.session.commit()
         flash('Game scores saved successfully!', 'success')
         return redirect(url_for('history', game_code=game.game_code))
 
-    players = [pg.player for pg in game.players]
-    return render_template('scoring.html', game=game, players=players)
+    return render_template('scoring.html', game=game)
 
 @app.route('/stats')
 @app.route('/stats/<game_code>')
