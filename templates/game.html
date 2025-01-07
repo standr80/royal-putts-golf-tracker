@@ -23,6 +23,16 @@
         </div>
         {% endif %}
 
+        {% if not courses %}
+        <div class="alert alert-info">
+            <h4 class="alert-heading"><i data-feather="info"></i> No Courses Available</h4>
+            <p>You need to set up at least one course before starting a game.</p>
+            <hr>
+            <a href="{{ url_for('course_setup') }}" class="btn btn-primary">
+                <i data-feather="settings"></i> Go to Course Setup
+            </a>
+        </div>
+        {% else %}
         <div class="card bg-dark">
             <div class="card-body">
                 <form method="POST" class="needs-validation" novalidate>
@@ -99,6 +109,7 @@
                 </form>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 
