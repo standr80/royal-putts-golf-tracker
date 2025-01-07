@@ -13,17 +13,45 @@
         <div class="card bg-dark">
             <div class="card-body">
                 <h5 class="card-title mb-4">Course Details</h5>
-                <div class="alert alert-info">
-                    <i data-feather="info"></i> Course settings and configuration options will be available here.
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="course_name" class="form-label">Course Name</label>
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="course_name" 
+                                   name="course_name"
+                                   value="{{ course.name }}"
+                                   required>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="save"></i> Update Name
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">
+                            Please enter a course name.
+                        </div>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Delete Course</h6>
+                        <small class="text-muted">This action cannot be undone.</small>
+                    </div>
+                    <form method="POST" action="{{ url_for('delete_course', course_id=course.id) }}" 
+                          onsubmit="return confirm('Are you sure you want to delete this course? This action cannot be undone.');">
+                        <button type="submit" class="btn btn-danger">
+                            <i data-feather="trash-2"></i> Delete Course
+                        </button>
+                    </form>
                 </div>
 
-                <dl class="row">
-                    <dt class="col-sm-3">Course Name</dt>
-                    <dd class="col-sm-9">{{ course.name }}</dd>
-                    
+                <dl class="row mt-4">
                     <dt class="col-sm-3">Created</dt>
                     <dd class="col-sm-9">{{ course.created_at|ordinal_date }}</dd>
-                    
+
                     <dt class="col-sm-3">Last Updated</dt>
                     <dd class="col-sm-9">{{ course.updated_at|ordinal_date }}</dd>
                 </dl>

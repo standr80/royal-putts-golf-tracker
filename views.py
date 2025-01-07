@@ -237,11 +237,41 @@ def register_routes(app):
         courses = Course.query.order_by(Course.name).all()
         return render_template('admin/course_setup.html', courses=courses)
 
-    @app.route('/admin/course/<int:course_id>/settings')
+    @app.route('/admin/course/<int:course_id>/settings', methods=['GET', 'POST'])
     def course_settings(course_id):
         """Settings page for a specific course"""
         course = Course.query.get_or_404(course_id)
+
+        if request.method == 'POST':
+            course_name = request.form.get('course_name', '').strip()
+            if course_name:
+                from app import db
+                try:
+                    course.name = course_name
+                    db.session.commit()
+                    flash(f'Course name updated successfully to "{course_name}".', 'success')
+                    return redirect(url_for('course_settings', course_id=course.id))
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f'Error updating course name: {str(e)}', 'danger')
+                    return redirect(url_for('course_settings', course_id=course.id))
+
         return render_template('admin/course_settings.html', course=course)
+
+    @app.route('/admin/course/<int:course_id>/delete', methods=['POST'])
+    def delete_course(course_id):
+        """Delete a course"""
+        course = Course.query.get_or_404(course_id)
+        from app import db
+        try:
+            db.session.delete(course)
+            db.session.commit()
+            flash(f'Course "{course.name}" has been deleted successfully.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error deleting course: {str(e)}', 'danger')
+
+        return redirect(url_for('course_setup'))
 
     @app.route('/admin')
     def admin():
