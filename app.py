@@ -66,12 +66,35 @@ def game(game_code=None):
         # Create new game or use existing
         if existing_game:
             game = existing_game
-            # First delete scores, then player_games due to foreign key constraint
-            for player_game in game.players:
-                Score.query.filter_by(player_game_id=player_game.id).delete()
-            db.session.commit()  # Commit the score deletions first
-            PlayerGame.query.filter_by(game_id=game.id).delete()
+            # Get current player names for comparison
+            current_player_names = {pg.player.name for pg in game.players}
+            new_player_names = {name.strip() for name in player_names if name.strip()}
+
+            # Only update players if the names have changed
+            if current_player_names != new_player_names:
+                # First delete scores, then player_games due to foreign key constraint
+                for player_game in game.players:
+                    Score.query.filter_by(player_game_id=player_game.id).delete()
+                db.session.commit()  # Commit the score deletions first
+                PlayerGame.query.filter_by(game_id=game.id).delete()
+
+                # Add the new players
+                for player_name in new_player_names:
+                    # Get or create player
+                    player = Player.query.filter_by(name=player_name).first()
+                    if not player:
+                        player = Player(name=player_name)
+                        db.session.add(player)
+                        db.session.flush()
+
+                    # Create player game record
+                    player_game = PlayerGame(player_id=player.id, game_id=game.id)
+                    db.session.add(player_game)
+
+            db.session.commit()
+            return redirect(url_for('scoring', game_code=game.game_code))
         else:
+            # Create a new game
             game = Game(
                 game_code=Game.generate_unique_code(),
                 date=datetime.now()
@@ -79,26 +102,24 @@ def game(game_code=None):
             db.session.add(game)
             db.session.flush()
 
-        players = []
-        # Process each player
-        for player_name in player_names:
-            if not player_name.strip():
-                continue
+            # Process each player
+            for player_name in player_names:
+                if not player_name.strip():
+                    continue
 
-            # Get or create player
-            player = Player.query.filter_by(name=player_name.strip()).first()
-            if not player:
-                player = Player(name=player_name.strip())
-                db.session.add(player)
-                db.session.flush()
+                # Get or create player
+                player = Player.query.filter_by(name=player_name.strip()).first()
+                if not player:
+                    player = Player(name=player_name.strip())
+                    db.session.add(player)
+                    db.session.flush()
 
-            # Create player game record
-            player_game = PlayerGame(player_id=player.id, game_id=game.id)
-            db.session.add(player_game)
-            players.append(player)
+                # Create player game record
+                player_game = PlayerGame(player_id=player.id, game_id=game.id)
+                db.session.add(player_game)
 
-        db.session.commit()
-        return redirect(url_for('scoring', game_code=game.game_code))
+            db.session.commit()
+            return redirect(url_for('scoring', game_code=game.game_code))
 
     return render_template('game.html', game=existing_game)
 
