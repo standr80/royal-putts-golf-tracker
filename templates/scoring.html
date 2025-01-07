@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-10 mx-auto">
+    <div class="col-md-8 mx-auto">
         <h2 class="mb-4">Enter Game Scores</h2>
 
         <div class="alert alert-success mb-4">
@@ -21,73 +21,85 @@
             </div>
         </div>
 
-        <form method="POST" class="needs-validation" novalidate>
-            <div class="card bg-dark mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                <i data-feather="info"></i> Enter scores for each hole (1-20 strokes)
-                            </div>
-                        </div>
-                    </div>
+        <div class="card bg-dark mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Hole {{ current_hole }}</h5>
 
-                    <div id="players-container">
-                        {% for player_game in game.players %}
-                        <div class="player-section mb-4">
-                            <h5 class="card-title mb-3">{{ player_game.player.name }}</h5>
-                            <input type="hidden" name="player_ids[]" value="{{ player_game.player.id }}">
-                            <div class="row g-3">
-                                {% for hole in range(1, 19) %}
-                                <div class="col-md-2 col-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Hole {{ hole }}</label>
-                                        {% set score = player_game.scores|selectattr('hole_number', 'equalto', hole)|first %}
-                                        <input type="number" 
-                                               class="form-control score-input" 
-                                               name="scores_{{ player_game.id }}_{{ hole }}"
-                                               min="1" 
-                                               max="20"
-                                               value="{{ score.strokes if score else '' }}">
-                                        <div class="invalid-feedback">
-                                            Valid score: 1-20
-                                        </div>
-                                    </div>
-                                </div>
+                <form method="POST" class="needs-validation" novalidate>
+                    <input type="hidden" name="current_hole" value="{{ current_hole }}">
+
+                    <div class="table-responsive">
+                        <table class="table table-dark">
+                            <thead>
+                                <tr>
+                                    <th>Score</th>
+                                    <th>Player</th>
+                                    <th>Strokes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player_game in game.players %}
+                                    {% set cumulative_score = 0 %}
+                                    {% for score in player_game.scores %}
+                                        {% if score.hole_number <= current_hole %}
+                                            {% set cumulative_score = cumulative_score + score.strokes %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <tr>
+                                        <td>{{ cumulative_score }}</td>
+                                        <td>{{ player_game.player.name }}</td>
+                                        <td>
+                                            {% set current_score = none %}
+                                            {% for score in player_game.scores %}
+                                                {% if score.hole_number == current_hole %}
+                                                    {% set current_score = score %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            <input type="number" 
+                                                   class="form-control score-input" 
+                                                   name="scores_{{ player_game.id }}_{{ current_hole }}"
+                                                   min="1" 
+                                                   max="20"
+                                                   value="{{ current_score.strokes if current_score else '' }}"
+                                                   required>
+                                            <div class="invalid-feedback">
+                                                Valid score: 1-20
+                                            </div>
+                                        </td>
+                                    </tr>
                                 {% endfor %}
-                            </div>
-                            {% if not loop.last %}
-                            <hr class="my-4">
-                            {% endif %}
-                        </div>
-                        {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-            </div>
 
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-success btn-lg">
-                    <i data-feather="save"></i> Save Game
-                </button>
+                    <div class="d-flex justify-content-between mt-4">
+                        {% if current_hole > 1 %}
+                        <a href="{{ url_for('scoring', game_code=game.game_code, hole=current_hole-1) }}" 
+                           class="btn btn-secondary">
+                            <i data-feather="arrow-left"></i> Previous Hole
+                        </a>
+                        {% else %}
+                        <div></div>
+                        {% endif %}
+
+                        {% if current_hole < 18 %}
+                        <button type="submit" class="btn btn-primary">
+                            Next Hole <i data-feather="arrow-right"></i>
+                        </button>
+                        {% else %}
+                        <button type="submit" class="btn btn-success">
+                            <i data-feather="save"></i> Finish Game
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Validate score inputs
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('score-input')) {
-            const value = e.target.value;
-            if (value && (isNaN(value) || value < 1 || value > 20)) {
-                e.target.classList.add('is-invalid');
-            } else {
-                e.target.classList.remove('is-invalid');
-            }
-        }
-    });
-
     // Copy game code functionality
     const copyGameCodeBtn = document.getElementById('copy-game-code');
     if (copyGameCodeBtn) {
@@ -104,8 +116,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-});
 
-feather.replace();
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+
+    feather.replace();
+});
 </script>
 {% endblock %}

@@ -127,34 +127,61 @@ def scoring(game_code):
     from models import Game, Score
 
     game = Game.query.filter_by(game_code=game_code).first_or_404()
+    try:
+        current_hole = int(request.args.get('hole', '1'))
+        if current_hole < 1 or current_hole > 18:
+            current_hole = 1
+    except ValueError:
+        current_hole = 1
 
     if request.method == 'POST':
-        # Process all form data
-        for player_game in game.players:
-            existing_scores = {score.hole_number: score for score in player_game.scores}
-
-            for hole in range(1, 19):
-                score_key = f'scores_{player_game.id}_{hole}'
+        try:
+            # Process scores for the current hole
+            for player_game in game.players:
+                score_key = f'scores_{player_game.id}_{current_hole}'
                 score_value = request.form.get(score_key)
 
                 if score_value and score_value.strip():
-                    if hole in existing_scores:
-                        # Update existing score
-                        existing_scores[hole].strokes = int(score_value)
-                    else:
-                        # Create new score
-                        score_entry = Score(
-                            player_game_id=player_game.id,
-                            hole_number=hole,
-                            strokes=int(score_value)
-                        )
-                        db.session.add(score_entry)
+                    try:
+                        score_value = int(score_value)
+                        if 1 <= score_value <= 20:  # Valid score range
+                            # Get existing score for this hole if it exists
+                            existing_score = Score.query.filter_by(
+                                player_game_id=player_game.id,
+                                hole_number=current_hole
+                            ).first()
 
-        db.session.commit()
-        flash('Game scores saved successfully!', 'success')
-        return redirect(url_for('history', game_code=game.game_code))
+                            if existing_score:
+                                # Update existing score
+                                existing_score.strokes = score_value
+                            else:
+                                # Create new score
+                                score_entry = Score(
+                                    player_game_id=player_game.id,
+                                    hole_number=current_hole,
+                                    strokes=score_value
+                                )
+                                db.session.add(score_entry)
+                    except ValueError:
+                        flash(f'Invalid score value for {player_game.player.name}', 'danger')
+                        return redirect(url_for('scoring', game_code=game_code, hole=current_hole))
 
-    return render_template('scoring.html', game=game)
+            db.session.commit()
+
+            if current_hole < 18:
+                # Redirect to next hole
+                return redirect(url_for('scoring', game_code=game_code, hole=current_hole + 1))
+            else:
+                # Game complete, redirect to history
+                flash('Game scores saved successfully!', 'success')
+                return redirect(url_for('history', game_code=game_code))
+
+        except Exception as e:
+            app.logger.error(f"Error saving scores: {str(e)}")
+            flash('Error saving scores. Please try again.', 'danger')
+            return redirect(url_for('scoring', game_code=game_code, hole=current_hole))
+
+    return render_template('scoring.html', game=game, current_hole=current_hole)
 
 @app.route('/stats')
 @app.route('/stats/<game_code>')
