@@ -67,19 +67,18 @@ def game(game_code=None):
         if existing_game:
             game = existing_game
             # Get current player names for comparison
-            current_player_names = {pg.player.name for pg in game.players}
+            current_player_names = {pg.player.name: pg for pg in game.players}
             new_player_names = {name.strip() for name in player_names if name.strip()}
 
-            # Only update players if the names have changed
-            if current_player_names != new_player_names:
-                # First delete scores, then player_games due to foreign key constraint
-                for player_game in game.players:
-                    Score.query.filter_by(player_game_id=player_game.id).delete()
-                db.session.commit()  # Commit the score deletions first
-                PlayerGame.query.filter_by(game_id=game.id).delete()
+            # Remove players that are no longer in the game
+            for player_name, player_game in current_player_names.items():
+                if player_name not in new_player_names:
+                    # This will automatically delete associated scores due to cascade
+                    db.session.delete(player_game)
 
-                # Add the new players
-                for player_name in new_player_names:
+            # Add new players that weren't in the game before
+            for player_name in new_player_names:
+                if player_name not in current_player_names:
                     # Get or create player
                     player = Player.query.filter_by(name=player_name).first()
                     if not player:
