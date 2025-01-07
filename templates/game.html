@@ -2,8 +2,8 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-10 mx-auto">
-        <h2 class="mb-4">{% if game %}Edit Game Score Card{% else %}New Game{% endif %}</h2>
+    <div class="col-md-8 mx-auto">
+        <h2 class="mb-4">{% if game %}Edit Players{% else %}New Game{% endif %}</h2>
 
         {% if game %}
         <div class="alert alert-success mb-4">
@@ -16,144 +16,125 @@
                     <button id="copy-game-code" 
                             class="btn btn-light" 
                             data-game-code="{{ game.game_code }}">
-                        <i data-feather="copy"></i> Copy Game Code to Clipboard
+                        <i data-feather="copy"></i> Copy Code
                     </button>
-                    <a href="https://wa.me/?text=Join%20my%20golf%20game!%20Click%20here%20to%20access%20the%20game:%20{{ request.host_url[:-1] }}{{ url_for('game', game_code=game.game_code) }}"
-                       target="_blank" 
-                       class="btn btn-success">
-                        <i data-feather="share-2"></i> Share Game Code via WhatsApp
-                    </a>
                 </div>
             </div>
         </div>
         {% endif %}
 
-        <form method="POST" class="needs-validation" novalidate>
-            <div class="card bg-dark mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                <i data-feather="info"></i> Enter player names and their scores
-                            </div>
+        <div class="card bg-dark">
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="mb-4">
+                        <h5 class="card-title">Player Names</h5>
+                        <div class="alert alert-info">
+                            <i data-feather="info"></i> Enter player names below. You can add multiple players.
                         </div>
                     </div>
 
                     <div id="players-container">
                         {% if game %}
                             {% for player_game in game.players %}
-                            {% set player_index = loop.index0 %}
-                            <div class="player-section mb-4">
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Player Name</label>
-                                            <input type="text" class="form-control" name="player_names[]" 
-                                                   value="{{ player_game.player.name }}" required>
-                                            <div class="invalid-feedback">
-                                                Please enter a player name
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div class="player-entry mb-3">
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="player_names[]" 
+                                           value="{{ player_game.player.name }}"
+                                           required>
+                                    <button type="button" class="btn btn-danger remove-player">
+                                        <i data-feather="trash-2"></i>
+                                    </button>
                                 </div>
-                                <div class="row g-3">
-                                    {% for hole in range(1, 19) %}
-                                    <div class="col-md-2 col-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Hole {{ hole }}</label>
-                                            {% set score = player_game.scores|selectattr('hole_number', 'equalto', hole)|first %}
-                                            <input type="number" 
-                                                   class="form-control score-input" 
-                                                   name="scores_{{ player_index }}_{{ hole }}"
-                                                   min="1" 
-                                                   max="20"
-                                                   value="{{ score.strokes if score else '' }}">
-                                            <div class="invalid-feedback">
-                                                Please enter a valid score (1-20)
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                {% if not loop.last %}
-                                <hr class="my-4">
-                                {% endif %}
                             </div>
                             {% endfor %}
                         {% else %}
-                            <div class="player-section mb-4">
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Player Name</label>
-                                            <input type="text" class="form-control" name="player_names[]" required>
-                                            <div class="invalid-feedback">
-                                                Please enter a player name
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row g-3">
-                                    {% for hole in range(1, 19) %}
-                                    <div class="col-md-2 col-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Hole {{ hole }}</label>
-                                            <input type="number" 
-                                                   class="form-control score-input" 
-                                                   name="scores_0_{{ hole }}"
-                                                   min="1" 
-                                                   max="20">
-                                            <div class="invalid-feedback">
-                                                Please enter a valid score (1-20)
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
+                            <div class="player-entry mb-3">
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="player_names[]" 
+                                           placeholder="Enter player name"
+                                           required>
+                                    <button type="button" class="btn btn-danger remove-player">
+                                        <i data-feather="trash-2"></i>
+                                    </button>
                                 </div>
                             </div>
                         {% endif %}
                     </div>
 
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <button type="button" class="btn btn-secondary" id="add-player">
-                                <i data-feather="user-plus"></i> Add Another Player
-                            </button>
-                        </div>
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-secondary" id="add-player">
+                            <i data-feather="user-plus"></i> Add Another Player
+                        </button>
                     </div>
-                </div>
-            </div>
 
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-success btn-lg">
-                    <i data-feather="save"></i> Save Game
-                </button>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i data-feather="arrow-right"></i> Continue to Scoring
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 </div>
-{% endblock %}
 
 <script>
-  document.getElementById('copy-game-code').addEventListener('click', function() {
-    const gameCode = this.dataset.gameCode;
-    navigator.clipboard.writeText(gameCode)
-      .then(() => {
-        this.classList.add('btn-success');
-        this.classList.remove('btn-light');
-        this.innerText = 'Copied!';
-        setTimeout(() => {
-          this.classList.remove('btn-success');
-          this.classList.add('btn-light');
-          this.innerText = '<i data-feather="copy"></i> Copy Game Code to Clipboard';
-          feather.replace(); // Re-render Feather icons
-        }, 2000);
-      })
-      .catch(err => {
-        console.error('Failed to copy: ', err);
-        // Handle copy error (e.g., display an error message)
-      });
-  });
+document.addEventListener('DOMContentLoaded', function() {
+    const playersContainer = document.getElementById('players-container');
+    const addPlayerBtn = document.getElementById('add-player');
 
-  feather.replace();
+    // Add new player input
+    addPlayerBtn.addEventListener('click', function() {
+        const playerEntry = document.createElement('div');
+        playerEntry.className = 'player-entry mb-3';
+        playerEntry.innerHTML = `
+            <div class="input-group">
+                <input type="text" 
+                       class="form-control" 
+                       name="player_names[]" 
+                       placeholder="Enter player name"
+                       required>
+                <button type="button" class="btn btn-danger remove-player">
+                    <i data-feather="trash-2"></i>
+                </button>
+            </div>
+        `;
+        playersContainer.appendChild(playerEntry);
+        feather.replace();
+    });
+
+    // Remove player input
+    playersContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-player')) {
+            const playerEntry = e.target.closest('.player-entry');
+            if (playersContainer.children.length > 1) {
+                playerEntry.remove();
+            }
+        }
+    });
+
+    // Copy game code functionality
+    const copyGameCodeBtn = document.getElementById('copy-game-code');
+    if (copyGameCodeBtn) {
+        copyGameCodeBtn.addEventListener('click', function() {
+            const gameCode = this.getAttribute('data-game-code');
+            navigator.clipboard.writeText(gameCode).then(() => {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i data-feather="check"></i> Copied!';
+                feather.replace();
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    feather.replace();
+                }, 2000);
+            });
+        });
+    }
+});
+
+feather.replace();
 </script>
+{% endblock %}

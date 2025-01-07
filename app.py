@@ -50,7 +50,7 @@ def home():
 @app.route('/game', methods=['GET', 'POST'])
 @app.route('/game/<game_code>', methods=['GET', 'POST'])
 def game(game_code=None):
-    from models import Game, Player, PlayerGame, Score
+    from models import Game, Player, PlayerGame
 
     # If editing existing game, load it
     existing_game = None
@@ -66,9 +66,7 @@ def game(game_code=None):
         # Create new game or use existing
         if existing_game:
             game = existing_game
-            # Clear existing scores to update them
-            for player_game in game.players:
-                Score.query.filter_by(player_game_id=player_game.id).delete()
+            # Clear existing player games to update them
             PlayerGame.query.filter_by(game_id=game.id).delete()
         else:
             game = Game(
@@ -78,8 +76,9 @@ def game(game_code=None):
             db.session.add(game)
             db.session.flush()
 
-        # Process each player's scores
-        for idx, player_name in enumerate(player_names):
+        players = []
+        # Process each player
+        for player_name in player_names:
             if not player_name.strip():
                 continue
 
@@ -93,9 +92,26 @@ def game(game_code=None):
             # Create player game record
             player_game = PlayerGame(player_id=player.id, game_id=game.id)
             db.session.add(player_game)
-            db.session.flush()
+            players.append(player)
 
-            # Add scores for each hole
+        db.session.commit()
+        return redirect(url_for('scoring', game_code=game.game_code))
+
+    return render_template('game.html', game=existing_game)
+
+@app.route('/scoring/<game_code>', methods=['GET', 'POST'])
+def scoring(game_code):
+    from models import Game, Player, PlayerGame, Score
+
+    game = Game.query.filter_by(game_code=game_code).first_or_404()
+
+    if request.method == 'POST':
+        # Clear existing scores for this game
+        for player_game in game.players:
+            Score.query.filter_by(player_game_id=player_game.id).delete()
+
+        # Add new scores
+        for idx, player_game in enumerate(game.players):
             for hole in range(1, 19):
                 score = request.form.get(f'scores_{idx}_{hole}')
                 if score:
@@ -107,10 +123,11 @@ def game(game_code=None):
                     db.session.add(score_entry)
 
         db.session.commit()
-        flash(f'Game saved successfully! Game Code: {game.game_code}', 'success')
-        return redirect(url_for('game', game_code=game.game_code))
+        flash('Game scores saved successfully!', 'success')
+        return redirect(url_for('history', game_code=game.game_code))
 
-    return render_template('game.html', game=existing_game)
+    players = [pg.player for pg in game.players]
+    return render_template('scoring.html', game=game, players=players)
 
 @app.route('/stats')
 @app.route('/stats/<game_code>')
