@@ -137,6 +137,16 @@ def scoring(game_code):
     except ValueError:
         current_hole = 1
 
+    logger.debug(f"Current hole: {current_hole}")
+
+    # Log existing scores for debugging
+    for player_game in game.players:
+        existing_scores = Score.query.filter_by(
+            player_game_id=player_game.id,
+            hole_number=current_hole
+        ).all()
+        logger.debug(f"Player {player_game.player.name} existing scores for hole {current_hole}: {[score.strokes for score in existing_scores]}")
+
     if request.method == 'POST':
         logger.debug(f"Processing POST request for hole {current_hole}")
         logger.debug(f"Form data: {request.form}")
