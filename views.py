@@ -416,10 +416,15 @@ def register_routes(app):
         return redirect(url_for('course_setup'))
 
     @app.route('/player-comparison')
-    def player_comparison():
+    @app.route('/player-comparison/<game_code>')
+    def player_comparison(game_code=None):
         """Compare performance metrics between selected players"""
-        # Get all players for the selection dropdown
-        all_players = Player.query.order_by(Player.name).all()
+        # Get players based on game code or all players
+        if game_code:
+            game = Game.query.filter_by(game_code=game_code).first_or_404()
+            all_players = [pg.player for pg in game.players]
+        else:
+            all_players = Player.query.order_by(Player.name).all()
 
         # Get selected player IDs from query parameters
         selected_player_ids = request.args.getlist('player_ids', type=int)
@@ -432,16 +437,21 @@ def register_routes(app):
         if selected_players:
             for player in selected_players:
                 # Calculate basic stats
-                games_played = len(player.games)
+                if game_code:
+                    player_games = [pg for pg in player.games if pg.game.game_code == game_code]
+                else:
+                    player_games = player.games
+
+                games_played = len(player_games)
                 if games_played > 0:
-                    total_scores = [game.total_score for game in player.games]
+                    total_scores = [game.total_score for game in player_games]
                     avg_score = sum(total_scores) / len(total_scores)
                     best_score = min(total_scores)
 
                     # Calculate hole-by-hole averages
                     hole_scores = {}
-                    for game in player.games:
-                        for score in game.scores:
+                    for pg in player_games:
+                        for score in pg.scores:
                             if score.hole_number not in hole_scores:
                                 hole_scores[score.hole_number] = []
                             hole_scores[score.hole_number].append(score.strokes)
@@ -467,4 +477,5 @@ def register_routes(app):
                              selected_player_ids=selected_player_ids,
                              stats=stats,
                              hole_averages=hole_averages,
-                             max_holes=max_holes)
+                             max_holes=max_holes,
+                             game_code=game_code)

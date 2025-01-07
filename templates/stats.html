@@ -7,7 +7,7 @@
             <h2>
                 {% if game_code %}Game {{ game_code }} Statistics{% else %}Overall Player Statistics{% endif %}
             </h2>
-            <a href="{{ url_for('player_comparison') }}" class="btn btn-primary">
+            <a href="{{ url_for('player_comparison', game_code=game_code) if game_code else url_for('player_comparison') }}" class="btn btn-primary">
                 <i data-feather="users"></i> Compare Players
             </a>
         </div>
