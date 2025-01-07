@@ -30,7 +30,7 @@ def register_routes(app):
 
                 # Process player changes
                 from app import db
-                
+
                 # Remove players that are no longer in the game
                 for player_name, player_game in current_player_names.items():
                     if player_name not in new_player_names:
@@ -221,6 +221,8 @@ def register_routes(app):
         """Admin dashboard to view all games with pagination and search"""
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
+        sort_by = request.args.get('sort', 'date')  # Default sort by date
+        order = request.args.get('order', 'desc')  # Default order is descending
 
         # Ensure per_page is one of the allowed values
         allowed_per_page = [10, 20, 30, 40, 50]
@@ -249,8 +251,14 @@ def register_routes(app):
                 )
             ).distinct()
 
-        # Order and paginate results
-        pagination = query.order_by(Game.date.desc()).paginate(
+        # Apply sorting
+        if sort_by == 'game_code':
+            query = query.order_by(Game.game_code.desc() if order == 'desc' else Game.game_code.asc())
+        else:  # Default to date sorting
+            query = query.order_by(Game.date.desc() if order == 'desc' else Game.date.asc())
+
+        # Paginate results
+        pagination = query.paginate(
             page=page, 
             per_page=per_page,
             error_out=False
@@ -262,4 +270,6 @@ def register_routes(app):
                              pagination=pagination,
                              per_page=per_page,
                              allowed_per_page=allowed_per_page,
-                             search_term=search_term)
+                             search_term=search_term,
+                             sort_by=sort_by,
+                             order=order)

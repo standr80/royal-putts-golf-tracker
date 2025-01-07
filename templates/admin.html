@@ -25,11 +25,13 @@
                            placeholder="Search games by code, player name, or date..."
                            value="{{ search_term or '' }}">
                     <input type="hidden" name="per_page" value="{{ per_page }}">
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
+                    <input type="hidden" name="order" value="{{ order }}">
                     <button type="submit" class="btn btn-primary">
                         <i data-feather="search"></i> Search
                     </button>
                     {% if search_term %}
-                    <a href="{{ url_for('admin', per_page=per_page) }}" class="btn btn-secondary">
+                    <a href="{{ url_for('admin', per_page=per_page, sort=sort_by, order=order) }}" class="btn btn-secondary">
                         <i data-feather="x"></i> Clear
                     </a>
                     {% endif %}
@@ -42,8 +44,24 @@
             <table class="table table-dark table-hover">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Game Code</th>
+                        <th>
+                            <a href="{{ url_for('admin', sort='date', order='asc' if sort_by == 'date' and order == 'desc' else 'desc', search=search_term, per_page=per_page) }}" 
+                               class="text-white text-decoration-none d-flex align-items-center gap-2">
+                                Date
+                                {% if sort_by == 'date' %}
+                                    <i data-feather="{{ 'chevron-up' if order == 'asc' else 'chevron-down' }}"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ url_for('admin', sort='game_code', order='asc' if sort_by == 'game_code' and order == 'desc' else 'desc', search=search_term, per_page=per_page) }}"
+                               class="text-white text-decoration-none d-flex align-items-center gap-2">
+                                Game Code
+                                {% if sort_by == 'game_code' %}
+                                    <i data-feather="{{ 'chevron-up' if order == 'asc' else 'chevron-down' }}"></i>
+                                {% endif %}
+                            </a>
+                        </th>
                         <th>Players</th>
                         <th>Actions</th>
                     </tr>
@@ -74,7 +92,7 @@
         <nav aria-label="Page navigation" class="mt-4">
             <ul class="pagination justify-content-center">
                 <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                    <a class="page-link" href="{{ url_for('admin', page=pagination.prev_num, per_page=per_page, search=search_term) if pagination.has_prev else '#' }}">
+                    <a class="page-link" href="{{ url_for('admin', page=pagination.prev_num, per_page=per_page, search=search_term, sort=sort_by, order=order) if pagination.has_prev else '#' }}">
                         <i data-feather="chevron-left"></i> Previous
                     </a>
                 </li>
@@ -82,7 +100,7 @@
                 {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=2, right_edge=2) %}
                     {% if page_num %}
                         <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                            <a class="page-link" href="{{ url_for('admin', page=page_num, per_page=per_page, search=search_term) }}">
+                            <a class="page-link" href="{{ url_for('admin', page=page_num, per_page=per_page, search=search_term, sort=sort_by, order=order) }}">
                                 {{ page_num }}
                             </a>
                         </li>
@@ -94,7 +112,7 @@
                 {% endfor %}
 
                 <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                    <a class="page-link" href="{{ url_for('admin', page=pagination.next_num, per_page=per_page, search=search_term) if pagination.has_next else '#' }}">
+                    <a class="page-link" href="{{ url_for('admin', page=pagination.next_num, per_page=per_page, search=search_term, sort=sort_by, order=order) if pagination.has_next else '#' }}">
                         Next <i data-feather="chevron-right"></i>
                     </a>
                 </li>
