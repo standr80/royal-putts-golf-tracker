@@ -43,12 +43,6 @@
                                             {% set cumulative_score.value = cumulative_score.value + score.strokes %}
                                         {% endif %}
                                     {% endfor %}
-                                    {% set current_hole_score = none %}
-                                    {% for score in player_game.scores %}
-                                        {% if score.hole_number == current_hole %}
-                                            {% set current_hole_score = score.strokes %}
-                                        {% endif %}
-                                    {% endfor %}
                                     <tr>
                                         <td>{{ cumulative_score.value }}</td>
                                         <td>{{ player_game.player.name }}</td>
@@ -58,7 +52,7 @@
                                                    name="scores_{{ player_game.id }}"
                                                    min="1" 
                                                    max="20"
-                                                   value="{{ current_hole_score }}"
+                                                   value="{{ current_hole_scores.get(player_game.id, '') }}"
                                                    required>
                                             <div class="invalid-feedback">
                                                 Valid score: 1-20
