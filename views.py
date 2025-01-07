@@ -479,3 +479,7 @@ def register_routes(app):
                              hole_averages=hole_averages,
                              max_holes=max_holes,
                              game_code=game_code)
+    @app.route('/bar-menu')
+    def bar_menu():
+        """Display the food and drink menu page"""
+        return render_template('bar_menu.html')
