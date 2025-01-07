@@ -66,9 +66,16 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
-                        <button class="btn btn-secondary btn-lg" disabled>
-                            <i data-feather="arrow-left"></i> Previous Hole
-                        </button>
+                        {% if current_hole > 1 %}
+                            <a href="{{ url_for('scoring', game_code=game.game_code, hole=current_hole - 1) }}" 
+                               class="btn btn-secondary btn-lg">
+                                <i data-feather="arrow-left"></i> Previous Hole
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary btn-lg" disabled>
+                                <i data-feather="arrow-left"></i> Previous Hole
+                            </button>
+                        {% endif %}
 
                         <div class="d-flex align-items-center gap-2">
                             <label for="goto-hole" class="form-label mb-0">Go to Hole:</label>
@@ -88,13 +95,13 @@
                         </div>
 
                         {% if current_hole < 18 %}
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            Next Hole <i data-feather="arrow-right"></i>
-                        </button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Next Hole <i data-feather="arrow-right"></i>
+                            </button>
                         {% else %}
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i data-feather="save"></i> Finish Game
-                        </button>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i data-feather="save"></i> Finish Game
+                            </button>
                         {% endif %}
                     </div>
                 </form>
