@@ -16,7 +16,6 @@ if __name__ == "__main__":
         app.run(host="0.0.0.0", port=port, debug=True)
     except Exception as e:
         logger.error(f"Failed to start server: {str(e)}")
-        # Print stack trace for debugging
         import traceback
         logger.error(traceback.format_exc())
         exit(1)
