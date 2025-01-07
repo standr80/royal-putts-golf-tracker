@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Course Settings: {{ course.name }}</h2>
+            <a href="{{ url_for('course_setup') }}" class="btn btn-secondary">
+                <i data-feather="arrow-left"></i> Back to Course Setup
+            </a>
+        </div>
+
+        <div class="card bg-dark">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Course Details</h5>
+                <div class="alert alert-info">
+                    <i data-feather="info"></i> Course settings and configuration options will be available here.
+                </div>
+
+                <dl class="row">
+                    <dt class="col-sm-3">Course Name</dt>
+                    <dd class="col-sm-9">{{ course.name }}</dd>
+                    
+                    <dt class="col-sm-3">Created</dt>
+                    <dd class="col-sm-9">{{ course.created_at|ordinal_date }}</dd>
+                    
+                    <dt class="col-sm-3">Last Updated</dt>
+                    <dd class="col-sm-9">{{ course.updated_at|ordinal_date }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
