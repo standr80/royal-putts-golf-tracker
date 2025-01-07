@@ -37,6 +37,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Function to sync player names across all holes
+    function syncPlayerNames(playerIndex, newName) {
+        for (let hole = 1; hole <= totalHoles; hole++) {
+            const playerNameInput = document.querySelector(`#players-for-hole-${hole} tr:nth-child(${playerIndex + 1}) input[name="player_names[]"]`);
+            if (playerNameInput) {
+                playerNameInput.value = newName;
+            }
+        }
+    }
+
+    // Add event listener for player name changes
+    document.addEventListener('input', function(e) {
+        if (e.target.name === 'player_names[]') {
+            const playerRow = e.target.closest('tr');
+            const playerIndex = Array.from(playerRow.parentNode.children).indexOf(playerRow);
+            syncPlayerNames(playerIndex, e.target.value);
+        } else if (e.target.classList.contains('score-input')) {
+            const value = e.target.value;
+            if (value && (isNaN(value) || value < 1 || value > 20)) {
+                e.target.classList.add('is-invalid');
+            } else {
+                e.target.classList.remove('is-invalid');
+                updateCumulativeScores();
+            }
+        }
+    });
+
     // Add new player
     document.getElementById('add-player')?.addEventListener('click', function() {
         const playerCount = document.querySelectorAll(`#players-for-hole-1 tr`).length;
@@ -102,16 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Input validation for scores
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('score-input')) {
-            const value = e.target.value;
-            if (value && (isNaN(value) || value < 1 || value > 20)) {
-                e.target.classList.add('is-invalid');
-            } else {
-                e.target.classList.remove('is-invalid');
-                updateCumulativeScores();
-            }
-        }
-    });
+    // Input validation for scores (merged with player name listener)
+
 });
