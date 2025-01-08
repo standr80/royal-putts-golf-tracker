@@ -21,7 +21,7 @@
                        data-action="share/whatsapp/share"
                        target="_blank"
                        class="btn btn-light">
-                         <i data-feather="share-2"></i> Share to WhatsApp
+                        <i data-feather="share-2"></i> Share to WhatsApp
                     </a>
                 </div>
             </div>
@@ -80,11 +80,11 @@
 
                     <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
                         {% if current_hole < max_holes %}
-                            <button type="submit" class="btn btn-primary btn-lg">
+                            <button type="submit" class="btn btn-primary">
                                 Next Hole <i data-feather="arrow-right"></i>
                             </button>
                         {% else %}
-                            <button type="submit" class="btn btn-success btn-lg">
+                            <button type="submit" class="btn btn-success">
                                 <i data-feather="save"></i> Finish Game
                             </button>
                         {% endif %}
@@ -93,14 +93,14 @@
                             <label for="goto-hole" class="form-label mb-0">Go to Hole:</label>
                             <input type="number" 
                                    id="goto-hole" 
-                                   class="form-control form-control-lg" 
+                                   class="form-control" 
                                    min="1" 
                                    max="{{ max_holes }}" 
                                    pattern="\d*"
                                    inputmode="numeric"
-                                   style="width: 80px;">
+                                   style="width: 60px;">
                             <button type="button" 
-                                    class="btn btn-primary btn-lg" 
+                                    class="btn btn-primary" 
                                     onclick="goToHole()">
                                 <i data-feather="arrow-right-circle"></i> Go
                             </button>
