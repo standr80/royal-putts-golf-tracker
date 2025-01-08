@@ -69,6 +69,26 @@
                 </form>
             </div>
         </div>
+
+        <div class="card bg-dark">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Game Usage Details</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Games Used</label>
+                            <p class="form-control-plaintext">{{ purchase_details.total_games_used if purchase_details else 0 }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Games Left</label>
+                            <p class="form-control-plaintext">{{ purchase_details.games_remaining if purchase_details else 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -84,3 +84,15 @@ class PurchaseDetails(db.Model):
             except EmailNotValidError:
                 return False
         return True
+
+    @property
+    def total_games_used(self):
+        """Calculate total number of games used"""
+        from app.models import Game
+        return Game.query.count()
+
+    @property
+    def games_remaining(self):
+        """Calculate number of games remaining"""
+        games_purchased = self.games_purchased or 0
+        return max(0, games_purchased - self.total_games_used)
