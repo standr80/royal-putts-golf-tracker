@@ -7,7 +7,7 @@
 
         {% if game %}
         <div class="alert alert-success mb-4">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
                     <h4 class="alert-heading mb-2">Game Code: <strong>{{ game.game_code }}</strong></h4>
                     <p class="mb-0">Share this code with other players to let them find this game.</p>
@@ -18,6 +18,12 @@
                             data-game-code="{{ game.game_code }}">
                         <i data-feather="copy"></i> Copy Code
                     </button>
+                    <a href="whatsapp://send?text=Join%20my%20game%20at%20Royal%20Putts%20Thetford!%20Game%20Code%3A%20{{ game.game_code }}"
+                       data-action="share/whatsapp/share"
+                       target="_blank"
+                       class="btn btn-light">
+                        <i data-feather="share-2"></i> Share to WhatsApp
+                    </a>
                 </div>
             </div>
         </div>
