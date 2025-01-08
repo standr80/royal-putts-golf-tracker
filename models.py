@@ -88,7 +88,6 @@ class PurchaseDetails(db.Model):
     @property
     def total_games_used(self):
         """Calculate total number of games used"""
-        from app.models import Game
         return Game.query.count()
 
     @property
