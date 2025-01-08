@@ -154,11 +154,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Form validation
+    // Enhanced form validation
     gameForm.addEventListener('submit', function(e) {
-        if (playersContainer.children.length === 0) {
+        const playerInputs = playersContainer.querySelectorAll('input[name="player_names[]"]');
+        const validPlayers = Array.from(playerInputs).filter(input => input.value.trim() !== '');
+
+        if (validPlayers.length === 0) {
             e.preventDefault();
             validationMessage.classList.remove('d-none');
+            playerInputs[0].focus();
             return false;
         }
         validationMessage.classList.add('d-none');
