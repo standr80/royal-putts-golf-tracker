@@ -47,8 +47,8 @@
                             </option>
                             {% endfor %}
                         </select>
-                        <div class="invalid-feedback">
-                            Please select a course.
+                        <div id="course-validation-message" class="invalid-feedback">
+                            Please select a course before continuing.
                         </div>
                     </div>
 
@@ -123,6 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const addPlayerBtn = document.getElementById('add-player');
     const gameForm = document.getElementById('gameForm');
     const validationMessage = document.getElementById('player-validation-message');
+    const courseSelect = document.getElementById('course_id');
 
     // Add new player input
     addPlayerBtn.addEventListener('click', function() {
@@ -156,6 +157,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Enhanced form validation
     gameForm.addEventListener('submit', function(e) {
+        let isValid = true;
+
+        // Course validation
+        if (!courseSelect.value) {
+            e.preventDefault();
+            courseSelect.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            courseSelect.classList.remove('is-invalid');
+        }
+
+        // Player validation
         const playerInputs = playersContainer.querySelectorAll('input[name="player_names[]"]');
         const validPlayers = Array.from(playerInputs).filter(input => input.value.trim() !== '');
 
@@ -163,9 +176,19 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             validationMessage.classList.remove('d-none');
             playerInputs[0].focus();
-            return false;
+            isValid = false;
+        } else {
+            validationMessage.classList.add('d-none');
         }
-        validationMessage.classList.add('d-none');
+
+        return isValid;
+    });
+
+    // Course select change handler
+    courseSelect.addEventListener('change', function() {
+        if (this.value) {
+            this.classList.remove('is-invalid');
+        }
     });
 
     // Copy game code functionality
