@@ -58,25 +58,16 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    {% if request.path.startswith('/game/') or request.path.startswith('/history/') or request.path.startswith('/stats/') or request.path.startswith('/scoring/') %}
-                    {% set game_code = request.path.split('/')[-1] %}
-                    {% if request.path.startswith('/scoring/') %}
-                        {% set game_code = game.game_code %}
-                    {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" 
-                           href="{{ url_for('game', game_code=game_code) }}">Home</a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
-                    </li>
-                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/game' %}active{% endif %}" href="/game">New Game</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/find-game' %}active{% endif %}" href="/find-game">Find Game</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/bar-menu' %}active{% endif %}" href="/bar-menu">
+                            <i data-feather="coffee"></i> Order Food & Drink
+                        </a>
                     </li>
                 </ul>
                 {% if request.path.startswith('/game/') or request.path.startswith('/history/') or request.path.startswith('/stats/') or request.path.startswith('/scoring/') %}
