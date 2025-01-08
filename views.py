@@ -483,10 +483,44 @@ def register_routes(app):
     def bar_menu():
         """Display the food and drink menu page"""
         return render_template('bar_menu.html')
-    @app.route('/admin/account')
+    @app.route('/admin/account', methods=['GET', 'POST'])
     def account_management():
-        """Display the account management page"""
-        return render_template('admin/account_management.html')
+        """Display and handle the account management page"""
+        from models import PurchaseDetails
+        from datetime import datetime
+
+        if request.method == 'POST':
+            from app import db
+            try:
+                # Get existing record or create new one
+                purchase_details = PurchaseDetails.get_latest() or PurchaseDetails()
+
+                # Update contact information
+                purchase_details.contact_name = request.form.get('contact_name')
+                purchase_details.contact_email = request.form.get('contact_email')
+                purchase_details.contact_phone = request.form.get('contact_phone')
+
+                # Validate email if provided
+                if purchase_details.contact_email and not purchase_details.validate_email():
+                    flash('Invalid email format', 'danger')
+                    return redirect(url_for('account_management'))
+
+                if not purchase_details.id:  # If new record
+                    db.session.add(purchase_details)
+                db.session.commit()
+                flash('Contact details saved successfully', 'success')
+                return redirect(url_for('account_management'))
+
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error saving contact details: {str(e)}', 'danger')
+                return redirect(url_for('account_management'))
+
+        # GET request - display form
+        purchase_details = PurchaseDetails.get_latest()
+        return render_template('admin/account_management.html', 
+                             purchase_details=purchase_details)
+
     @app.route('/superadmin', methods=['GET', 'POST'])
     def superadmin():
         """Display and handle the super admin dashboard page"""
