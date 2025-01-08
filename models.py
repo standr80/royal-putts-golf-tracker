@@ -1,7 +1,8 @@
-from app import db
+from app import db, mail
 from datetime import datetime
 import random
 from email_validator import validate_email, EmailNotValidError
+from flask_mail import Message
 
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -69,6 +70,7 @@ class PurchaseDetails(db.Model):
     contact_phone = db.Column(db.String(20), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    notification_sent = db.Column(db.Boolean, default=False)
 
     @staticmethod
     def get_latest():
@@ -94,4 +96,41 @@ class PurchaseDetails(db.Model):
     def games_remaining(self):
         """Calculate number of games remaining"""
         games_purchased = self.games_purchased or 0
-        return max(0, games_purchased - self.total_games_used)
+        remaining = max(0, games_purchased - self.total_games_used)
+
+        # Send notification if games remaining is zero and notification hasn't been sent
+        if remaining == 0 and not self.notification_sent and self.contact_name:
+            self.send_no_games_notification()
+            self.notification_sent = True
+            db.session.commit()
+
+        return remaining
+
+    def send_no_games_notification(self):
+        """Send email notification when games remaining reaches zero"""
+        try:
+            subject = f"{self.contact_name} - No Games Left"
+            msg = Message(
+                subject=subject,
+                recipients=['richard@eventstuff.ltd'],
+                body=f"""
+                Hello,
+
+                This is an automated notification to inform you that the number of games remaining has reached zero.
+
+                Details:
+                Contact Name: {self.contact_name}
+                Contact Email: {self.contact_email}
+                Contact Phone: {self.contact_phone}
+                Last Invoice: {self.invoice_number}
+                Last Purchase Date: {self.purchase_date}
+
+                Please take necessary action.
+
+                Best regards,
+                Golf Score Tracker System
+                """
+            )
+            mail.send(msg)
+        except Exception as e:
+            print(f"Error sending email notification: {str(e)}")

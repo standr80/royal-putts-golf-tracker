@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, g
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+from flask_mail import Mail, Message
 from datetime import datetime
 import logging
 import os
@@ -15,6 +16,7 @@ class Base(DeclarativeBase):
 
 # Initialize extensions
 db = SQLAlchemy(model_class=Base)
+mail = Mail()
 
 def create_app():
     """Application factory function"""
@@ -28,8 +30,17 @@ def create_app():
         "pool_pre_ping": True,
     }
 
-    # Initialize the app with the extension
+    # Configure email settings
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
+
+    # Initialize the extensions
     db.init_app(app)
+    mail.init_app(app)
 
     with app.app_context():
         # Import models here to avoid circular imports
@@ -77,7 +88,6 @@ def create_app():
 
 # Create the application instance
 app = create_app()
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
