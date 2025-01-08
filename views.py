@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, abort, g
-from models import Game, Player, PlayerGame, Score, Course, Hole
+from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails
 from datetime import datetime
 
 def register_routes(app):
@@ -490,7 +490,7 @@ def register_routes(app):
     @app.route('/superadmin', methods=['GET', 'POST'])
     def superadmin():
         """Display and handle the super admin dashboard page"""
-        from models import PurchaseDetails
+        from models import PurchaseDetails, ModuleSettings
         from datetime import datetime
 
         if request.method == 'POST':
@@ -536,4 +536,24 @@ def register_routes(app):
 
         # GET request - display form
         purchase_details = PurchaseDetails.get_latest()
-        return render_template('admin/superadmin.html', purchase_details=purchase_details)
+        modules = ModuleSettings.get_settings()
+        return render_template('admin/superadmin.html', 
+                             purchase_details=purchase_details,
+                             modules=modules)
+
+    @app.route('/admin/update-modules', methods=['POST'])
+    def update_modules():
+        """Handle module settings updates"""
+        from app import db
+        from models import ModuleSettings
+
+        try:
+            settings = ModuleSettings.get_settings()
+            settings.enable_food_drink = bool(request.form.get('enable_food_drink'))
+            db.session.commit()
+            flash('Module settings updated successfully', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating module settings: {str(e)}', 'danger')
+
+        return redirect(url_for('superadmin'))

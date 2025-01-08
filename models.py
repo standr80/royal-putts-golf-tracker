@@ -134,3 +134,18 @@ class PurchaseDetails(db.Model):
             mail.send(msg)
         except Exception as e:
             print(f"Error sending email notification: {str(e)}")
+
+class ModuleSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    enable_food_drink = db.Column(db.Boolean, default=False)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @staticmethod
+    def get_settings():
+        """Get the module settings, creating if needed"""
+        settings = ModuleSettings.query.first()
+        if not settings:
+            settings = ModuleSettings()
+            db.session.add(settings)
+            db.session.commit()
+        return settings
