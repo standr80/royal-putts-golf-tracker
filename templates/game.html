@@ -18,7 +18,7 @@
                             data-game-code="{{ game.game_code }}">
                         <i data-feather="copy"></i> Copy Code
                     </button>
-                    <a href="whatsapp://send?text=Join%20my%20game%20at%20Royal%20Putts%20Thetford!%20Game%20Code%3A%20{{ game.game_code }}"
+                    <a href="https://api.whatsapp.com/send?text={{ 'Join my game at Royal Putts Thetford! Game Code: ' ~ game.game_code|urlencode }}"
                        data-action="share/whatsapp/share"
                        target="_blank"
                        class="btn btn-light">
