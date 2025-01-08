@@ -138,6 +138,7 @@ class PurchaseDetails(db.Model):
 class ModuleSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     enable_food_drink = db.Column(db.Boolean, default=False)
+    auto_disable_games = db.Column(db.Boolean, default=False)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     @staticmethod
@@ -149,3 +150,16 @@ class ModuleSettings(db.Model):
             db.session.add(settings)
             db.session.commit()
         return settings
+
+    @property
+    def should_disable_new_games(self):
+        """Check if new games should be disabled based on settings and remaining games"""
+        if not self.auto_disable_games:
+            return False
+
+        # Get latest purchase details
+        purchase_details = PurchaseDetails.get_latest()
+        if not purchase_details:
+            return False
+
+        return purchase_details.games_remaining < 1

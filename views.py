@@ -550,6 +550,7 @@ def register_routes(app):
         try:
             settings = ModuleSettings.get_settings()
             settings.enable_food_drink = bool(request.form.get('enable_food_drink'))
+            settings.auto_disable_games = bool(request.form.get('auto_disable_games'))
             db.session.commit()
             flash('Module settings updated successfully', 'success')
         except Exception as e:
