@@ -483,7 +483,7 @@ def register_routes(app):
     def bar_menu():
         """Display the food and drink menu page"""
         return render_template('bar_menu.html')
-    @app.route('/admin/account')
-    def account_management():
-        """Display the account management page"""
-        return render_template('admin/account_management.html')
+    @app.route('/superadmin')
+    def superadmin():
+        """Display the super admin dashboard page"""
+        return render_template('admin/superadmin.html')
