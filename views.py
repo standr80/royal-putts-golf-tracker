@@ -486,7 +486,7 @@ def register_routes(app):
     @app.route('/admin/account', methods=['GET', 'POST'])
     def account_management():
         """Display and handle the account management page"""
-        from models import PurchaseDetails
+        from models import PurchaseDetails, ModuleSettings
         from datetime import datetime
 
         if request.method == 'POST':
@@ -518,8 +518,10 @@ def register_routes(app):
 
         # GET request - display form
         purchase_details = PurchaseDetails.get_latest()
+        modules = ModuleSettings.get_settings()
         return render_template('admin/account_management.html', 
-                             purchase_details=purchase_details)
+                             purchase_details=purchase_details,
+                             modules=modules)
 
     @app.route('/superadmin', methods=['GET', 'POST'])
     def superadmin():
