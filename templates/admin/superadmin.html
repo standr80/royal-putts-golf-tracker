@@ -7,10 +7,66 @@
             <h2>Super Admin Dashboard</h2>
         </div>
 
-        <div class="card bg-dark">
+        <div class="card bg-dark mb-4">
             <div class="card-body">
-                <h5 class="card-title mb-4">Super Admin Controls</h5>
-                <p class="text-muted">Super admin features coming soon...</p>
+                <h5 class="card-title mb-4">Game Purchase Details</h5>
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="games_purchased" class="form-label">Games Purchased</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="games_purchased" 
+                               name="games_purchased"
+                               value="{{ purchase_details.games_purchased if purchase_details else '' }}"
+                               min="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="purchase_date" class="form-label">Date of last Purchase</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="purchase_date" 
+                               name="purchase_date"
+                               placeholder="DD/MM/YYYY"
+                               value="{{ purchase_details.purchase_date.strftime('%d/%m/%Y') if purchase_details and purchase_details.purchase_date else '' }}"
+                               pattern="\d{2}/\d{2}/\d{4}">
+                        <div class="form-text">Format: DD/MM/YYYY</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="invoice_number" class="form-label">Last Invoice Number</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="invoice_number" 
+                               name="invoice_number"
+                               value="{{ purchase_details.invoice_number if purchase_details else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact_name" class="form-label">Contact Name</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="contact_name" 
+                               name="contact_name"
+                               value="{{ purchase_details.contact_name if purchase_details else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact_email" class="form-label">Contact Email</label>
+                        <input type="email" 
+                               class="form-control" 
+                               id="contact_email" 
+                               name="contact_email"
+                               value="{{ purchase_details.contact_email if purchase_details else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact_phone" class="form-label">Contact Phone</label>
+                        <input type="tel" 
+                               class="form-control" 
+                               id="contact_phone" 
+                               name="contact_phone"
+                               value="{{ purchase_details.contact_phone if purchase_details else '' }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="save"></i> Save Details
+                    </button>
+                </form>
             </div>
         </div>
     </div>

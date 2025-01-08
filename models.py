@@ -1,6 +1,7 @@
 from app import db
 from datetime import datetime
 import random
+from email_validator import validate_email, EmailNotValidError
 
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -57,3 +58,29 @@ class Score(db.Model):
     player_game_id = db.Column(db.Integer, db.ForeignKey('player_game.id'), nullable=False)
     hole_number = db.Column(db.Integer, nullable=False)
     strokes = db.Column(db.Integer, nullable=False)
+
+class PurchaseDetails(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    games_purchased = db.Column(db.Integer, nullable=True)
+    purchase_date = db.Column(db.Date, nullable=True)
+    invoice_number = db.Column(db.String(50), nullable=True)
+    contact_name = db.Column(db.String(100), nullable=True)
+    contact_email = db.Column(db.String(120), nullable=True)
+    contact_phone = db.Column(db.String(20), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @staticmethod
+    def get_latest():
+        """Get the latest purchase details record"""
+        return PurchaseDetails.query.order_by(PurchaseDetails.id.desc()).first()
+
+    def validate_email(self):
+        """Validate email format"""
+        if self.contact_email:
+            try:
+                validate_email(self.contact_email)
+                return True
+            except EmailNotValidError:
+                return False
+        return True

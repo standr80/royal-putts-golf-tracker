@@ -483,7 +483,53 @@ def register_routes(app):
     def bar_menu():
         """Display the food and drink menu page"""
         return render_template('bar_menu.html')
-    @app.route('/superadmin')
+    @app.route('/superadmin', methods=['GET', 'POST'])
     def superadmin():
-        """Display the super admin dashboard page"""
-        return render_template('admin/superadmin.html')
+        """Display and handle the super admin dashboard page"""
+        from models import PurchaseDetails
+        from datetime import datetime
+
+        if request.method == 'POST':
+            from app import db
+            try:
+                # Get existing record or create new one
+                purchase_details = PurchaseDetails.get_latest() or PurchaseDetails()
+
+                # Update fields
+                if request.form.get('games_purchased'):
+                    purchase_details.games_purchased = int(request.form.get('games_purchased'))
+
+                if request.form.get('purchase_date'):
+                    try:
+                        purchase_details.purchase_date = datetime.strptime(
+                            request.form.get('purchase_date'), 
+                            '%d/%m/%Y'
+                        ).date()
+                    except ValueError:
+                        flash('Invalid date format. Please use DD/MM/YYYY', 'danger')
+                        return redirect(url_for('superadmin'))
+
+                purchase_details.invoice_number = request.form.get('invoice_number')
+                purchase_details.contact_name = request.form.get('contact_name')
+                purchase_details.contact_email = request.form.get('contact_email')
+                purchase_details.contact_phone = request.form.get('contact_phone')
+
+                # Validate email if provided
+                if purchase_details.contact_email and not purchase_details.validate_email():
+                    flash('Invalid email format', 'danger')
+                    return redirect(url_for('superadmin'))
+
+                if not purchase_details.id:  # If new record
+                    db.session.add(purchase_details)
+                db.session.commit()
+                flash('Purchase details saved successfully', 'success')
+                return redirect(url_for('superadmin'))
+
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error saving purchase details: {str(e)}', 'danger')
+                return redirect(url_for('superadmin'))
+
+        # GET request - display form
+        purchase_details = PurchaseDetails.get_latest()
+        return render_template('admin/superadmin.html', purchase_details=purchase_details)
