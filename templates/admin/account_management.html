@@ -88,6 +88,22 @@
                 </div>
             </div>
         </div>
+
+        <div class="card bg-dark">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Installed Modules</h5>
+                <div class="mb-3">
+                    <label class="form-label">Food and Drink Purchasing</label>
+                    <p class="form-control-plaintext">
+                        {% if modules and modules.enable_food_drink %}
+                            Enabled
+                        {% else %}
+                            Disabled
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
