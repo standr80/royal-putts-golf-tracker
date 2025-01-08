@@ -65,11 +65,13 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/find-game' %}active{% endif %}" href="/find-game">Find Game</a>
                     </li>
+                    {% if module_settings and module_settings.enable_food_drink %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/bar-menu' %}active{% endif %}" href="/bar-menu">
                             Order Food & Drink
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
                 {% if request.path.startswith('/game/') or request.path.startswith('/history/') or request.path.startswith('/stats/') or request.path.startswith('/scoring/') %}
                 {% set game_code = request.path.split('/')[-1] %}

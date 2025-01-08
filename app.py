@@ -80,6 +80,13 @@ def create_app():
         """Make games available in all templates"""
         return dict(games=getattr(g, 'games', []))
 
+    @app.context_processor
+    def inject_module_settings():
+        """Make module settings available in all templates"""
+        from models import ModuleSettings
+        return dict(module_settings=ModuleSettings.get_settings())
+
+
     # Register routes
     from views import register_routes
     register_routes(app)
