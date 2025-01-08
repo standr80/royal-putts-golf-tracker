@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Account Management</h2>
+            <a href="{{ url_for('admin') }}" class="btn btn-secondary">
+                <i data-feather="arrow-left"></i> Back to Admin
+            </a>
+        </div>
+
+        <div class="card bg-dark">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Account Settings</h5>
+                <p class="text-muted">Account management features coming soon...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

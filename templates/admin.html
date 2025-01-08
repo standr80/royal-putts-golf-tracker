@@ -5,8 +5,11 @@
     <div class="col-md-10 mx-auto">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Admin Dashboard</h2>
-            <!-- Course Setup Link -->
+            <!-- Course Setup and Account Links -->
             <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('account_management') }}" class="btn btn-info">
+                    <i data-feather="user"></i> Account
+                </a>
                 <a href="{{ url_for('course_setup') }}" class="btn btn-success">
                     <i data-feather="settings"></i> Course Setup
                 </a>
