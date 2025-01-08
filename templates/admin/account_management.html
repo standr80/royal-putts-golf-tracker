@@ -63,14 +63,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">
-                                Auto-Disable
-                                <i data-feather="help-circle" 
-                                   class="text-muted" 
-                                   data-bs-toggle="tooltip" 
-                                   data-bs-placement="top" 
-                                   title="If Enabled, New Games cannot be created when Games Left count reaches zero"></i>
-                            </label>
+                            <label class="form-label">Auto-Disable</label>
                             <div class="form-text">
                                 {% if modules and modules.auto_disable_games %}
                                     Enabled
@@ -101,9 +94,11 @@
                             Disabled
                         {% endif %}
                     </p>
+                    {% if not modules or not modules.enable_food_drink %}
                     <p class="text-muted small">
                         To enable the Food and Drink purchasing module, please contact office@eventstuff.ltd to arrange a demonstration and set-up.
                     </p>
+                    {% endif %}
                 </div>
             </div>
         </div>
