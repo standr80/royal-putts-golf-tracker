@@ -63,7 +63,14 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Auto-Disable</label>
+                            <label class="form-label">
+                                Auto-Disable
+                                <i data-feather="help-circle" 
+                                   class="text-muted" 
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top" 
+                                   title="If Enabled, New Games cannot be created when Games Left count reaches zero"></i>
+                            </label>
                             <div class="form-text">
                                 {% if modules and modules.auto_disable_games %}
                                     Enabled
