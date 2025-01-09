@@ -45,7 +45,7 @@
                     <div class="mb-4">
                         <label for="course_id" class="form-label">{{ get_localized_text('SelectCourseTitle', 'Select Course') }}</label>
                         <select class="form-select" id="course_id" name="course_id" required>
-                            <option value="">Choose Course</option>
+                            <option value="">{{ get_localized_text('SelectCourseDropdown', 'Choose Course') }}</option>
                             {% for course in courses %}
                             <option value="{{ course.id }}" {% if game and game.course_id == course.id %}selected{% endif %}>
                                 {{ course.name }} ({{ course.holes|length }} holes)
