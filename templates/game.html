@@ -9,8 +9,8 @@
         <div class="alert alert-success mb-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <h4 class="alert-heading mb-2">Game Code: <strong>{{ game.game_code }}</strong></h4>
-                    <p class="mb-0">Share this code with other players to let them find this game.</p>
+                    <h4 class="alert-heading mb-2">{{ get_localized_text('GameCodeToolTip', 'Game Code:') }} <strong>{{ game.game_code }}</strong></h4>
+                    <p class="mb-0">{{ get_localized_text('GameCodeShareTooltip', 'Share this code with other players to let them find this game.') }}</p>
                 </div>
                 <div class="d-flex gap-2">
                     <button id="copy-game-code" 
