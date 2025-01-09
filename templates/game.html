@@ -109,7 +109,7 @@
                     <div class="d-grid">
                         <button type="submit" class="btn btn-success btn-lg">
                             {% if game %}
-                                <i data-feather="edit-2"></i> Update Players and Continue
+                                <i data-feather="edit-2"></i> {{ get_localized_text('UpdatePlayersButton', 'Update Players and Continue') }}
                             {% else %}
                                 <i data-feather="arrow-right"></i> {{ get_localized_text('StartScoringButton', 'Continue to Scoring') }}
                             {% endif %}
