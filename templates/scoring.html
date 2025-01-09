@@ -121,63 +121,65 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Copy game code functionality with touch feedback
-    const copyGameCodeBtn = document.getElementById('copy-game-code');
-    if (copyGameCodeBtn) {
-        copyGameCodeBtn.addEventListener('click', function() {
-            const gameCode = this.getAttribute('data-game-code');
-            navigator.clipboard.writeText(gameCode).then(() => {
-                const originalHtml = '<i data-feather="copy"></i> {{ get_localized_text('CopyButton', 'Copy Code') }}';
-                this.innerHTML = '<i data-feather="check"></i> {{ get_localized_text('CopiedButton', 'Copied!') }}';
-                this.classList.add('btn-success');
-                this.classList.remove('btn-light');
-                feather.replace();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Copy game code functionality with touch feedback
+        const copyGameCodeBtn = document.getElementById('copy-game-code');
+        if (copyGameCodeBtn) {
+            copyGameCodeBtn.addEventListener('click', function() {
+                const gameCode = this.getAttribute('data-game-code');
+                const originalHtml = this.innerHTML;
+                const copiedHtml = '<i data-feather="check"></i> {{ get_localized_text('CopiedButton', 'Copied!') }}';
 
-                setTimeout(() => {
-                    this.innerHTML = originalHtml;
-                    this.classList.remove('btn-success');
-                    this.classList.add('btn-light');
+                navigator.clipboard.writeText(gameCode).then(() => {
+                    this.innerHTML = copiedHtml;
+                    this.classList.add('btn-success');
+                    this.classList.remove('btn-light');
                     feather.replace();
-                }, 2000);
+
+                    setTimeout(() => {
+                        this.innerHTML = originalHtml;
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-light');
+                        feather.replace();
+                    }, 2000);
+                });
+            });
+        }
+
+        // Form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+
+        // Add touch ripple effect to buttons
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+            });
+            button.addEventListener('touchend', function() {
+                this.style.transform = 'scale(1)';
             });
         });
-    }
 
-    // Form validation
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function(event) {
-        if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
+        feather.replace();
+    });
+
+    // Function to handle hole navigation
+    function goToHole() {
+        const holeInput = document.getElementById('goto-hole');
+        const hole = parseInt(holeInput.value);
+        const maxHoles = {{ max_holes }};
+        if (hole >= 1 && hole <= maxHoles) {
+            window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
+        } else {
+            alert(`Please enter a valid hole number (1-${maxHoles})`);
         }
-        form.classList.add('was-validated');
-    });
-
-    // Add touch ripple effect to buttons
-    const buttons = document.querySelectorAll('.btn');
-    buttons.forEach(button => {
-        button.addEventListener('touchstart', function() {
-            this.style.transform = 'scale(0.98)';
-        });
-        button.addEventListener('touchend', function() {
-            this.style.transform = 'scale(1)';
-        });
-    });
-
-    feather.replace();
-});
-
-// Function to handle hole navigation
-function goToHole() {
-    const holeInput = document.getElementById('goto-hole');
-    const hole = parseInt(holeInput.value);
-    const maxHoles = {{ max_holes }};
-    if (hole >= 1 && hole <= maxHoles) {
-        window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
-    } else {
-        alert(`Please enter a valid hole number (1-${maxHoles})`);
     }
-}
 </script>
 {% endblock %}
