@@ -86,6 +86,11 @@ def create_app():
         from models import ModuleSettings
         return dict(module_settings=ModuleSettings.get_settings())
 
+    @app.context_processor
+    def inject_template_functions():
+        """Make helper functions available in templates"""
+        from views import get_localized_text
+        return dict(get_localized_text=get_localized_text)
 
     # Register routes
     from views import register_routes

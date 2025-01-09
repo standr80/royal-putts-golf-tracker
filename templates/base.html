@@ -63,7 +63,7 @@
                 <ul class="navbar-nav me-auto">
                     {% if not (module_settings and module_settings.should_disable_new_games) %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/game' %}active{% endif %}" href="/game">New Game</a>
+                        <a class="nav-link {% if request.path == '/game' %}active{% endif %}" href="/game">{{ get_localized_text('NewGame', 'New Game') }}</a>
                     </li>
                     {% endif %}
                     <li class="nav-item">
