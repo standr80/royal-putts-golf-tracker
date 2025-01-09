@@ -8,7 +8,7 @@
              class="img-fluid rounded mb-4" 
              style="max-height: 300px; width: auto; object-fit: contain;">
         <h1 class="display-4">{{ title }}<br>{{ title_line2 }}</h1>
-        <p class="lead">Track your scores, compare your results and eat, drink & be merry!</p>
+        <p class="lead">{{ lead_text }}</p>
         <div class="d-flex justify-content-center gap-3">
             {% if not (module_settings and module_settings.should_disable_new_games) %}
             <a href="{{ url_for('game') }}" class="btn btn-success btn-lg">
