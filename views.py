@@ -36,6 +36,9 @@ def register_routes(app):
         right_box_title = get_localized_text('HomePageRightBoxLine1', 'Analyze Stats')
         right_box_text = get_localized_text('HomePageRightBoxLine2', 'Get insights into your performance with detailed statistics.')
 
+        # Button text
+        new_game_button = get_localized_text('NewGameButton', 'New Game')
+
         return render_template('home.html', 
                             title=title,
                             title_line2=title_line2,
@@ -45,7 +48,8 @@ def register_routes(app):
                             middle_box_title=middle_box_title,
                             middle_box_text=middle_box_text,
                             right_box_title=right_box_title,
-                            right_box_text=right_box_text)
+                            right_box_text=right_box_text,
+                            new_game_button=new_game_button)
 
     @app.route('/game', methods=['GET', 'POST'])
     @app.route('/game/<game_code>', methods=['GET', 'POST'])
@@ -57,6 +61,11 @@ def register_routes(app):
         existing_game = None
         if game_code:
             existing_game = Game.query.filter_by(game_code=game_code).first_or_404()
+
+        # Get localized strings
+        new_game_title = get_localized_text('NewGameTitle', 'New Game')
+        new_game_button = get_localized_text('NewGameButton', 'New Game')
+
 
         if request.method == 'POST':
             player_names = request.form.getlist('player_names[]')
@@ -128,7 +137,7 @@ def register_routes(app):
                 db.session.commit()
                 return redirect(url_for('scoring', game_code=game.game_code))
 
-        return render_template('game.html', game=existing_game, courses=courses)
+        return render_template('game.html', game=existing_game, courses=courses, new_game_title=new_game_title, new_game_button=new_game_button)
 
     @app.route('/scoring/<game_code>', methods=['GET', 'POST'])
     def scoring(game_code):
@@ -268,7 +277,12 @@ def register_routes(app):
         else:
             games = Game.query.order_by(Game.date.desc()).all()
 
-        return render_template('history.html', games=games, game_code=game_code)
+        new_game_button = get_localized_text('NewGameButton', 'New Game')
+
+        return render_template('history.html', 
+                             games=games, 
+                             game_code=game_code,
+                             new_game_button=new_game_button)
 
     @app.route('/find-game', methods=['GET', 'POST'])
     def find_game():
