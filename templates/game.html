@@ -43,7 +43,7 @@
                 <form method="POST" class="needs-validation" novalidate id="gameForm">
                     <!-- Course Selection -->
                     <div class="mb-4">
-                        <label for="course_id" class="form-label">Select Course</label>
+                        <label for="course_id" class="form-label">{{ get_localized_text('SelectCourseTitle', 'Select Course') }}</label>
                         <select class="form-select" id="course_id" name="course_id" required>
                             <option value="">Choose Course</option>
                             {% for course in courses %}
