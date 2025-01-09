@@ -15,7 +15,7 @@
                     <button id="copy-game-code" 
                             class="btn btn-light" 
                             data-game-code="{{ game.game_code }}">
-                        <i data-feather="copy"></i> Copy Code
+                        <i data-feather="copy"></i> {{ get_localized_text('CopyButton', 'Copy Code') }}
                     </button>
                     <a href="https://api.whatsapp.com/send?text={{ 'Join my game at Royal Putts Thetford! Game Code: ' ~ game.game_code ~ ' - Click here to join: ' ~ url_for('game', game_code=game.game_code, _external=True)|urlencode }}"
                        data-action="share/whatsapp/share"
