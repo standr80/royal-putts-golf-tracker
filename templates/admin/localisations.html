@@ -26,7 +26,14 @@
             <table class="table table-dark table-hover">
                 <thead>
                     <tr>
-                        <th>Text String Code</th>
+                        <th>
+                            <div class="d-flex align-items-center gap-2">
+                                Text String Code
+                                <a href="{{ url_for('localisations', order='asc' if current_sort_order == 'desc' else 'desc') }}" class="text-decoration-none">
+                                    <i data-feather="{{ 'arrow-up' if current_sort_order == 'asc' else 'arrow-down' }}"></i>
+                                </a>
+                            </div>
+                        </th>
                         <th>English</th>
                         <th>French</th>
                         <th>German</th>

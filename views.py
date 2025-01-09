@@ -619,11 +619,21 @@ def register_routes(app):
     def localisations():
         """Display and manage localisation strings"""
         from models import LocalisationString, StoreSettings
-        strings = LocalisationString.query.order_by(LocalisationString.code).all()
+
+        # Get sort parameters
+        sort_order = request.args.get('order', 'asc')  # Default to ascending
+
+        # Query with sorting
+        if sort_order == 'desc':
+            strings = LocalisationString.query.order_by(LocalisationString.code.desc()).all()
+        else:
+            strings = LocalisationString.query.order_by(LocalisationString.code.asc()).all()
+
         store_settings = StoreSettings.get_settings()
         return render_template('admin/localisations.html', 
                              strings=strings,
-                             store_settings=store_settings)
+                             store_settings=store_settings,
+                             current_sort_order=sort_order)
 
     @app.route('/admin/localisations/add', methods=['POST'])
     def add_localisation_string():
