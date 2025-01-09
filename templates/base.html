@@ -86,19 +86,19 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.path.startswith('/game/') %}active{% endif %}" 
                            href="{{ url_for('game', game_code=game_code) }}">
-                            <i data-feather="edit-2"></i> Edit Game Score Card
+                            <i data-feather="edit-2"></i> {{ get_localized_text('EditGameMenu', 'Edit Game Score Card') }}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.path.startswith('/history/') %}active{% endif %}"
                            href="{{ url_for('history', game_code=game_code) }}">
-                            <i data-feather="clock"></i> Results
+                            <i data-feather="clock"></i> {{ get_localized_text('ResultsMenu', 'Results') }}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.path.startswith('/stats/') %}active{% endif %}"
                            href="{{ url_for('stats', game_code=game_code) }}">
-                            <i data-feather="bar-chart-2"></i> Stats
+                            <i data-feather="bar-chart-2"></i> {{ get_localized_text('StatsMenu', 'Stats') }}
                         </a>
                     </li>
                 </ul>
