@@ -25,7 +25,27 @@ def register_routes(app):
         title = get_localized_text('HomePageTitleLine1', 'Royal Putts Thetford')
         title_line2 = get_localized_text('HomePageTitleLine2', "Scores 'n' More!")
         lead_text = get_localized_text('HomePageTitleLine3', "Track your scores, compare your results and eat, drink & be merry!")
-        return render_template('home.html', title=title, title_line2=title_line2, lead_text=lead_text)
+
+        # Feature box texts
+        left_box_title = get_localized_text('HomePageLeftBoxLine1', 'Track Scores')
+        left_box_text = get_localized_text('HomePageLeftBoxLine2', 'Record your scores hole by hole as you play.')
+
+        middle_box_title = get_localized_text('HomePageMiddleBoxLine1', 'View Results')
+        middle_box_text = get_localized_text('HomePageMiddleBoxLine2', 'Review your past games and progress over time.')
+
+        right_box_title = get_localized_text('HomePageRightBoxLine1', 'Analyze Stats')
+        right_box_text = get_localized_text('HomePageRightBoxLine2', 'Get insights into your performance with detailed statistics.')
+
+        return render_template('home.html', 
+                            title=title,
+                            title_line2=title_line2,
+                            lead_text=lead_text,
+                            left_box_title=left_box_title,
+                            left_box_text=left_box_text,
+                            middle_box_title=middle_box_title,
+                            middle_box_text=middle_box_text,
+                            right_box_title=right_box_title,
+                            right_box_text=right_box_text)
 
     @app.route('/game', methods=['GET', 'POST'])
     @app.route('/game/<game_code>', methods=['GET', 'POST'])
