@@ -201,12 +201,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (copyGameCodeBtn) {
         copyGameCodeBtn.addEventListener('click', function() {
             const gameCode = this.getAttribute('data-game-code');
+            const originalHtml = this.innerHTML;
+            const copiedHtml = '<i data-feather="check"></i> {{ get_localized_text('CopiedButton', 'Copied!') }}';
+
             navigator.clipboard.writeText(gameCode).then(() => {
-                const originalText = this.innerHTML;
-                this.innerHTML = '<i data-feather="check"></i> {{ get_localized_text('CopiedButton', 'Copied!') }}';
+                this.innerHTML = copiedHtml;
                 feather.replace();
                 setTimeout(() => {
-                    this.innerHTML = originalText;
+                    this.innerHTML = originalHtml;
                     feather.replace();
                 }, 2000);
             });
