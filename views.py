@@ -23,7 +23,8 @@ def register_routes(app):
     @app.route('/')
     def home():
         title = get_localized_text('HomePageTitleLine1', 'Royal Putts Thetford')
-        return render_template('home.html', title=title)
+        title_line2 = get_localized_text('HomePageTitleLine2', "Scores 'n' More!")
+        return render_template('home.html', title=title, title_line2=title_line2)
 
     @app.route('/game', methods=['GET', 'POST'])
     @app.route('/game/<game_code>', methods=['GET', 'POST'])
