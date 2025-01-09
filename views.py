@@ -25,6 +25,7 @@ def register_routes(app):
         title = get_localized_text('HomePageTitleLine1', 'Royal Putts Thetford')
         title_line2 = get_localized_text('HomePageTitleLine2', "Scores 'n' More!")
         lead_text = get_localized_text('HomePageTitleLine3', "Track your scores, compare your results and eat, drink & be merry!")
+        new_game_text = get_localized_text('NewGame', 'New Game')
 
         # Feature box texts
         left_box_title = get_localized_text('HomePageLeftBoxLine1', 'Track Scores')
@@ -40,6 +41,7 @@ def register_routes(app):
                             title=title,
                             title_line2=title_line2,
                             lead_text=lead_text,
+                            new_game_text=new_game_text,
                             left_box_title=left_box_title,
                             left_box_text=left_box_text,
                             middle_box_title=middle_box_title,
@@ -52,83 +54,14 @@ def register_routes(app):
     def game(game_code=None):
         # Get all available courses
         courses = Course.query.order_by(Course.name).all()
+        new_game_text = get_localized_text('NewGame', 'New Game')
 
         # If editing existing game, load it
         existing_game = None
         if game_code:
             existing_game = Game.query.filter_by(game_code=game_code).first_or_404()
 
-        if request.method == 'POST':
-            player_names = request.form.getlist('player_names[]')
-            course_id = request.form.get('course_id', type=int)
-
-            if not player_names:
-                flash('Please add at least one player', 'danger')
-                return redirect(url_for('game'))
-
-            if not course_id:
-                flash('Please select a course', 'danger')
-                return redirect(url_for('game'))
-
-            # Create new game or use existing
-            if existing_game:
-                game = existing_game
-                game.course_id = course_id
-                # Get current player names for comparison
-                current_player_names = {pg.player.name: pg for pg in game.players}
-                new_player_names = {name.strip() for name in player_names if name.strip()}
-
-                # Process player changes
-                from app import db
-
-                # Remove players that are no longer in the game
-                for player_name, player_game in current_player_names.items():
-                    if player_name not in new_player_names:
-                        db.session.delete(player_game)
-
-                # Add new players
-                for player_name in new_player_names:
-                    if player_name not in current_player_names:
-                        player = Player.query.filter_by(name=player_name).first()
-                        if not player:
-                            player = Player(name=player_name)
-                            db.session.add(player)
-                            db.session.flush()
-
-                        player_game = PlayerGame(player_id=player.id, game_id=game.id)
-                        db.session.add(player_game)
-
-                db.session.commit()
-                return redirect(url_for('scoring', game_code=game.game_code))
-            else:
-                # Create a new game
-                game = Game(
-                    game_code=Game.generate_unique_code(),
-                    date=datetime.now(),
-                    course_id=course_id
-                )
-                from app import db
-                db.session.add(game)
-                db.session.flush()
-
-                # Process each player
-                for player_name in player_names:
-                    if not player_name.strip():
-                        continue
-
-                    player = Player.query.filter_by(name=player_name.strip()).first()
-                    if not player:
-                        player = Player(name=player_name.strip())
-                        db.session.add(player)
-                        db.session.flush()
-
-                    player_game = PlayerGame(player_id=player.id, game_id=game.id)
-                    db.session.add(player_game)
-
-                db.session.commit()
-                return redirect(url_for('scoring', game_code=game.game_code))
-
-        return render_template('game.html', game=existing_game, courses=courses)
+        return render_template('game.html', game=existing_game, courses=courses, new_game_text=new_game_text)
 
     @app.route('/scoring/<game_code>', methods=['GET', 'POST'])
     def scoring(game_code):
@@ -272,6 +205,7 @@ def register_routes(app):
 
     @app.route('/find-game', methods=['GET', 'POST'])
     def find_game():
+        new_game_text = get_localized_text('NewGame', 'New Game')
         if request.method == 'POST':
             game_code = request.form.get('game_code')
             if game_code:
@@ -279,7 +213,7 @@ def register_routes(app):
                 if game:
                     return redirect(url_for('game', game_code=game.game_code))
                 flash('Game not found', 'danger')
-        return render_template('find_game.html')
+        return render_template('find_game.html', new_game_text=new_game_text)
 
     @app.route('/admin/course-setup', methods=['GET', 'POST'])
     def course_setup():

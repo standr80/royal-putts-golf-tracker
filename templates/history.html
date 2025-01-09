@@ -127,7 +127,7 @@
         {% else %}
         <div class="alert alert-info">
             <i data-feather="info"></i> No games recorded yet. 
-            <a href="{{ url_for('game') }}" class="alert-link">Start a new game</a>
+            <a href="{{ url_for('game') }}" class="alert-link">Start a {{ new_game_text|lower }}</a>
         </div>
         {% endif %}
     </div>
