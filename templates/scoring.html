@@ -128,14 +128,14 @@ document.addEventListener('DOMContentLoaded', function() {
         copyGameCodeBtn.addEventListener('click', function() {
             const gameCode = this.getAttribute('data-game-code');
             navigator.clipboard.writeText(gameCode).then(() => {
-                const originalText = this.innerHTML;
+                const originalHtml = '<i data-feather="copy"></i> {{ get_localized_text('CopyButton', 'Copy Code') }}';
                 this.innerHTML = '<i data-feather="check"></i> {{ get_localized_text('CopiedButton', 'Copied!') }}';
                 this.classList.add('btn-success');
                 this.classList.remove('btn-light');
                 feather.replace();
 
                 setTimeout(() => {
-                    this.innerHTML = '<i data-feather="copy"></i> {{ get_localized_text('CopyButton', 'Copy Code') }}';
+                    this.innerHTML = originalHtml;
                     this.classList.remove('btn-success');
                     this.classList.add('btn-light');
                     feather.replace();
