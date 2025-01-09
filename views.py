@@ -2,10 +2,28 @@ from flask import render_template, request, redirect, url_for, flash, abort, g
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings
 from datetime import datetime
 
+def get_localized_text(code, default=''):
+    """Get localized text based on store language setting"""
+    store_settings = StoreSettings.get_settings()
+    string = LocalisationString.query.filter_by(code=code).first()
+
+    if not string:
+        return default
+
+    if store_settings.language == 'fr' and string.french_text:
+        return string.french_text
+    elif store_settings.language == 'de' and string.german_text:
+        return string.german_text
+    elif store_settings.language == 'es' and string.spanish_text:
+        return string.spanish_text
+
+    return string.english_text or default
+
 def register_routes(app):
     @app.route('/')
     def home():
-        return render_template('home.html')
+        title = get_localized_text('HomePageTitleLine1', 'Royal Putts Thetford')
+        return render_template('home.html', title=title)
 
     @app.route('/game', methods=['GET', 'POST'])
     @app.route('/game/<game_code>', methods=['GET', 'POST'])
