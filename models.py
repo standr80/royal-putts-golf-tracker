@@ -163,3 +163,31 @@ class ModuleSettings(db.Model):
             return False
 
         return purchase_details.games_remaining < 1
+
+class LocalisationString(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(100), unique=True, nullable=False)
+    english_text = db.Column(db.Text, nullable=False)
+    french_text = db.Column(db.Text)
+    german_text = db.Column(db.Text)
+    spanish_text = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<LocalisationString {self.code}>'
+
+class StoreSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    language = db.Column(db.String(10), nullable=False, default='en')  # en, fr, de, es
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @staticmethod
+    def get_settings():
+        """Get the store settings, creating if needed"""
+        settings = StoreSettings.query.first()
+        if not settings:
+            settings = StoreSettings()
+            db.session.add(settings)
+            db.session.commit()
+        return settings

@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Localisation Management</h2>
+            <div class="d-flex gap-3">
+                <form method="POST" action="{{ url_for('update_store_language') }}" class="d-flex align-items-center gap-2">
+                    <label for="store_language" class="form-label mb-0">Store Language:</label>
+                    <select name="language" id="store_language" class="form-select" onchange="this.form.submit()">
+                        <option value="en" {% if store_settings.language == 'en' %}selected{% endif %}>English</option>
+                        <option value="fr" {% if store_settings.language == 'fr' %}selected{% endif %}>French</option>
+                        <option value="de" {% if store_settings.language == 'de' %}selected{% endif %}>German</option>
+                        <option value="es" {% if store_settings.language == 'es' %}selected{% endif %}>Spanish</option>
+                    </select>
+                </form>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStringModal">
+                    <i data-feather="plus"></i> Add New String
+                </button>
+            </div>
+        </div>
+
+        {% if strings %}
+        <div class="table-responsive">
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th>Text String Code</th>
+                        <th>English</th>
+                        <th>French</th>
+                        <th>German</th>
+                        <th>Spanish</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for string in strings %}
+                    <tr>
+                        <td><code>{{ string.code }}</code></td>
+                        <td>{{ string.english_text }}</td>
+                        <td>{{ string.french_text or '-' }}</td>
+                        <td>{{ string.german_text or '-' }}</td>
+                        <td>{{ string.spanish_text or '-' }}</td>
+                        <td>
+                            <button type="button" 
+                                    class="btn btn-sm btn-primary"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editStringModal"
+                                    data-string-id="{{ string.id }}"
+                                    data-string-code="{{ string.code }}"
+                                    data-string-en="{{ string.english_text }}"
+                                    data-string-fr="{{ string.french_text or '' }}"
+                                    data-string-de="{{ string.german_text or '' }}"
+                                    data-string-es="{{ string.spanish_text or '' }}">
+                                <i data-feather="edit"></i> Edit
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i data-feather="info"></i> No localisation strings found. Add your first string using the button above.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add String Modal -->
+<div class="modal fade" id="addStringModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+            <form method="POST" action="{{ url_for('add_localisation_string') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Localisation String</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Text String Code</label>
+                        <input type="text" class="form-control" id="code" name="code" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="english_text" class="form-label">English Text</label>
+                        <textarea class="form-control" id="english_text" name="english_text" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="french_text" class="form-label">French Text</label>
+                        <textarea class="form-control" id="french_text" name="french_text" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="german_text" class="form-label">German Text</label>
+                        <textarea class="form-control" id="german_text" name="german_text" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="spanish_text" class="form-label">Spanish Text</label>
+                        <textarea class="form-control" id="spanish_text" name="spanish_text" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add String</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit String Modal -->
+<div class="modal fade" id="editStringModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+            <form method="POST" action="{{ url_for('edit_localisation_string') }}">
+                <input type="hidden" name="string_id" id="edit_string_id">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Localisation String</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_code" class="form-label">Text String Code</label>
+                        <input type="text" class="form-control" id="edit_code" name="code" required readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_english_text" class="form-label">English Text</label>
+                        <textarea class="form-control" id="edit_english_text" name="english_text" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_french_text" class="form-label">French Text</label>
+                        <textarea class="form-control" id="edit_french_text" name="french_text" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_german_text" class="form-label">German Text</label>
+                        <textarea class="form-control" id="edit_german_text" name="german_text" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_spanish_text" class="form-label">Spanish Text</label>
+                        <textarea class="form-control" id="edit_spanish_text" name="spanish_text" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle edit modal data population
+    const editModal = document.getElementById('editStringModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const stringId = button.getAttribute('data-string-id');
+            const stringCode = button.getAttribute('data-string-code');
+            const stringEn = button.getAttribute('data-string-en');
+            const stringFr = button.getAttribute('data-string-fr');
+            const stringDe = button.getAttribute('data-string-de');
+            const stringEs = button.getAttribute('data-string-es');
+
+            editModal.querySelector('#edit_string_id').value = stringId;
+            editModal.querySelector('#edit_code').value = stringCode;
+            editModal.querySelector('#edit_english_text').value = stringEn;
+            editModal.querySelector('#edit_french_text').value = stringFr;
+            editModal.querySelector('#edit_german_text').value = stringDe;
+            editModal.querySelector('#edit_spanish_text').value = stringEs;
+        });
+    }
+
+    // Initialize Feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}

@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, abort, g
-from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails
+from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings
 from datetime import datetime
 
 def register_routes(app):
@@ -594,3 +594,70 @@ def register_routes(app):
             flash(f'Error updating module settings: {str(e)}', 'danger')
 
         return redirect(url_for('superadmin'))
+
+    @app.route('/admin/localisations')
+    def localisations():
+        """Display and manage localisation strings"""
+        from models import LocalisationString, StoreSettings
+        strings = LocalisationString.query.order_by(LocalisationString.code).all()
+        store_settings = StoreSettings.get_settings()
+        return render_template('admin/localisations.html', 
+                             strings=strings,
+                             store_settings=store_settings)
+
+    @app.route('/admin/localisations/add', methods=['POST'])
+    def add_localisation_string():
+        """Add a new localisation string"""
+        from app import db
+        from models import LocalisationString
+        try:
+            string = LocalisationString(
+                code=request.form.get('code'),
+                english_text=request.form.get('english_text'),
+                french_text=request.form.get('french_text'),
+                german_text=request.form.get('german_text'),
+                spanish_text=request.form.get('spanish_text')
+            )
+            db.session.add(string)
+            db.session.commit()
+            flash('Localisation string added successfully', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error adding localisation string: {str(e)}', 'danger')
+
+        return redirect(url_for('localisations'))
+
+    @app.route('/admin/localisations/edit', methods=['POST'])
+    def edit_localisation_string():
+        """Edit an existing localisation string"""
+        from app import db
+        from models import LocalisationString
+        try:
+            string = LocalisationString.query.get_or_404(request.form.get('string_id', type=int))
+            string.english_text = request.form.get('english_text')
+            string.french_text = request.form.get('french_text')
+            string.german_text = request.form.get('german_text')
+            string.spanish_text = request.form.get('spanish_text')
+            db.session.commit()
+            flash('Localisation string updated successfully', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating localisation string: {str(e)}', 'danger')
+
+        return redirect(url_for('localisations'))
+
+    @app.route('/admin/store/language', methods=['POST'])
+    def update_store_language():
+        """Update the store's display language"""
+        from app import db
+        from models import StoreSettings
+        try:
+            settings = StoreSettings.get_settings()
+            settings.language = request.form.get('language')
+            db.session.commit()
+            flash('Store language updated successfully', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating store language: {str(e)}', 'danger')
+
+        return redirect(url_for('localisations'))
