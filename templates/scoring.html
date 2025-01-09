@@ -110,7 +110,7 @@
                     <div class="text-center">
                         {% if module_settings and module_settings.enable_food_drink %}
                         <a href="{{ url_for('bar_menu') }}" class="btn btn-warning btn-lg">
-                            <i data-feather="coffee"></i> Order Food and Drink
+                            <i data-feather="coffee"></i> {{ get_localized_text('OrderFoodButton', 'Order Food & Drink') }}
                         </a>
                         {% endif %}
                     </div>
