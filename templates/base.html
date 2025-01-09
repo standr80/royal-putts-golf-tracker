@@ -72,7 +72,7 @@
                     {% if module_settings and module_settings.enable_food_drink %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/bar-menu' %}active{% endif %}" href="/bar-menu">
-                            Order Food & Drink
+                            {{ get_localized_text('OrderFoodMenu', 'Order Food & Drink') }}
                         </a>
                     </li>
                     {% endif %}
