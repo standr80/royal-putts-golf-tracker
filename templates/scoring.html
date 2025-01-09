@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 feather.replace();
 
                 setTimeout(() => {
-                    this.innerHTML = originalText;
+                    this.innerHTML = '<i data-feather="copy"></i> {{ get_localized_text('CopyButton', 'Copy Code') }}';
                     this.classList.remove('btn-success');
                     this.classList.add('btn-light');
                     feather.replace();
