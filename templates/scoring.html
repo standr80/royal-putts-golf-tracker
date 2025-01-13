@@ -36,14 +36,29 @@
                                 <tr>
                                     <th>{{ get_localized_text('ScoreTableScore', 'Score') }}</th>
                                     <th>{{ get_localized_text('ScoreTablePlayer', 'Player') }}</th>
+                                    <th>Par +/-</th>
                                     <th>{{ get_localized_text('ScoreTableStrokes', 'Strokes') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for player_game in game.players %}
+                                    {% set total_par = 0 %}
+                                    {% for hole in game.course.holes[:current_hole]|sort(attribute='name') %}
+                                        {% set total_par = total_par + hole.par %}
+                                    {% endfor %}
+                                    {% set par_diff = cumulative_scores[player_game.id] - total_par %}
                                     <tr>
                                         <td class="align-middle">{{ cumulative_scores[player_game.id] }}</td>
                                         <td class="align-middle">{{ player_game.player.name }}</td>
+                                        <td class="align-middle">
+                                            {% if par_diff > 0 %}
+                                                +{{ par_diff }}
+                                            {% elif par_diff < 0 %}
+                                                {{ par_diff }}
+                                            {% else %}
+                                                E
+                                            {% endif %}
+                                        </td>
                                         <td style="min-width: 120px;">
                                             <input type="number" 
                                                    class="form-control form-control-lg" 
@@ -117,7 +132,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Feather icons
         feather.replace();
     });
 
