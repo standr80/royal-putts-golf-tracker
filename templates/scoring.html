@@ -6,18 +6,17 @@
         <h2 class="mb-4">{{ get_localized_text('EnterGameScoresTitle', 'Enter Game Scores') }}</h2>
 
         {% if current_hole_info and (current_hole_info.image_url or current_hole_info.notes) %}
-        <div class="alert bg-white border mb-4">
+        <div class="alert alert-success mb-4">
             {% if current_hole_info.image_url %}
-            <div class="parallax-container">
-                <div class="parallax-image" style="background-image: url('{{ current_hole_info.image_url }}');"></div>
-                {% if current_hole_info.notes %}
-                <div class="parallax-content">
-                    <p class="mb-0 text-dark"><strong>Hole Notes:</strong> {{ current_hole_info.notes }}</p>
-                </div>
-                {% endif %}
+            <div class="text-center mb-3">
+                <img src="{{ current_hole_info.image_url }}" 
+                     alt="Hole {{ current_hole }} layout" 
+                     class="img-fluid rounded" 
+                     style="max-height: 200px;">
             </div>
-            {% elif current_hole_info.notes %}
-            <p class="mb-0 text-dark"><strong>Hole Notes:</strong> {{ current_hole_info.notes }}</p>
+            {% endif %}
+            {% if current_hole_info.notes %}
+            <p class="mb-0"><strong>Hole Notes:</strong> {{ current_hole_info.notes }}</p>
             {% endif %}
         </div>
         {% endif %}
@@ -107,11 +106,11 @@
             </div>
         </div>
 
-        <div class="alert bg-white border mt-4">
+        <div class="alert alert-success mt-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2" style="font-size: 0.5rem;">
                 <div>
-                    <h4 class="alert-heading mb-1 text-dark" style="font-size: 0.875rem;">{{ get_localized_text('GameCodeToolTip', 'Game Code:') }} <strong>{{ game.game_code }}</strong></h4>
-                    <p class="mb-0 text-dark" style="font-size: 0.75rem;">{{ get_localized_text('GameCodeShareTooltip', 'Share this code with other players to let them find this game.') }}</p>
+                    <h4 class="alert-heading mb-1" style="font-size: 0.875rem;">{{ get_localized_text('GameCodeToolTip', 'Game Code:') }} <strong>{{ game.game_code }}</strong></h4>
+                    <p class="mb-0" style="font-size: 0.75rem;">{{ get_localized_text('GameCodeShareTooltip', 'Share this code with other players to let them find this game.') }}</p>
                 </div>
                 <div class="d-flex gap-1">
                     <button id="copy-game-code" 
