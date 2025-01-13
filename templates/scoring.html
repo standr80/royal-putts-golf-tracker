@@ -61,6 +61,19 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+                        <div class="d-flex align-items-center">
+                            <label for="goto-hole" class="form-label mb-0 me-2">{{ get_localized_text('GoToHoleText', 'Go to Hole:') }}</label>
+                            <select id="goto-hole" 
+                                   class="form-select" 
+                                   style="width: 80px;"
+                                   onchange="goToHole(this.value)">
+                                <option value="">--</option>
+                                {% for hole in range(1, max_holes + 1) %}
+                                    <option value="{{ hole }}" {% if hole == current_hole %}selected{% endif %}>{{ hole }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         {% if current_hole < max_holes %}
                             <button type="submit" class="btn btn-primary">
                                 {{ get_localized_text('NextHoleButton', 'Next Hole') }} <i data-feather="arrow-right"></i>
@@ -70,23 +83,6 @@
                                 <i data-feather="save"></i> {{ get_localized_text('FinishGameButton', 'Finish Game') }}
                             </button>
                         {% endif %}
-
-                        <div class="d-flex align-items-center gap-2">
-                            <label for="goto-hole" class="form-label mb-0">{{ get_localized_text('GoToHoleText', 'Go to Hole:') }}</label>
-                            <input type="number" 
-                                   id="goto-hole" 
-                                   class="form-control" 
-                                   min="1" 
-                                   max="{{ max_holes }}" 
-                                   pattern="\d*"
-                                   inputmode="numeric"
-                                   style="width: 60px;">
-                            <button type="button" 
-                                    class="btn btn-primary" 
-                                    onclick="goToHole()">
-                                <i data-feather="arrow-right-circle"></i> Go
-                            </button>
-                        </div>
                     </div>
 
                     <div class="text-center">
@@ -179,14 +175,9 @@
     });
 
     // Function to handle hole navigation
-    function goToHole() {
-        const holeInput = document.getElementById('goto-hole');
-        const hole = parseInt(holeInput.value);
-        const maxHoles = {{ max_holes }};
-        if (hole >= 1 && hole <= maxHoles) {
+    function goToHole(hole) {
+        if (hole) {
             window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
-        } else {
-            alert(`Please enter a valid hole number (1-${maxHoles})`);
         }
     }
 </script>
