@@ -36,6 +36,7 @@
                                 <tr>
                                     <th>{{ get_localized_text('ScoreTableScore', 'Score') }}</th>
                                     <th>{{ get_localized_text('ScoreTablePlayer', 'Player') }}</th>
+                                    <th>Par +/-</th>
                                     <th>{{ get_localized_text('ScoreTableStrokes', 'Strokes') }}</th>
                                 </tr>
                             </thead>
@@ -44,6 +45,18 @@
                                     <tr>
                                         <td class="align-middle">{{ cumulative_scores[player_game.id] }}</td>
                                         <td class="align-middle">{{ player_game.player.name }}</td>
+                                        <td class="align-middle">
+                                            {% if current_hole_scores.get(player_game.id) is not none %}
+                                                {% set par_diff = current_hole_scores.get(player_game.id) - current_hole_info.par %}
+                                                {% if par_diff == 0 %}
+                                                    E
+                                                {% elif par_diff > 0 %}
+                                                    +{{ par_diff }}
+                                                {% else %}
+                                                    {{ par_diff }}
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
                                         <td style="min-width: 120px;">
                                             <input type="number" 
                                                    class="form-control form-control-lg" 
