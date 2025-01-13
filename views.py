@@ -180,14 +180,18 @@ def register_routes(app):
                 # Process scores for the current hole
                 for player_game in game.players:
                     score_key = f'scores_{player_game.id}'
-                    score_value = request.form.get(score_key, '').strip()
-
                     try:
-                        score_value = int(score_value) if score_value else 0
-                        if score_value < 0 or score_value > 100:
-                            score_value = 0
+                        score_value = request.form.get(score_key, '').strip()
+                        if score_value:
+                            score_value = int(score_value)
+                            if score_value < 1 or score_value > 20:
+                                flash('Strokes must be between 1 and 20', 'danger')
+                                return redirect(url_for('scoring', game_code=game_code, hole=current_hole))
+                        else:
+                            continue  # Skip empty scores
                     except ValueError:
-                        score_value = 0
+                        flash('Invalid score value', 'danger')
+                        return redirect(url_for('scoring', game_code=game_code, hole=current_hole))
 
                     existing_score = Score.query.filter_by(
                         player_game_id=player_game.id,
