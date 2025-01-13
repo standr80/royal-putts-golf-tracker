@@ -6,25 +6,7 @@
         <h2 class="mb-4">{{ get_localized_text('EnterGameScoresTitle', 'Enter Game Scores') }}</h2>
 
         <div class="alert alert-success mb-4">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div>
-                    <h4 class="alert-heading mb-2">{{ get_localized_text('GameCodeToolTip', 'Game Code:') }} <strong>{{ game.game_code }}</strong></h4>
-                    <p class="mb-0">{{ get_localized_text('GameCodeShareTooltip', 'Share this code with other players to let them find this game.') }}</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <button id="copy-game-code" 
-                            class="btn btn-light" 
-                            data-game-code="{{ game.game_code }}">
-                        <i data-feather="copy"></i> {{ get_localized_text('CopyButton', 'Copy Code') }}
-                    </button>
-                    <a href="https://api.whatsapp.com/send?text={{ 'Join my game at Royal Putts Thetford! Game Code: ' ~ game.game_code ~ ' - Click here to join: ' ~ url_for('game', game_code=game.game_code, _external=True)|urlencode }}"
-                       data-action="share/whatsapp/share"
-                       target="_blank"
-                       class="btn btn-light">
-                        <i data-feather="share-2"></i> {{ get_localized_text('WhatsAppButton', 'Share to WhatsApp') }}
-                    </a>
-                </div>
-            </div>
+            {# Empty game code box - content to be decided later #}
         </div>
 
         <div class="card bg-dark mb-4">
@@ -122,24 +104,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Copy game code functionality with touch feedback
-        const copyGameCodeBtn = document.getElementById('copy-game-code');
-        if (copyGameCodeBtn) {
-            copyGameCodeBtn.addEventListener('click', function() {
-                const gameCode = this.getAttribute('data-game-code');
-                const originalHtml = this.innerHTML;
-                const copiedHtml = '<i data-feather="check"></i> {{ get_localized_text('CopiedButton', 'Copied!') }}';
-
-                navigator.clipboard.writeText(gameCode).then(() => {
-                    this.innerHTML = copiedHtml;
-                    feather.replace();
-                    setTimeout(() => {
-                        this.innerHTML = originalHtml;
-                        feather.replace();
-                    }, 2000);
-                });
-            });
-        }
         // Form validation
         const form = document.querySelector('form');
         form.addEventListener('submit', function(event) {
