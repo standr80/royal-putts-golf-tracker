@@ -48,9 +48,6 @@
                                             <input type="number" 
                                                    class="form-control form-control-lg score-input" 
                                                    name="scores_{{ player_game.id }}"
-                                                   min="0" 
-                                                   max="100"
-                                                   pattern="\d*"
                                                    inputmode="numeric"
                                                    value="{{ current_hole_scores.get(player_game.id, '') }}">
                                         </td>
