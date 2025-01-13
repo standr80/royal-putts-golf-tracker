@@ -6,13 +6,9 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             {% if current_hole_info %}
             <h2>
-                {{ game.course.name }} - Hole {{ current_hole }} - 
-                {{ current_hole_info.name }} - Par {{ current_hole_info.par }}
+                Hole {{ current_hole }} - {{ current_hole_info.name }} - Par {{ current_hole_info.par }}
             </h2>
             {% endif %}
-            <button class="btn btn-secondary" onclick="history.back()">
-                <i data-feather="arrow-left"></i> Back to Game
-            </button>
         </div>
 
         {% if current_hole_info and (current_hole_info.image_url or current_hole_info.notes) %}
