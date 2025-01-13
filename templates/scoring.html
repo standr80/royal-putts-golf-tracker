@@ -29,7 +29,7 @@
 
         <div class="card bg-dark mb-4">
             <div class="card-body">
-                <form method="POST" novalidate>
+                <form method="POST" id="scoreForm" novalidate>
                     <div class="table-responsive">
                         <table class="table table-dark">
                             <thead>
@@ -120,12 +120,30 @@
     });
 
     // Function to handle hole navigation
-    function goToHole(hole) {
+    async function goToHole(hole) {
         if (hole) {
-            // Submit the form to save current scores
-            document.querySelector('form').submit();
-            // After form submission, redirect to the selected hole
-            window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
+            try {
+                // Get the form element
+                const form = document.getElementById('scoreForm');
+
+                // Create form data
+                const formData = new FormData(form);
+
+                // Submit the form data using fetch
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Only redirect after successful form submission
+                    window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
+                } else {
+                    console.error("Form submission failed");
+                }
+            } catch (error) {
+                console.error('Error saving scores:', error);
+            }
         }
     }
 </script>
