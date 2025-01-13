@@ -29,7 +29,7 @@
 
         <div class="card bg-dark mb-4">
             <div class="card-body">
-                <form method="POST" class="needs-validation" novalidate>
+                <form method="POST">
                     <div class="table-responsive">
                         <table class="table table-dark">
                             <thead>
@@ -129,6 +129,9 @@
     // Function to handle hole navigation
     function goToHole(hole) {
         if (hole) {
+            // Submit the form to save current scores
+            document.querySelector('form').submit();
+            // After form submission, redirect to the selected hole
             window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
         }
     }
