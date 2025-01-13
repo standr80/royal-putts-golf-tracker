@@ -41,12 +41,8 @@
                             </thead>
                             <tbody>
                                 {% for player_game in game.players %}
-                                    {% set cumulative_score = namespace(value=0) %}
-                                    {% for score in player_game.scores %}
-                                        {% set cumulative_score.value = cumulative_score.value + score.strokes %}
-                                    {% endfor %}
                                     <tr>
-                                        <td class="align-middle">{{ cumulative_score.value }}</td>
+                                        <td class="align-middle">{{ cumulative_scores[player_game.id] }}</td>
                                         <td class="align-middle">{{ player_game.player.name }}</td>
                                         <td style="min-width: 120px;">
                                             <input type="number" 
@@ -57,9 +53,6 @@
                                                    pattern="\d*"
                                                    inputmode="numeric"
                                                    value="{{ current_hole_scores.get(player_game.id, '') }}">
-                                            <div class="invalid-feedback">
-                                                Please enter a number between 0 and 100
-                                            </div>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -129,16 +122,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Form validation
-        const form = document.querySelector('form');
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        });
-
         // Initialize Feather icons
         feather.replace();
     });

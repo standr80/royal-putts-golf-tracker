@@ -154,15 +154,25 @@ def register_routes(app):
         if 0 <= current_hole - 1 < len(sorted_holes):
             current_hole_info = sorted_holes[current_hole - 1]
 
-        # Create a dictionary of current hole scores
+        # Create dictionaries for current hole scores and cumulative scores
         current_hole_scores = {}
+        cumulative_scores = {}
+
         for player_game in game.players:
+            # Get current hole score
             score = Score.query.filter_by(
                 player_game_id=player_game.id,
                 hole_number=current_hole
             ).first()
             if score:
                 current_hole_scores[player_game.id] = score.strokes
+
+            # Calculate cumulative score for each player
+            total_score = 0
+            for s in player_game.scores:
+                if s.strokes is not None:  # Only add valid scores
+                    total_score += s.strokes
+            cumulative_scores[player_game.id] = total_score
 
         if request.method == 'POST':
             try:
@@ -212,7 +222,8 @@ def register_routes(app):
                             current_hole=current_hole,
                             current_hole_info=current_hole_info,
                             max_holes=max_holes,
-                            current_hole_scores=current_hole_scores)
+                            current_hole_scores=current_hole_scores,
+                            cumulative_scores=cumulative_scores)
 
     @app.route('/stats')
     @app.route('/stats/<game_code>')
