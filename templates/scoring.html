@@ -5,9 +5,21 @@
     <div class="col-md-8 mx-auto">
         <h2 class="mb-4">{{ get_localized_text('EnterGameScoresTitle', 'Enter Game Scores') }}</h2>
 
+        {% if current_hole_info and (current_hole_info.image_url or current_hole_info.notes) %}
         <div class="alert alert-success mb-4">
-            {# Empty game code box - content to be decided later #}
+            {% if current_hole_info.image_url %}
+            <div class="text-center mb-3">
+                <img src="{{ current_hole_info.image_url }}" 
+                     alt="Hole {{ current_hole }} layout" 
+                     class="img-fluid rounded" 
+                     style="max-height: 200px;">
+            </div>
+            {% endif %}
+            {% if current_hole_info.notes %}
+            <p class="mb-0"><strong>Hole Notes:</strong> {{ current_hole_info.notes }}</p>
+            {% endif %}
         </div>
+        {% endif %}
 
         <div class="card bg-dark mb-4">
             <div class="card-body">
