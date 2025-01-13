@@ -17,6 +17,8 @@ class Hole(db.Model):
     name = db.Column(db.String(100), nullable=False)
     par = db.Column(db.Integer, nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    image_url = db.Column(db.String(255), nullable=True)  # Store path to uploaded image
+    notes = db.Column(db.Text, nullable=True)  # Store hole notes/description
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 

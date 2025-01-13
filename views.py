@@ -1,3 +1,4 @@
+import os
 from flask import render_template, request, redirect, url_for, flash, abort, g
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings
 from datetime import datetime
@@ -711,3 +712,55 @@ def register_routes(app):
             flash(f'Error updating store language: {str(e)}', 'danger')
 
         return redirect(url_for('localisations'))
+
+    @app.route('/admin/course/<int:course_id>/hole/<int:hole_id>/upload-image', methods=['POST'])
+    def upload_hole_image(course_id, hole_id):
+        """Upload an image for a specific hole"""
+        hole = Hole.query.filter_by(id=hole_id, course_id=course_id).first_or_404()
+
+        if 'hole_image' not in request.files:
+            flash('No image file provided', 'danger')
+            return redirect(url_for('course_settings', course_id=course_id))
+
+        file = request.files['hole_image']
+        if file.filename == '':
+            flash('No selected file', 'danger')
+            return redirect(url_for('course_settings', course_id=course_id))
+
+        if file:
+            # Create upload directory if it doesn't exist
+            upload_dir = os.path.join('static', 'hole_images')
+            os.makedirs(upload_dir, exist_ok=True)
+
+            # Generate unique filename
+            filename = f"hole_{hole_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{os.path.splitext(file.filename)[1]}"
+            file_path = os.path.join(upload_dir, filename)
+
+            try:
+                file.save(file_path)
+                from app import db
+                hole.image_url = f"/static/hole_images/{filename}"
+                db.session.commit()
+                flash('Image uploaded successfully', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error uploading image: {str(e)}', 'danger')
+
+        return redirect(url_for('course_settings', course_id=course_id))
+
+    @app.route('/admin/course/<int:course_id>/hole/<int:hole_id>/update-notes', methods=['POST'])
+    def update_hole_notes(course_id, hole_id):
+        """Update notes for a specific hole"""
+        hole = Hole.query.filter_by(id=hole_id, course_id=course_id).first_or_404()
+
+        notes = request.form.get('hole_notes', '').strip()
+        from app import db
+        try:
+            hole.notes = notes
+            db.session.commit()
+            flash('Hole notes updated successfully', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating notes: {str(e)}', 'danger')
+
+        return redirect(url_for('course_settings', course_id=course_id))
