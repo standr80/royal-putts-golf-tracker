@@ -177,7 +177,31 @@
     // Function to handle hole navigation
     function goToHole(hole) {
         if (hole) {
-            window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
+            const form = document.querySelector('form');
+            const formData = new FormData(form);
+
+            // Submit the form data
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    // After successful save, navigate to the selected hole
+                    window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
+                } else {
+                    // If save failed, show error and reset dropdown
+                    alert('Failed to save scores. Please try again.');
+                    const dropdown = document.getElementById('goto-hole');
+                    dropdown.value = '{{ current_hole }}';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to save scores. Please try again.');
+                const dropdown = document.getElementById('goto-hole');
+                dropdown.value = '{{ current_hole }}';
+            });
         }
     }
 </script>
