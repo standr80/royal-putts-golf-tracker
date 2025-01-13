@@ -174,7 +174,7 @@ def register_routes(app):
 
                     try:
                         score_value = int(score_value) if score_value else 0
-                        if score_value < 0 or score_value > 20:
+                        if score_value < 0 or score_value > 100:
                             score_value = 0
                     except ValueError:
                         score_value = 0
@@ -761,6 +761,6 @@ def register_routes(app):
             flash('Hole notes updated successfully', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error updating notes: {str(e)}', 'danger')
+            flash(f'Error updating hole notes: {str(e)}', 'danger')
 
         return redirect(url_for('course_settings', course_id=course_id))

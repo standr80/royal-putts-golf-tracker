@@ -11,18 +11,18 @@
             {% endif %}
         </div>
 
-        {% if current_hole_info and (current_hole_info.image_url or current_hole_info.notes) %}
+        {% if current_hole_info %}
         <div class="alert alert-success mb-4">
-            {% if current_hole_info.image_url %}
             <div class="text-center mb-3">
+                {% if current_hole_info.image_url %}
                 <img src="{{ current_hole_info.image_url }}" 
                      alt="Hole {{ current_hole }} layout" 
                      class="img-fluid rounded" 
                      style="max-height: 200px;">
+                {% endif %}
             </div>
-            {% endif %}
             {% if current_hole_info.notes %}
-            <p class="mb-0"><strong>Hole Notes:</strong> {{ current_hole_info.notes }}</p>
+            <p class="mb-0">{{ current_hole_info.notes }}</p>
             {% endif %}
         </div>
         {% endif %}
@@ -52,13 +52,13 @@
                                             <input type="number" 
                                                    class="form-control form-control-lg score-input" 
                                                    name="scores_{{ player_game.id }}"
-                                                   min="1" 
-                                                   max="20"
+                                                   min="0" 
+                                                   max="100"
                                                    pattern="\d*"
                                                    inputmode="numeric"
                                                    value="{{ current_hole_scores.get(player_game.id, '') }}">
                                             <div class="invalid-feedback">
-                                                Valid score: 1-20
+                                                Please enter a number between 0 and 100
                                             </div>
                                         </td>
                                     </tr>

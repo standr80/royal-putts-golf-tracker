@@ -6,8 +6,11 @@ from datetime import datetime
 import logging
 import os
 
-# Set up logging
-logging.basicConfig(level=logging.DEBUG)
+# Set up logging with more detail
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+)
 logger = logging.getLogger(__name__)
 
 # Define base model class
@@ -30,6 +33,9 @@ def create_app():
         "pool_pre_ping": True,
     }
 
+    # Enable SQLAlchemy logging
+    app.config["SQLALCHEMY_ECHO"] = True
+
     # Configure email settings
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
     app.config['MAIL_PORT'] = 587
@@ -44,13 +50,16 @@ def create_app():
 
     with app.app_context():
         # Import models here to avoid circular imports
-        import models
-        logger.info("Creating database tables...")
+        logger.info("Importing models...")
         try:
+            from models import User, Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings
+            logger.info("Models imported successfully")
+
+            logger.info("Creating database tables...")
             db.create_all()
             logger.info("Database tables created successfully")
         except Exception as e:
-            logger.error(f"Error creating database tables: {e}")
+            logger.error(f"Error during database initialization: {str(e)}")
             raise
 
     # Register template filters
