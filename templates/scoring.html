@@ -4,13 +4,15 @@
 <div class="row">
     <div class="col-md-8 mx-auto">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>{{ get_localized_text('EnterGameScoresTitle', 'Enter Game Scores') }}</h2>
             {% if current_hole_info %}
-            <h5 class="text-muted mb-0">
+            <h2>
                 {{ game.course.name }} - Hole {{ current_hole }} - 
                 {{ current_hole_info.name }} - Par {{ current_hole_info.par }}
-            </h5>
+            </h2>
             {% endif %}
+            <button class="btn btn-secondary" onclick="history.back()">
+                <i data-feather="arrow-left"></i> Back to Game
+            </button>
         </div>
 
         {% if current_hole_info and (current_hole_info.image_url or current_hole_info.notes) %}
@@ -106,24 +108,22 @@
         </div>
 
         <div class="alert alert-success mt-4">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2" style="font-size: 0.5rem;">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <h4 class="alert-heading mb-1" style="font-size: 0.875rem;">{{ get_localized_text('GameCodeToolTip', 'Game Code:') }} <strong>{{ game.game_code }}</strong></h4>
-                    <p class="mb-0" style="font-size: 0.75rem;">{{ get_localized_text('GameCodeShareTooltip', 'Share this code with other players to let them find this game.') }}</p>
+                    <h4 class="alert-heading mb-1">{{ get_localized_text('GameCodeToolTip', 'Game Code:') }} <strong>{{ game.game_code }}</strong></h4>
+                    <p class="mb-0">{{ get_localized_text('GameCodeShareTooltip', 'Share this code with other players to let them find this game.') }}</p>
                 </div>
                 <div class="d-flex gap-1">
                     <button id="copy-game-code" 
                             class="btn btn-light btn-sm" 
-                            data-game-code="{{ game.game_code }}"
-                            style="font-size: 0.75rem;">
-                        <i data-feather="copy" class="feather-small"></i> {{ get_localized_text('CopyButton', 'Copy Code') }}
+                            data-game-code="{{ game.game_code }}">
+                        <i data-feather="copy"></i> {{ get_localized_text('CopyButton', 'Copy Code') }}
                     </button>
                     <a href="https://api.whatsapp.com/send?text={{ 'Join my game at Royal Putts Thetford! Game Code: ' ~ game.game_code ~ ' - Click here to join: ' ~ url_for('game', game_code=game.game_code, _external=True)|urlencode }}"
                        data-action="share/whatsapp/share"
                        target="_blank"
-                       class="btn btn-light btn-sm"
-                       style="font-size: 0.75rem;">
-                        <i data-feather="share-2" class="feather-small"></i> {{ get_localized_text('WhatsAppButton', 'Share to WhatsApp') }}
+                       class="btn btn-light btn-sm">
+                        <i data-feather="share-2"></i> {{ get_localized_text('WhatsAppButton', 'Share to WhatsApp') }}
                     </a>
                 </div>
             </div>
@@ -145,42 +145,12 @@
 
         // Initialize Feather icons
         feather.replace();
-
-        // Make footer icons smaller
-        document.querySelectorAll('.feather-small').forEach(icon => {
-            icon.style.width = '0.75rem';
-            icon.style.height = '0.75rem';
-        });
     });
 
     // Function to handle hole navigation
     function goToHole(hole) {
         if (hole) {
-            const form = document.querySelector('form');
-            const formData = new FormData(form);
-
-            // Submit the form data
-            fetch(form.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    // After successful save, navigate to the selected hole
-                    window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
-                } else {
-                    // If save failed, show error and reset dropdown
-                    alert('Failed to save scores. Please try again.');
-                    const dropdown = document.getElementById('goto-hole');
-                    dropdown.value = '{{ current_hole }}';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to save scores. Please try again.');
-                const dropdown = document.getElementById('goto-hole');
-                dropdown.value = '{{ current_hole }}';
-            });
+            window.location.href = `{{ url_for('scoring', game_code=game.game_code) }}?hole=${hole}`;
         }
     }
 </script>
