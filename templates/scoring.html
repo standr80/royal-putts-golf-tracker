@@ -204,6 +204,21 @@
                             setTimeout(() => {
                                 saveIndicator.style.display = 'none';
                             }, 2000);
+
+                            // Update par difference
+                            const parCell = this.closest('tr').querySelector('td:nth-child(3)');
+                            const holePar = {{ current_hole_info.par }};
+                            const parDiff = value - holePar;
+
+                            let parText;
+                            if (parDiff === 0) {
+                                parText = 'E';
+                            } else if (parDiff > 0) {
+                                parText = `+${parDiff}`;
+                            } else {
+                                parText = parDiff.toString();
+                            }
+                            parCell.textContent = parText;
                         } else {
                             this.classList.add('is-invalid');
                             throw new Error(data.error || 'Failed to save score');
