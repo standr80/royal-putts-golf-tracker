@@ -60,8 +60,10 @@
                                         <td style="min-width: 120px;">
                                             <div class="position-relative">
                                                 <input type="number" 
-                                                       class="form-control form-control-lg" 
+                                                       class="form-control form-control-lg score-input" 
                                                        name="scores_{{ player_game.id }}"
+                                                       data-player-game-id="{{ player_game.id }}"
+                                                       data-hole-number="{{ current_hole }}"
                                                        inputmode="numeric"
                                                        min="1"
                                                        max="20"
@@ -75,6 +77,14 @@
                                                               padding-right: 2.5rem !important;">
                                                 <div class="invalid-feedback">
                                                     Please enter a score between 1 and 20.
+                                                </div>
+                                                <div class="position-absolute top-50 end-0 translate-middle-y pe-2 save-indicator" style="display: none;">
+                                                    <i data-feather="check-circle" class="text-success"></i>
+                                                </div>
+                                                <div class="position-absolute top-50 end-0 translate-middle-y pe-2 saving-indicator" style="display: none;">
+                                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                        <span class="visually-hidden">Saving...</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
@@ -142,20 +152,69 @@
         // Initialize Feather icons
         feather.replace();
 
-        // Add input validation for score fields
+        // Add input validation and auto-save for score fields
         const form = document.getElementById('scoreForm');
-        const inputs = form.querySelectorAll('input[type="number"]');
+        const inputs = form.querySelectorAll('.score-input');
+
+        let saveTimeouts = {};
 
         inputs.forEach(input => {
             input.addEventListener('input', function() {
                 const value = parseInt(this.value);
+                const playerGameId = this.dataset.playerGameId;
+                const holeNumber = this.dataset.holeNumber;
+
+                // Validate input
                 if (!value || value < 1 || value > 20) {
                     this.classList.add('is-invalid');
                     this.classList.remove('is-valid');
+                    return;
                 } else {
                     this.classList.remove('is-invalid');
                     this.classList.add('is-valid');
                 }
+
+                // Clear any existing timeout for this input
+                if (saveTimeouts[playerGameId]) {
+                    clearTimeout(saveTimeouts[playerGameId]);
+                }
+
+                // Show saving indicator
+                const savingIndicator = this.parentElement.querySelector('.saving-indicator');
+                const saveIndicator = this.parentElement.querySelector('.save-indicator');
+                savingIndicator.style.display = 'block';
+                saveIndicator.style.display = 'none';
+
+                // Set a new timeout to save after 500ms of no input
+                saveTimeouts[playerGameId] = setTimeout(() => {
+                    const formData = new FormData();
+                    formData.append('player_game_id', playerGameId);
+                    formData.append('hole_number', holeNumber);
+                    formData.append('strokes', value);
+
+                    fetch(`/scoring/{{ game.game_code }}/save-score`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        savingIndicator.style.display = 'none';
+                        if (data.success) {
+                            saveIndicator.style.display = 'block';
+                            setTimeout(() => {
+                                saveIndicator.style.display = 'none';
+                            }, 2000);
+                        } else {
+                            this.classList.add('is-invalid');
+                            throw new Error(data.error || 'Failed to save score');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saving score:', error);
+                        savingIndicator.style.display = 'none';
+                        this.classList.add('is-invalid');
+                    });
+                }, 500);
             });
         });
     });

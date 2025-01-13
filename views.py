@@ -1,5 +1,5 @@
 import os
-from flask import render_template, request, redirect, url_for, flash, abort, g
+from flask import render_template, request, redirect, url_for, flash, abort, g, jsonify
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings
 from datetime import datetime
 
@@ -779,3 +779,42 @@ def register_routes(app):
             flash(f'Error updating hole notes: {str(e)}', 'danger')
 
         return redirect(url_for('course_settings', course_id=course_id))
+
+    @app.route('/scoring/<game_code>/save-score', methods=['POST'])
+    def save_score(game_code):
+        """Save a single score via AJAX"""
+        game = Game.query.filter_by(game_code=game_code).first_or_404()
+
+        try:
+            player_game_id = request.form.get('player_game_id', type=int)
+            hole_number = request.form.get('hole_number', type=int)
+            strokes = request.form.get('strokes', type=int)
+
+            if not all([player_game_id, hole_number, strokes]):
+                return jsonify({'error': 'Missing required fields'}), 400
+
+            if not (1 <= strokes <= 20):
+                return jsonify({'error': 'Invalid score value'}), 400
+
+            existing_score = Score.query.filter_by(
+                player_game_id=player_game_id,
+                hole_number=hole_number
+            ).first()
+
+            from app import db
+            if existing_score:
+                existing_score.strokes = strokes
+            else:
+                score = Score(
+                    player_game_id=player_game_id,
+                    hole_number=hole_number,
+                    strokes=strokes
+                )
+                db.session.add(score)
+
+            db.session.commit()
+            return jsonify({'success': True})
+
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
