@@ -8,14 +8,15 @@
         {% if current_hole_info and (current_hole_info.image_url or current_hole_info.notes) %}
         <div class="alert bg-white border mb-4">
             {% if current_hole_info.image_url %}
-            <div class="text-center mb-3">
-                <img src="{{ current_hole_info.image_url }}" 
-                     alt="Hole {{ current_hole }} layout" 
-                     class="img-fluid rounded" 
-                     style="max-height: 200px;">
+            <div class="parallax-container">
+                <div class="parallax-image" style="background-image: url('{{ current_hole_info.image_url }}');"></div>
+                {% if current_hole_info.notes %}
+                <div class="parallax-content">
+                    <p class="mb-0 text-dark"><strong>Hole Notes:</strong> {{ current_hole_info.notes }}</p>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
-            {% if current_hole_info.notes %}
+            {% elif current_hole_info.notes %}
             <p class="mb-0 text-dark"><strong>Hole Notes:</strong> {{ current_hole_info.notes }}</p>
             {% endif %}
         </div>
