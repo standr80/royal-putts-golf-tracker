@@ -62,17 +62,6 @@
                     {% set player_dates = {} %}
 
                     {% for game in games %}
-                        {% set player_birdies = Achievement.calculate_birdies(game) %}
-                        {% set birdie_player_text, birdie_details = Achievement.format_birdie_details(player_birdies) %}
-
-                        {% if birdie_player_text and birdie_details %}
-                        <tr>
-                            <td>{{ get_localized_text('AchievementBirdy', 'Most Birdies') }}</td>
-                            <td>{{ birdie_player_text }}</td>
-                            <td>{{ birdie_details }}</td>
-                        </tr>
-                        {% endif %}
-
                         {% for player_game in game.players %}
                             {% set hole_in_one_count = namespace(value=0) %}
                             {% set hole_numbers = [] %}

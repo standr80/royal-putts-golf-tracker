@@ -13,57 +13,6 @@ class Achievement(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    @staticmethod
-    def calculate_birdies(game):
-        """Calculate birdies for all players in a game"""
-        player_birdies = {}
-        print(f"Calculating birdies for game {game.game_code}")  # Debug log
-
-        for player_game in game.players:
-            birdies = []
-            print(f"Checking scores for player: {player_game.player.name}")  # Debug log
-
-            for score in player_game.scores:
-                # Get the hole for this score
-                hole = next((h for h in game.course.holes if str(h.name) == str(score.hole_number)), None)
-                print(f"Hole {score.hole_number}: Score={score.strokes}, ", end="")  # Debug log
-
-                if hole:
-                    print(f"Par={hole.par}")  # Debug log
-                    if score.strokes == hole.par - 1:  # Birdie is one under par
-                        print(f"BIRDIE found for {player_game.player.name} on hole {score.hole_number}")  # Debug log
-                        birdies.append(score.hole_number)
-                else:
-                    print("No matching hole found")  # Debug log
-
-            if birdies:
-                player_birdies[player_game.player.name] = birdies
-
-        print(f"Final birdie count: {player_birdies}")  # Debug log
-        return player_birdies
-
-    @staticmethod
-    def format_birdie_details(player_birdies):
-        """Format birdie details for display"""
-        if not player_birdies:
-            return None, None
-
-        # Find players with the most birdies
-        max_birdies = max(len(birdies) for birdies in player_birdies.values())
-        top_players = [name for name, birdies in player_birdies.items() 
-                      if len(birdies) == max_birdies]
-
-        # Format player names
-        player_text = " and ".join(top_players)
-
-        # Format details for each top player
-        details = []
-        for player in top_players:
-            holes = player_birdies[player]
-            details.append(f"{player}: {len(holes)} birdies (Holes: {', '.join(map(str, sorted(holes)))})")
-
-        return player_text, " | ".join(details)
-
 class User(UserMixin, db.Model):
     __tablename__ = 'admin'  # Map to existing admin table
     id = db.Column(db.Integer, primary_key=True)
