@@ -64,16 +64,10 @@
                     {% set hole_pars = {} %}
 
                     {% for game in games %}
-                        {# First, create a mapping of hole numbers to their par values for this course #}
+                        {# Create a mapping of hole numbers to their par values for this course #}
                         {% set hole_pars = {} %}
                         {% for hole in game.course.holes %}
-                            {% if hole.name == 'Hop Scotch' %}
-                                {% set _ = hole_pars.update({'1': hole.par}) %}
-                            {% elif hole.name == 'Meteor Shower' %}
-                                {% set _ = hole_pars.update({'2': hole.par}) %}
-                            {% elif hole.name == 'Mountain Climb' %}
-                                {% set _ = hole_pars.update({'3': hole.par}) %}
-                            {% endif %}
+                            {% set _ = hole_pars.update({hole.name: hole.par}) %}
                         {% endfor %}
 
                         {% for player_game in game.players %}
@@ -85,28 +79,35 @@
                             {% set eagle_holes = [] %}
 
                             {% for score in player_game.scores %}
-                                {# Check for hole in ones #}
-                                {% if score.strokes == 1 %}
-                                    {% set hole_in_one_count.value = hole_in_one_count.value + 1 %}
-                                    {% set _ = hole_numbers.append(score.hole_number) %}
-                                {% endif %}
+                                {# Get the hole information #}
+                                {% set current_hole = none %}
+                                {% for hole in game.course.holes %}
+                                    {% if hole.name in hole_pars %}
+                                        {% set current_hole = hole %}
+                                        {# Check for hole in ones #}
+                                        {% if score.strokes == 1 %}
+                                            {% set hole_in_one_count.value = hole_in_one_count.value + 1 %}
+                                            {% set _ = hole_numbers.append(score.hole_number) %}
+                                        {% endif %}
 
-                                {# Check for birdies #}
-                                {% if score.hole_number|string in hole_pars and score.strokes == hole_pars[score.hole_number|string] - 1 %}
-                                    {% set birdie_count.value = birdie_count.value + 1 %}
-                                    {% set _ = birdie_holes.append(score.hole_number) %}
-                                {% endif %}
+                                        {# Check for birdies #}
+                                        {% if score.strokes == hole.par - 1 %}
+                                            {% set birdie_count.value = birdie_count.value + 1 %}
+                                            {% set _ = birdie_holes.append(score.hole_number) %}
+                                        {% endif %}
 
-                                {# Check for eagles #}
-                                {% if score.hole_number|string in hole_pars and score.strokes == hole_pars[score.hole_number|string] - 2 %}
-                                    {% set eagle_count.value = eagle_count.value + 1 %}
-                                    {% set _ = eagle_holes.append(score.hole_number) %}
-                                {% endif %}
+                                        {# Check for eagles #}
+                                        {% if score.strokes == hole.par - 2 %}
+                                            {% set eagle_count.value = eagle_count.value + 1 %}
+                                            {% set _ = eagle_holes.append(score.hole_number) %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
                             {% endfor %}
 
                             {# Record hole in ones #}
                             {% if hole_in_one_count.value > 0 %}
-                                {% if player_game.player.name not in hole_in_ones or hole_in_one_count.value >= hole_in_ones[player_game.player.name].count %}
+                                {% if player_game.player.name not in hole_in_ones or hole_in_one_count.value > hole_in_ones[player_game.player.name].count %}
                                     {% set _ = hole_in_ones.update({
                                         player_game.player.name: {
                                             'count': hole_in_one_count.value,
@@ -119,7 +120,7 @@
 
                             {# Record birdies #}
                             {% if birdie_count.value > 0 %}
-                                {% if player_game.player.name not in birdies or birdie_count.value >= birdies[player_game.player.name].count %}
+                                {% if player_game.player.name not in birdies or birdie_count.value > birdies[player_game.player.name].count %}
                                     {% set _ = birdies.update({
                                         player_game.player.name: {
                                             'count': birdie_count.value,
@@ -132,7 +133,7 @@
 
                             {# Record eagles #}
                             {% if eagle_count.value > 0 %}
-                                {% if player_game.player.name not in eagles or eagle_count.value >= eagles[player_game.player.name].count %}
+                                {% if player_game.player.name not in eagles or eagle_count.value > eagles[player_game.player.name].count %}
                                     {% set _ = eagles.update({
                                         player_game.player.name: {
                                             'count': eagle_count.value,
@@ -145,101 +146,33 @@
                         {% endfor %}
                     {% endfor %}
 
-                    {# Display hole in one achievements #}
+                    {# Display achievements #}
                     {% if hole_in_ones %}
-                        {% set max_holes = {'count': 0} %}
-                        {% set best_players = [] %}
-
-                        {# First find the maximum number of holes in one #}
                         {% for player_name, data in hole_in_ones.items() %}
-                            {% if data.count > max_holes.count %}
-                                {% set _ = max_holes.update({'count': data.count}) %}
-                            {% endif %}
-                        {% endfor %}
-
-                        {# Then collect all players who achieved that maximum #}
-                        {% for player_name, data in hole_in_ones.items() %}
-                            {% if data.count == max_holes.count %}
-                                {% set _ = best_players.append({
-                                    'name': player_name,
-                                    'count': data.count,
-                                    'game': data.game,
-                                    'holes': data.holes
-                                }) %}
-                            {% endif %}
-                        {% endfor %}
-
-                        {% for player in best_players %}
                             <tr>
-                                <td>Most Holes in One</td>
-                                <td>{{ player.name }}</td>
-                                <td>{{ player.name }} scored {{ player.count }} holes in one on holes {% for hole in player.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
+                                <td>Holes in One</td>
+                                <td>{{ player_name }}</td>
+                                <td>{{ player_name }} scored {{ data.count }} holes in one on holes {% for hole in data.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
                             </tr>
                         {% endfor %}
                     {% endif %}
 
-                    {# Display birdie achievements #}
                     {% if birdies %}
-                        {% set max_birdies = {'count': 0} %}
-                        {% set best_birdie_players = [] %}
-
-                        {# First find the maximum number of birdies #}
                         {% for player_name, data in birdies.items() %}
-                            {% if data.count > max_birdies.count %}
-                                {% set _ = max_birdies.update({'count': data.count}) %}
-                            {% endif %}
-                        {% endfor %}
-
-                        {# Then collect all players who achieved that maximum #}
-                        {% for player_name, data in birdies.items() %}
-                            {% if data.count == max_birdies.count %}
-                                {% set _ = best_birdie_players.append({
-                                    'name': player_name,
-                                    'count': data.count,
-                                    'game': data.game,
-                                    'holes': data.holes
-                                }) %}
-                            {% endif %}
-                        {% endfor %}
-
-                        {% for player in best_birdie_players %}
                             <tr>
                                 <td>Most Birdies</td>
-                                <td>{{ player.name }}</td>
-                                <td>{{ player.name }} scored {{ player.count }} birdies on holes {% for hole in player.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
+                                <td>{{ player_name }}</td>
+                                <td>{{ player_name }} scored {{ data.count }} birdies on holes {% for hole in data.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
                             </tr>
                         {% endfor %}
                     {% endif %}
 
-                    {# Display eagle achievements #}
                     {% if eagles %}
-                        {% set max_eagles = {'count': 0} %}
-                        {% set best_eagle_players = [] %}
-
-                        {# First find the maximum number of eagles #}
                         {% for player_name, data in eagles.items() %}
-                            {% if data.count > max_eagles.count %}
-                                {% set _ = max_eagles.update({'count': data.count}) %}
-                            {% endif %}
-                        {% endfor %}
-
-                        {# Then collect all players who achieved that maximum #}
-                        {% for player_name, data in eagles.items() %}
-                            {% if data.count == max_eagles.count %}
-                                {% set _ = best_eagle_players.append({
-                                    'name': player_name,
-                                    'count': data.count,
-                                    'game': data.game,
-                                    'holes': data.holes
-                                }) %}
-                            {% endif %}
-                        {% endfor %}
-
-                        {% for player in best_eagle_players %}
                             <tr>
                                 <td>Most Eagles</td>
-                                <td>{{ player.name }}</td>
-                                <td>{{ player.name }} scored {{ player.count }} eagles on holes {% for hole in player.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
+                                <td>{{ player_name }}</td>
+                                <td>{{ player_name }} scored {{ data.count }} eagles on holes {% for hole in data.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
                             </tr>
                         {% endfor %}
                     {% endif %}
