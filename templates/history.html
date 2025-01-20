@@ -61,6 +61,7 @@
                     {% set hole_in_ones = {} %}
                     {% set player_dates = {} %}
 
+                    {# Display existing hole-in-one achievements #}
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set hole_in_one_count = namespace(value=0) %}
@@ -117,6 +118,15 @@
                             </tr>
                         {% endfor %}
                     {% endif %}
+
+                    {# Display achievements from stats-setup page #}
+                    {% for result in achievement_results %}
+                        <tr>
+                            <td>{{ result.name }}</td>
+                            <td>{{ result.player if result.player else 'All Players' }}</td>
+                            <td>{{ result.details }}</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

@@ -284,7 +284,28 @@ def register_routes(app):
         else:
             games = Game.query.order_by(Game.date.desc()).all()
 
-        return render_template('history.html', games=games, game_code=game_code)
+        # Get achievements that are marked for display
+        achievements = Achievement.query.filter_by(display='Y').order_by(Achievement.name).all()
+
+        # For each achievement, evaluate its logic against the games
+        achievement_results = []
+        for achievement in achievements:
+            try:
+                # Basic achievement logic evaluation - this can be expanded based on needs
+                achievement_result = {
+                    'name': achievement.name,
+                    'player': None,
+                    'details': achievement.logic  # Initially use logic as details
+                }
+                achievement_results.append(achievement_result)
+            except Exception as e:
+                print(f"Error evaluating achievement {achievement.name}: {str(e)}")
+                continue
+
+        return render_template('history.html', 
+                             games=games, 
+                             game_code=game_code,
+                             achievement_results=achievement_results)
 
     @app.route('/find-game', methods=['GET', 'POST'])
     def find_game():
