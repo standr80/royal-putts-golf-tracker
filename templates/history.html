@@ -22,7 +22,7 @@
                 <tbody>
                     {% for game in games %}
                     <tr>
-                        <td>{{ game.date|format_date }}</td>
+                        <td>{{ game.date|ordinal_date }}</td>
                         <td><code class="bg-dark">{{ game.game_code }}</code></td>
                         <td>
                             {% for player_game in game.players %}
@@ -117,7 +117,7 @@
                                 <td>Most Holes in One</td>
                                 <td>{{ player.name }}</td>
                                 <td>{{ player.name }} scored {{ player.count }} holes in one on holes {% for hole in player.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
-                                <td>{{ player.game.date|format_date }}</td>
+                                <td>{{ player.game.date|ordinal_date }}</td>
                             </tr>
                         {% endfor %}
                     {% endif %}
