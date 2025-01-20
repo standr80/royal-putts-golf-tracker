@@ -10,15 +10,45 @@
             </a>
         </div>
 
-        <div class="card bg-dark">
+        <div class="card bg-dark mb-4">
             <div class="card-body">
-                <h3>Statistics Configuration</h3>
-                <p class="text-muted">Configure statistics settings and calculations for the golf course.</p>
-                
-                <!-- Stats configuration form will be added here in future updates -->
-                <div class="alert alert-info">
-                    <i data-feather="info"></i> Statistics configuration options will be available soon.
+                <h3>Achievements</h3>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Achievement Name</th>
+                                <th>Achievement Logic</th>
+                                <th>Display Y/N</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input type="text" class="form-control bg-dark text-white" placeholder="Enter achievement name">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control bg-dark text-white" placeholder="Enter achievement logic">
+                                </td>
+                                <td>
+                                    <select class="form-select bg-dark text-white">
+                                        <option value="Y">Y</option>
+                                        <option value="N">N</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary">
+                                        <i data-feather="save"></i> Save
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+                <button class="btn btn-success mt-3">
+                    <i data-feather="plus"></i> Add New Achievement
+                </button>
             </div>
         </div>
     </div>
