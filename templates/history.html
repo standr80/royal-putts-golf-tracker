@@ -12,7 +12,6 @@
             <table class="table table-dark table-hover">
                 <thead>
                     <tr>
-                        <th>{{ get_localized_text('GameResultsTableDate', 'Date') }}</th>
                         <th>{{ get_localized_text('GameResultsTableGameCode', 'Game Code') }}</th>
                         <th>{{ get_localized_text('GameResultsTablePlayers', 'Players') }}</th>
                         <th>{{ get_localized_text('GameResultsTablePutts', 'Total Putts') }}</th>
@@ -22,7 +21,6 @@
                 <tbody>
                     {% for game in games %}
                     <tr>
-                        <td>{{ game.date|ordinal_date }}</td>
                         <td><code class="bg-dark">{{ game.game_code }}</code></td>
                         <td>
                             {% for player_game in game.players %}
