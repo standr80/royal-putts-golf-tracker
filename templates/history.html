@@ -60,9 +60,21 @@
                 <tbody>
                     {% set hole_in_ones = {} %}
                     {% set birdies = {} %}
-                    {% set player_dates = {} %}
+                    {% set hole_pars = {} %}
 
                     {% for game in games %}
+                        {# First, create a mapping of hole numbers to their par values for this course #}
+                        {% set hole_pars = {} %}
+                        {% for hole in game.course.holes %}
+                            {% if hole.name == 'Hop Scotch' %}
+                                {% set _ = hole_pars.update({'1': hole.par}) %}
+                            {% elif hole.name == 'Meteor Shower' %}
+                                {% set _ = hole_pars.update({'2': hole.par}) %}
+                            {% elif hole.name == 'Mountain Climb' %}
+                                {% set _ = hole_pars.update({'3': hole.par}) %}
+                            {% endif %}
+                        {% endfor %}
+
                         {% for player_game in game.players %}
                             {% set hole_in_one_count = namespace(value=0) %}
                             {% set birdie_count = namespace(value=0) %}
@@ -76,13 +88,11 @@
                                     {% set _ = hole_numbers.append(score.hole_number) %}
                                 {% endif %}
 
-                                {# Check for birdies (score one below par) #}
-                                {% for hole in game.course.holes %}
-                                    {% if hole.name == score.hole_number|string and score.strokes == hole.par - 1 %}
-                                        {% set birdie_count.value = birdie_count.value + 1 %}
-                                        {% set _ = birdie_holes.append(score.hole_number) %}
-                                    {% endif %}
-                                {% endfor %}
+                                {# Check for birdies #}
+                                {% if score.hole_number|string in hole_pars and score.strokes == hole_pars[score.hole_number|string] - 1 %}
+                                    {% set birdie_count.value = birdie_count.value + 1 %}
+                                    {% set _ = birdie_holes.append(score.hole_number) %}
+                                {% endif %}
                             {% endfor %}
 
                             {# Record hole in ones #}
