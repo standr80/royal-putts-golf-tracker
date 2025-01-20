@@ -3,6 +3,9 @@ from flask import render_template, request, redirect, url_for, flash, abort, g, 
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings
 from datetime import datetime
 import locale
+import logging
+
+app = None # Assuming app is defined elsewhere, and this is just a placeholder.  You will need to replace this with your app instantiation
 
 def format_date_by_language(date):
     """Format date according to the store language setting"""
@@ -12,28 +15,32 @@ def format_date_by_language(date):
     # Set locale based on language
     try:
         if lang == 'fr':
-            locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'fr_FR')  # Simplified locale name
         elif lang == 'de':
-            locale.setlocale(locale.LC_TIME, 'de_DE.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'de_DE')
         elif lang == 'es':
-            locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'es_ES')
         else:  # Default to English
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'en_US')
 
         # Format date according to language conventions
         if lang == 'fr':
-            return date.strftime('%d %B %Y')
+            formatted_date = date.strftime('%d %B %Y')
         elif lang == 'de':
-            return date.strftime('%-d. %B %Y')
+            formatted_date = date.strftime('%-d. %B %Y')
         elif lang == 'es':
-            return date.strftime('%d de %B de %Y')
+            formatted_date = date.strftime('%d de %B de %Y')
         else:  # English
-            return date.strftime('%B %-d, %Y')
-    except locale.Error:
-        # Fallback to English format if locale not available
-        return date.strftime('%B %-d, %Y')
+            formatted_date = date.strftime('%B %-d, %Y')
+
+        app.logger.debug(f"Language: {lang}, Formatted date: {formatted_date}")
+        return formatted_date
+    except locale.Error as e:
+        app.logger.error(f"Locale error: {str(e)}")
+        # Fallback to simple date format if locale fails
+        return date.strftime('%Y-%m-%d')
     finally:
-        # Reset locale
+        # Reset locale to system default
         try:
             locale.setlocale(locale.LC_TIME, '')
         except:
@@ -857,3 +864,5 @@ def register_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': str(e)}), 500
+
+    return app
