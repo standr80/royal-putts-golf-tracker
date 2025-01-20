@@ -55,7 +55,6 @@
                         <th>Achievement</th>
                         <th>Player</th>
                         <th>Details</th>
-                        <th>Date</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -115,7 +114,6 @@
                                 <td>Most Holes in One</td>
                                 <td>{{ player.name }}</td>
                                 <td>{{ player.name }} scored {{ player.count }} holes in one on holes {% for hole in player.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
-                                <td>{{ player.game.date|ordinal_date }}</td>
                             </tr>
                         {% endfor %}
                     {% endif %}
