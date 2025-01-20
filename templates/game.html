@@ -53,7 +53,7 @@
                             {% endfor %}
                         </select>
                         <div id="course-validation-message" class="invalid-feedback">
-                            Please select a course before continuing.
+                            {{ get_localized_text('SelectCourseError', 'Please select a course before continuing.') }}
                         </div>
                     </div>
 
