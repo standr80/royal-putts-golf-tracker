@@ -279,12 +279,18 @@ def register_routes(app):
     @app.route('/history')
     @app.route('/history/<game_code>')
     def history(game_code=None):
+        """Display game history and achievements"""
+        from models import Game, Achievement
+
         if game_code:
             games = [Game.query.filter_by(game_code=game_code).first_or_404()]
         else:
             games = Game.query.order_by(Game.date.desc()).all()
 
-        return render_template('history.html', games=games, game_code=game_code)
+        return render_template('history.html', 
+                            games=games, 
+                            game_code=game_code,
+                            Achievement=Achievement)  # Pass Achievement model to template
 
     @app.route('/find-game', methods=['GET', 'POST'])
     def find_game():
