@@ -58,6 +58,12 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% set all_achievements = {
+                        'holes_in_one': {},
+                        'birdies': {},
+                        'eagles': {}
+                    } %}
+
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set achievements = {
@@ -85,31 +91,75 @@
                                 {% endif %}
                             {% endfor %}
 
+                            {# Record achievements for this player #}
                             {% if achievements.holes_in_one %}
-                                <tr>
-                                    <td>Holes in One</td>
-                                    <td>{{ player_game.player.name }}</td>
-                                    <td>{{ player_game.player.name }} scored {{ achievements.holes_in_one|length }} holes in one on holes {{ achievements.holes_in_one|sort|join(', ') }}!</td>
-                                </tr>
+                                {% set _ = all_achievements.holes_in_one.update({
+                                    player_game.player.name: {
+                                        'count': achievements.holes_in_one|length,
+                                        'holes': achievements.holes_in_one|sort
+                                    }
+                                }) %}
                             {% endif %}
 
                             {% if achievements.birdies %}
-                                <tr>
-                                    <td>Birdies</td>
-                                    <td>{{ player_game.player.name }}</td>
-                                    <td>{{ player_game.player.name }} scored {{ achievements.birdies|length }} birdies on holes {{ achievements.birdies|sort|join(', ') }}!</td>
-                                </tr>
+                                {% set _ = all_achievements.birdies.update({
+                                    player_game.player.name: {
+                                        'count': achievements.birdies|length,
+                                        'holes': achievements.birdies|sort
+                                    }
+                                }) %}
                             {% endif %}
 
                             {% if achievements.eagles %}
-                                <tr>
-                                    <td>Eagles</td>
-                                    <td>{{ player_game.player.name }}</td>
-                                    <td>{{ player_game.player.name }} scored {{ achievements.eagles|length }} eagles on holes {{ achievements.eagles|sort|join(', ') }}!</td>
-                                </tr>
+                                {% set _ = all_achievements.eagles.update({
+                                    player_game.player.name: {
+                                        'count': achievements.eagles|length,
+                                        'holes': achievements.eagles|sort
+                                    }
+                                }) %}
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
+
+                    {# Display only the highest achievers in each category #}
+                    {% if all_achievements.holes_in_one %}
+                        {% set max_holes_in_one = all_achievements.holes_in_one.values()|map(attribute='count')|max %}
+                        {% for player_name, data in all_achievements.holes_in_one.items() %}
+                            {% if data.count == max_holes_in_one %}
+                                <tr>
+                                    <td>Most Holes in One</td>
+                                    <td>{{ player_name }}</td>
+                                    <td>{{ player_name }} scored {{ data.count }} holes in one on holes {{ data.holes|join(', ') }}!</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if all_achievements.birdies %}
+                        {% set max_birdies = all_achievements.birdies.values()|map(attribute='count')|max %}
+                        {% for player_name, data in all_achievements.birdies.items() %}
+                            {% if data.count == max_birdies %}
+                                <tr>
+                                    <td>Most Birdies</td>
+                                    <td>{{ player_name }}</td>
+                                    <td>{{ player_name }} scored {{ data.count }} birdies on holes {{ data.holes|join(', ') }}!</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if all_achievements.eagles %}
+                        {% set max_eagles = all_achievements.eagles.values()|map(attribute='count')|max %}
+                        {% for player_name, data in all_achievements.eagles.items() %}
+                            {% if data.count == max_eagles %}
+                                <tr>
+                                    <td>Most Eagles</td>
+                                    <td>{{ player_name }}</td>
+                                    <td>{{ player_name }} scored {{ data.count }} eagles on holes {{ data.holes|join(', ') }}!</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
         </div>
