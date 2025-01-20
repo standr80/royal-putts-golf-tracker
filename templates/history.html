@@ -60,6 +60,7 @@
                 <tbody>
                     {% set hole_in_ones = {} %}
                     {% set birdies = {} %}
+                    {% set eagles = {} %}
                     {% set hole_pars = {} %}
 
                     {% for game in games %}
@@ -78,8 +79,10 @@
                         {% for player_game in game.players %}
                             {% set hole_in_one_count = namespace(value=0) %}
                             {% set birdie_count = namespace(value=0) %}
+                            {% set eagle_count = namespace(value=0) %}
                             {% set hole_numbers = [] %}
                             {% set birdie_holes = [] %}
+                            {% set eagle_holes = [] %}
 
                             {% for score in player_game.scores %}
                                 {# Check for hole in ones #}
@@ -92,6 +95,12 @@
                                 {% if score.hole_number|string in hole_pars and score.strokes == hole_pars[score.hole_number|string] - 1 %}
                                     {% set birdie_count.value = birdie_count.value + 1 %}
                                     {% set _ = birdie_holes.append(score.hole_number) %}
+                                {% endif %}
+
+                                {# Check for eagles #}
+                                {% if score.hole_number|string in hole_pars and score.strokes == hole_pars[score.hole_number|string] - 2 %}
+                                    {% set eagle_count.value = eagle_count.value + 1 %}
+                                    {% set _ = eagle_holes.append(score.hole_number) %}
                                 {% endif %}
                             {% endfor %}
 
@@ -116,6 +125,19 @@
                                             'count': birdie_count.value,
                                             'game': game,
                                             'holes': birdie_holes|sort
+                                        }
+                                    }) %}
+                                {% endif %}
+                            {% endif %}
+
+                            {# Record eagles #}
+                            {% if eagle_count.value > 0 %}
+                                {% if player_game.player.name not in eagles or eagle_count.value >= eagles[player_game.player.name].count %}
+                                    {% set _ = eagles.update({
+                                        player_game.player.name: {
+                                            'count': eagle_count.value,
+                                            'game': game,
+                                            'holes': eagle_holes|sort
                                         }
                                     }) %}
                                 {% endif %}
@@ -185,6 +207,39 @@
                                 <td>Most Birdies</td>
                                 <td>{{ player.name }}</td>
                                 <td>{{ player.name }} scored {{ player.count }} birdies on holes {% for hole in player.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+
+                    {# Display eagle achievements #}
+                    {% if eagles %}
+                        {% set max_eagles = {'count': 0} %}
+                        {% set best_eagle_players = [] %}
+
+                        {# First find the maximum number of eagles #}
+                        {% for player_name, data in eagles.items() %}
+                            {% if data.count > max_eagles.count %}
+                                {% set _ = max_eagles.update({'count': data.count}) %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {# Then collect all players who achieved that maximum #}
+                        {% for player_name, data in eagles.items() %}
+                            {% if data.count == max_eagles.count %}
+                                {% set _ = best_eagle_players.append({
+                                    'name': player_name,
+                                    'count': data.count,
+                                    'game': data.game,
+                                    'holes': data.holes
+                                }) %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% for player in best_eagle_players %}
+                            <tr>
+                                <td>Most Eagles</td>
+                                <td>{{ player.name }}</td>
+                                <td>{{ player.name }} scored {{ player.count }} eagles on holes {% for hole in player.holes %}{{ hole }}{% if not loop.last %}, {% endif %}{% endfor %}!</td>
                             </tr>
                         {% endfor %}
                     {% endif %}
