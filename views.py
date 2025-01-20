@@ -27,7 +27,7 @@ def format_date_by_language(date):
 
         # Format date according to language conventions
         if lang == 'fr':
-            formatted_date = date.strftime('%d %B %Y')
+            formatted_date = date.strftime('%-d %B %Y')
         elif lang == 'de':
             formatted_date = date.strftime('%-d. %B %Y')
         elif lang == 'es':
