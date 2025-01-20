@@ -6,7 +6,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             {% if current_hole_info %}
             <h2>
-                {{ get_localized_text('GenericHole', 'Hole') }} {{ current_hole }} - {{ current_hole_info.name }} - Par {{ current_hole_info.par }}
+                {{ get_localized_text('GenericHole', 'Hole') }} {{ current_hole }} - {{ current_hole_info.name }} - {{ get_localized_text('GenericPar', 'Par') }} {{ current_hole_info.par }}
             </h2>
             {% endif %}
         </div>
