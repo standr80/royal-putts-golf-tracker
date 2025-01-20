@@ -25,24 +25,40 @@
                         </thead>
                         <tbody>
                             <tr>
+                                <form method="POST" action="{{ url_for('stats_setup') }}">
+                                    <td>
+                                        <input type="text" class="form-control bg-dark text-white" 
+                                               name="achievement_name" placeholder="Enter achievement name" required>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control bg-dark text-white" 
+                                               name="achievement_logic" placeholder="Enter achievement logic" required>
+                                    </td>
+                                    <td>
+                                        <select class="form-select bg-dark text-white" name="display">
+                                            <option value="Y">Y</option>
+                                            <option value="N">N</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <i data-feather="save"></i> Save
+                                        </button>
+                                    </td>
+                                </form>
+                            </tr>
+                            {% for achievement in achievements %}
+                            <tr>
+                                <td>{{ achievement.name }}</td>
+                                <td>{{ achievement.logic }}</td>
+                                <td>{{ achievement.display }}</td>
                                 <td>
-                                    <input type="text" class="form-control bg-dark text-white" placeholder="Enter achievement name">
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control bg-dark text-white" placeholder="Enter achievement logic">
-                                </td>
-                                <td>
-                                    <select class="form-select bg-dark text-white">
-                                        <option value="Y">Y</option>
-                                        <option value="N">N</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary">
-                                        <i data-feather="save"></i> Save
+                                    <button class="btn btn-sm btn-info">
+                                        <i data-feather="edit-2"></i> Edit
                                     </button>
                                 </td>
                             </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

@@ -5,6 +5,14 @@ from email_validator import validate_email, EmailNotValidError
 from flask_login import UserMixin
 from flask_mail import Message
 
+class Achievement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    logic = db.Column(db.Text, nullable=False)
+    display = db.Column(db.String(1), nullable=False, default='Y')
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 class User(UserMixin, db.Model):
     __tablename__ = 'admin'  # Map to existing admin table
     id = db.Column(db.Integer, primary_key=True)

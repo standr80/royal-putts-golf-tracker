@@ -1,6 +1,6 @@
 import os
 from flask import render_template, request, redirect, url_for, flash, abort, g, jsonify
-from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings
+from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings, Achievement
 from datetime import datetime
 
 def get_localized_text(code, default=''):
@@ -818,7 +818,32 @@ def register_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': str(e)}), 500
-    @app.route('/admin/stats-setup')
+    @app.route('/admin/stats-setup', methods=['GET', 'POST'])
     def stats_setup():
         """Admin page for statistics setup and configuration"""
-        return render_template('admin/stats_setup.html')
+        if request.method == 'POST':
+            # Handle achievement save
+            achievement_name = request.form.get('achievement_name')
+            achievement_logic = request.form.get('achievement_logic')
+            display = request.form.get('display', 'N')
+
+            if achievement_name and achievement_logic:
+                try:
+                    from app import db
+                    achievement = Achievement(
+                        name=achievement_name,
+                        logic=achievement_logic,
+                        display=display
+                    )
+                    db.session.add(achievement)
+                    db.session.commit()
+                    flash('Achievement saved successfully!', 'success')
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f'Error saving achievement: {str(e)}', 'danger')
+            else:
+                flash('Please provide both name and logic for the achievement', 'danger')
+
+        # Get all achievements for display
+        achievements = Achievement.query.order_by(Achievement.created_at.desc()).all()
+        return render_template('admin/stats_setup.html', achievements=achievements)
