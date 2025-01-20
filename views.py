@@ -2,6 +2,42 @@ import os
 from flask import render_template, request, redirect, url_for, flash, abort, g, jsonify
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings
 from datetime import datetime
+import locale
+
+def format_date_by_language(date):
+    """Format date according to the store language setting"""
+    store_settings = StoreSettings.get_settings()
+    lang = store_settings.language
+
+    # Set locale based on language
+    try:
+        if lang == 'fr':
+            locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
+        elif lang == 'de':
+            locale.setlocale(locale.LC_TIME, 'de_DE.UTF-8')
+        elif lang == 'es':
+            locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+        else:  # Default to English
+            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+
+        # Format date according to language conventions
+        if lang == 'fr':
+            return date.strftime('%d %B %Y')
+        elif lang == 'de':
+            return date.strftime('%-d. %B %Y')
+        elif lang == 'es':
+            return date.strftime('%d de %B de %Y')
+        else:  # English
+            return date.strftime('%B %-d, %Y')
+    except locale.Error:
+        # Fallback to English format if locale not available
+        return date.strftime('%B %-d, %Y')
+    finally:
+        # Reset locale
+        try:
+            locale.setlocale(locale.LC_TIME, '')
+        except:
+            pass
 
 def get_localized_text(code, default=''):
     """Get localized text based on store language setting"""
@@ -21,6 +57,9 @@ def get_localized_text(code, default=''):
     return string.english_text or default
 
 def register_routes(app):
+    # Register the date formatting filter
+    app.jinja_env.filters['format_date'] = format_date_by_language
+
     @app.route('/')
     def home():
         title = get_localized_text('HomePageTitleLine1', 'Royal Putts Thetford')
