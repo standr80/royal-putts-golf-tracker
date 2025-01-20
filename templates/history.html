@@ -67,21 +67,19 @@
                             } %}
 
                             {% for score in player_game.scores %}
-                                {% set hole = none %}
-                                {% for h in game.course.holes if h.name == score.hole_number|string %}
-                                    {% set hole = h %}
-                                {% endfor %}
+                                {% set hole = game.course.holes|sort(attribute='name')|list %}
+                                {% if score.hole_number <= hole|length %}
+                                    {% set current_hole = hole[score.hole_number - 1] %}
 
-                                {% if hole %}
                                     {% if score.strokes == 1 %}
                                         {% set _ = achievements.holes_in_one.append(score.hole_number) %}
                                     {% endif %}
 
-                                    {% if score.strokes == hole.par - 1 %}
+                                    {% if score.strokes == current_hole.par - 1 %}
                                         {% set _ = achievements.birdies.append(score.hole_number) %}
                                     {% endif %}
 
-                                    {% if score.strokes == hole.par - 2 %}
+                                    {% if score.strokes == current_hole.par - 2 %}
                                         {% set _ = achievements.eagles.append(score.hole_number) %}
                                     {% endif %}
                                 {% endif %}
@@ -97,7 +95,7 @@
 
                             {% if achievements.birdies %}
                                 <tr>
-                                    <td>Most Birdies</td>
+                                    <td>Birdies</td>
                                     <td>{{ player_game.player.name }}</td>
                                     <td>{{ player_game.player.name }} scored {{ achievements.birdies|length }} birdies on holes {{ achievements.birdies|sort|join(', ') }}!</td>
                                 </tr>
@@ -105,7 +103,7 @@
 
                             {% if achievements.eagles %}
                                 <tr>
-                                    <td>Most Eagles</td>
+                                    <td>Eagles</td>
                                     <td>{{ player_game.player.name }}</td>
                                     <td>{{ player_game.player.name }} scored {{ achievements.eagles|length }} eagles on holes {{ achievements.eagles|sort|join(', ') }}!</td>
                                 </tr>
