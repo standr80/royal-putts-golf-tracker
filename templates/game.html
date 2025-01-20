@@ -48,7 +48,7 @@
                             <option value="">{{ get_localized_text('SelectCourseDropdown', 'Choose Course') }}</option>
                             {% for course in courses %}
                             <option value="{{ course.id }}" {% if game and game.course_id == course.id %}selected{% endif %}>
-                                {{ course.name }} ({{ course.holes|length }} holes)
+                                {{ course.name }} ({{ course.holes|length }} {{ get_localized_text('NumberHolesCourse', 'holes') }})
                             </option>
                             {% endfor %}
                         </select>
