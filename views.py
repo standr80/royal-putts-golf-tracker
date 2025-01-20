@@ -1,11 +1,13 @@
 import os
+import logging
 from flask import render_template, request, redirect, url_for, flash, abort, g, jsonify
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings
 from datetime import datetime
 import locale
-import logging
 
-app = None # Assuming app is defined elsewhere, and this is just a placeholder.  You will need to replace this with your app instantiation
+# Configure basic logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def format_date_by_language(date):
     """Format date according to the store language setting"""
@@ -33,10 +35,10 @@ def format_date_by_language(date):
         else:  # English
             formatted_date = date.strftime('%B %-d, %Y')
 
-        app.logger.debug(f"Language: {lang}, Formatted date: {formatted_date}")
+        logger.debug(f"Language: {lang}, Formatted date: {formatted_date}")
         return formatted_date
     except locale.Error as e:
-        app.logger.error(f"Locale error: {str(e)}")
+        logger.error(f"Locale error: {str(e)}")
         # Fallback to simple date format if locale fails
         return date.strftime('%Y-%m-%d')
     finally:
