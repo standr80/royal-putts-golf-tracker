@@ -818,3 +818,7 @@ def register_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': str(e)}), 500
+    @app.route('/admin/stats-setup')
+    def stats_setup():
+        """Admin page for statistics setup and configuration"""
+        return render_template('admin/stats_setup.html')
