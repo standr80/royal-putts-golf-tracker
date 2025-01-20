@@ -17,18 +17,29 @@ class Achievement(db.Model):
     def calculate_birdies(game):
         """Calculate birdies for all players in a game"""
         player_birdies = {}
+        print(f"Calculating birdies for game {game.game_code}")  # Debug log
 
         for player_game in game.players:
             birdies = []
+            print(f"Checking scores for player: {player_game.player.name}")  # Debug log
+
             for score in player_game.scores:
                 # Get the hole for this score
-                hole = next((h for h in game.course.holes if h.name == str(score.hole_number)), None)
-                if hole and score.strokes == hole.par - 1:  # Birdie is one under par
-                    birdies.append(score.hole_number)
+                hole = next((h for h in game.course.holes if str(h.name) == str(score.hole_number)), None)
+                print(f"Hole {score.hole_number}: Score={score.strokes}, ", end="")  # Debug log
+
+                if hole:
+                    print(f"Par={hole.par}")  # Debug log
+                    if score.strokes == hole.par - 1:  # Birdie is one under par
+                        print(f"BIRDIE found for {player_game.player.name} on hole {score.hole_number}")  # Debug log
+                        birdies.append(score.hole_number)
+                else:
+                    print("No matching hole found")  # Debug log
 
             if birdies:
                 player_birdies[player_game.player.name] = birdies
 
+        print(f"Final birdie count: {player_birdies}")  # Debug log
         return player_birdies
 
     @staticmethod
