@@ -2,6 +2,8 @@ import os
 from flask import render_template, request, redirect, url_for, flash, abort, g, jsonify
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings, Achievement
 from datetime import datetime
+from sqlalchemy import text
+from app import db
 
 def get_localized_text(code, default=''):
     """Get localized text based on store language setting"""
@@ -281,10 +283,16 @@ def register_routes(app):
     def history(game_code=None):
         if game_code:
             games = [Game.query.filter_by(game_code=game_code).first_or_404()]
+            # Get peaked player data for this game
+            peaked_data = get_peaked_player(game_code)
         else:
             games = Game.query.order_by(Game.date.desc()).all()
+            peaked_data = None
 
-        return render_template('history.html', games=games, game_code=game_code)
+        return render_template('history.html', 
+                             games=games, 
+                             game_code=game_code,
+                             peaked_data=peaked_data)
 
     @app.route('/find-game', methods=['GET', 'POST'])
     def find_game():
@@ -847,3 +855,60 @@ def register_routes(app):
         # Get all achievements for display
         achievements = Achievement.query.order_by(Achievement.created_at.desc()).all()
         return render_template('admin/stats_setup.html', achievements=achievements)
+
+def get_peaked_player(game_code):
+    """Get the player who led for most holes but didn't win"""
+    sql = text("""
+        WITH hole_cumulative_scores AS (
+            SELECT 
+                p.name as player_name,
+                s.hole_number,
+                s.strokes,
+                SUM(s.strokes) OVER (PARTITION BY pg.id ORDER BY s.hole_number) as cumulative_score
+            FROM score s
+            JOIN player_game pg ON pg.id = s.player_game_id
+            JOIN player p ON p.id = pg.player_id
+            JOIN game g ON g.id = pg.game_id
+            WHERE g.game_code = :game_code
+        ),
+        hole_rankings AS (
+            SELECT 
+                player_name,
+                hole_number,
+                cumulative_score,
+                RANK() OVER (PARTITION BY hole_number ORDER BY cumulative_score) as rank
+            FROM hole_cumulative_scores
+        ),
+        leader_counts AS (
+            SELECT 
+                player_name,
+                COUNT(*) as times_leading
+            FROM hole_rankings
+            WHERE rank = 1
+            GROUP BY player_name
+        ),
+        final_scores AS (
+            SELECT 
+                player_name,
+                cumulative_score as final_score,
+                RANK() OVER (ORDER BY cumulative_score) as final_rank
+            FROM hole_cumulative_scores
+            WHERE hole_number = (
+                SELECT MAX(hole_number) 
+                FROM hole_cumulative_scores
+            )
+        )
+        SELECT 
+            l.player_name,
+            l.times_leading as holes_led,
+            f.final_score,
+            f.final_rank
+        FROM leader_counts l
+        JOIN final_scores f ON f.player_name = l.player_name
+        WHERE f.final_rank > 1
+        ORDER BY l.times_leading DESC
+        LIMIT 1
+    """)
+
+    result = db.session.execute(sql, {"game_code": game_code}).fetchone()
+    return result
