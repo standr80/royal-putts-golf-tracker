@@ -715,9 +715,9 @@
                     {% endif %}
 
                     {# Track Leading But Not Winning #}
+                    {% set premature_leaders = {} %}
                     {% for game in games %}
                         {% set player_scores = {} %}
-                        {% set hole_leaders = {} %}
                         {% set winner = {'name': '', 'total_putts': 999999} %}
 
                         {# First determine the winner #}
@@ -727,11 +727,11 @@
                                 {% set _ = winner.update({'name': player_game.player.name, 'total_putts': total_putts}) %}
                             {% endif %}
 
-                            {# Initialize cumulative scores for each player #}
+                            {# Initialize tracking for each player #}
                             {% set _ = player_scores.update({
                                 player_game.player.name: {
-                                    'cumulative_scores': [],
-                                    'holes_led': 0
+                                    'holes_led': 0,
+                                    'total_putts': total_putts
                                 }
                             }) %}
                         {% endfor %}
@@ -767,7 +767,6 @@
 
                                 {% if has_current_hole %}
                                     {% set _ = current_scores.update({player_game.player.name: cumulative}) %}
-                                    {% set _ = player_scores[player_game.player.name].cumulative_scores.append(cumulative) %}
                                 {% else %}
                                     {% set all_have_score = false %}
                                 {% endif %}
@@ -786,27 +785,36 @@
                             {% endif %}
                         {% endfor %}
 
-                        {# Find player who led the most but didn't win #}
-                        {% set max_led_non_winner = {'name': '', 'holes_led': 0} %}
+                        {# Record player who led the most but didn't win #}
                         {% for player_name, data in player_scores.items() %}
-                            {% if player_name != winner.name and data.holes_led > max_led_non_winner.holes_led %}
-                                {% set _ = max_led_non_winner.update({
-                                    'name': player_name,
-                                    'holes_led': data.holes_led
-                                }) %}
+                            {% if player_name != winner.name %}
+                                {% if player_name not in premature_leaders or
+                                      data.holes_led > premature_leaders[player_name].holes_led %}
+                                    {% set _ = premature_leaders.update({
+                                        player_name: {
+                                            'holes_led': data.holes_led,
+                                            'total_putts': data.total_putts
+                                        }
+                                    }) %}
+                                {% endif %}
                             {% endif %}
                         {% endfor %}
-
-                        {% if max_led_non_winner.holes_led > 0 %}
-                            <tr>
-                                <td>A Little Premature!</td>
-                                <td>The player who led the game the longest but didn't win</td>
-                                <td>
-                                    {{ max_led_non_winner.name }} (led for {{ max_led_non_winner.winner.holes_led }} holes)
-                                </td>
-                            </tr>
-                        {% endif %}
                     {% endfor %}
+
+                    {% if premature_leaders %}
+                        {% set max_led = premature_leaders.values()|map(attribute='holes_led')|max %}
+                        <tr>
+                            <td>A Little Premature!</td>
+                            <td>The player who led the game the longest but didn't win</td>
+                            <td>
+                                {% for player_name, data in premature_leaders.items() %}
+                                    {% if data.holes_led == max_led %}
+                                        {{ player_name }} (led for {{ data.holes_led }} holes)<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
