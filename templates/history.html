@@ -713,6 +713,63 @@
                             </td>
                         </tr>
                     {% endif %}
+
+                    {# Track Consecutive Under Par Holes (Streak) #}
+                    {% set player_streaks = {} %}
+
+                    {% for game in games %}
+                        {% for player_game in game.players %}
+                            {% set current_streak = {'count': 0, 'holes': []} %}
+                            {% set max_streak = {'count': 0, 'holes': []} %}
+
+                            {% for score in player_game.scores %}
+                                {% set hole = game.course.holes|sort(attribute='name')|list %}
+                                {% if score.hole_number <= hole|length %}
+                                    {% set current_hole = hole[score.hole_number - 1] %}
+                                    {% if score.strokes < current_hole.par %}
+                                        {% set _ = current_streak.update({'count': current_streak.count + 1}) %}
+                                        {% set _ = current_streak.holes.append(score.hole_number) %}
+
+                                        {% if current_streak.count > max_streak.count %}
+                                            {% set _ = max_streak.update({
+                                                'count': current_streak.count,
+                                                'holes': current_streak.holes.copy()
+                                            }) %}
+                                        {% endif %}
+                                    {% else %}
+                                        {% set _ = current_streak.update({'count': 0, 'holes': []}) %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if player_game.player.name not in player_streaks %}
+                                {% set _ = player_streaks.update({
+                                    player_game.player.name: max_streak
+                                }) %}
+                            {% else %}
+                                {% if max_streak.count > player_streaks[player_game.player.name].count %}
+                                    {% set _ = player_streaks.update({
+                                        player_game.player.name: max_streak
+                                    }) %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% if player_streaks %}
+                        {% set max_streak_count = player_streaks.values()|map(attribute='count')|max %}
+                        <tr>
+                            <td>Steaker!</td>
+                            <td>The player who went under par for the most consecutive holes</td>
+                            <td>
+                                {% for player_name, data in player_streaks.items() %}
+                                    {% if data.count == max_streak_count %}
+                                        {{ player_name }} ({{ data.count }} consecutive holes under par: holes {{ data.holes|join(', ') }})<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
