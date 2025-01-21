@@ -345,12 +345,12 @@
                     {% if player_aces %}
                         {% set max_aces = player_aces.values()|map(attribute='count')|max %}
                         <tr>
-                            <td>The ACE!</td>
-                            <td>The player with the most holes in one</td>
+                            <td>{{ get_localized_text('StatACETitle', 'The ACE!') }}</td>
+                            <td>{{ get_localized_text('StatACEDescription', 'The player with the most holes in one') }}</td>
                             <td>
                                 {% for player_name, data in player_aces.items() %}
                                     {% if data.count == max_aces %}
-                                        {{ player_name }} ({{ data.count }} holes in one)<br>
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatACEInfo', 'holes in one') }})<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
