@@ -61,7 +61,8 @@
                     {% set all_achievements = {
                         'holes_in_one': {},
                         'birdies': {},
-                        'eagles': {}
+                        'eagles': {},
+                        'albatrosses': {}
                     } %}
 
                     {% for game in games %}
@@ -69,7 +70,8 @@
                             {% set achievements = {
                                 'holes_in_one': [],
                                 'birdies': [],
-                                'eagles': []
+                                'eagles': [],
+                                'albatrosses': []
                             } %}
 
                             {% for score in player_game.scores %}
@@ -87,6 +89,10 @@
 
                                     {% if score.strokes == current_hole.par - 2 %}
                                         {% set _ = achievements.eagles.append(score.hole_number) %}
+                                    {% endif %}
+
+                                    {% if score.strokes == current_hole.par - 3 %}
+                                        {% set _ = achievements.albatrosses.append(score.hole_number) %}
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -115,6 +121,15 @@
                                     player_game.player.name: {
                                         'count': achievements.eagles|length,
                                         'holes': achievements.eagles|sort
+                                    }
+                                }) %}
+                            {% endif %}
+
+                            {% if achievements.albatrosses %}
+                                {% set _ = all_achievements.albatrosses.update({
+                                    player_game.player.name: {
+                                        'count': achievements.albatrosses|length,
+                                        'holes': achievements.albatrosses|sort
                                     }
                                 }) %}
                             {% endif %}
@@ -156,6 +171,19 @@
                                     <td>Most Eagles</td>
                                     <td>{{ player_name }}</td>
                                     <td>{{ player_name }} scored {{ data.count }} eagles on holes {{ data.holes|join(', ') }}!</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if all_achievements.albatrosses %}
+                        {% set max_albatrosses = all_achievements.albatrosses.values()|map(attribute='count')|max %}
+                        {% for player_name, data in all_achievements.albatrosses.items() %}
+                            {% if data.count == max_albatrosses %}
+                                <tr>
+                                    <td>Most Albatrosses</td>
+                                    <td>{{ player_name }}</td>
+                                    <td>{{ player_name }} scored {{ data.count }} albatrosses on holes {{ data.holes|join(', ') }}!</td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
