@@ -617,17 +617,6 @@
                         </tr>
                     {% endif %}
 
-                    {# Display Peaked Player #}
-                    {% if peaked_data %}
-                        <tr>
-                            <td>Peaked too Soon!</td>
-                            <td>The player who led the game the longest but didn't win</td>
-                            <td>
-                                {{ peaked_data.player_name }} (Led for {{ peaked_data.holes_led }} holes but finished {{ peaked_data.final_rank }}th)
-                            </td>
-                        </tr>
-                    {% endif %}
-
                     {# Track Maximum Strokes on a Single Hole #}
                     {% set player_max_strokes = {} %}
 
@@ -730,7 +719,8 @@
 
         {% else %}
         <div class="alert alert-info">
-            No games found.
+            <i data-feather="info"></i> No games recorded yet. 
+            <a href="{{ url_for('game') }}" class="alert-link">Start a new game</a>
         </div>
         {% endif %}
     </div>
