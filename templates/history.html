@@ -302,7 +302,7 @@
                             <td>
                                 {% for player_name, data in player_over_par_counts.items() %}
                                     {% if data.count == max_over_par %}
-                                        {{ player_name }} ({{ data.count }} holes over par)<br>
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatBogeyMasterInfo', 'holes over par') }})<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
