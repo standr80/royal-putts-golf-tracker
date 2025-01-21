@@ -763,12 +763,13 @@
                     {% if player_streaks %}
                         {% set max_streak_count = player_streaks.values()|map(attribute='count')|max %}
                         <tr>
-                            <td>Steaker!</td>
-                            <td>The player who went underpar for the most consecutive holes</td>
+                            <td>{{ get_localized_text('StatStreakerTitle', 'Steaker!') }}</td>
+                            <td>{{ get_localized_text('StatStreakerDescription', 'The player who went under par for the most consecutive holes') }}</td>
                             <td>
                                 {% for player_name, data in player_streaks.items() %}
                                     {% if data.count == max_streak_count %}
-                                        {{ player_name }} ({{ data.count }} consecutive holes under par: holes {{ data.holes|join(', ') }})<br>                                    {% endif %}
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatStreakerInfo', 'consecutive holes under par: holes') }} {{ data.holes|join(', ') }})<br>
+                                    {% endif %}
                                 {% endfor %}
                             </td>
                         </tr>
