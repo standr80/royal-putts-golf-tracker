@@ -715,95 +715,76 @@
                     {% endif %}
 
                     {# Track Leading But Not Winning #}
-                    {% set player_leads = {} %}
+                    {% set premature_leader_stats = None %}
                     {% for game in games %}
-                        {% set hole_scores = {} %}
-                        {% set final_winner = {'name': '', 'total_putts': 999999} %}
+                        {% set leading_players = {} %}
+                        {% set final_winner = None %}
 
                         {# First determine the winner #}
                         {% for player_game in game.players %}
                             {% set total_putts = player_game.scores|map(attribute='strokes')|sum %}
-                            {% if total_putts < final_winner.total_putts %}
-                                {% set _ = final_winner.update({'name': player_game.player.name, 'total_putts': total_putts}) %}
+                            {% if not final_winner or total_putts < final_winner.total_putts %}
+                                {% set final_winner = {'name': player_game.player.name, 'total_putts': total_putts} %}
                             {% endif %}
-
-                            {# Initialize scoring tracking #}
-                            {% set _ = hole_scores.update({player_game.player.name: {}}) %}
-                            {% set running_total = 0 %}
-                            {% for score in player_game.scores|sort(attribute='hole_number') %}
-                                {% set running_total = running_total + score.strokes %}
-                                {% set _ = hole_scores[player_game.player.name].update({score.hole_number: running_total}) %}
-                            {% endfor %}
                         {% endfor %}
 
-                        {# Find max hole number with scores #}
-                        {% set max_hole = 0 %}
-                        {% for player_game in game.players %}
-                            {% for score in player_game.scores %}
-                                {% if score.hole_number > max_hole %}
-                                    {% set max_hole = score.hole_number %}
-                                {% endif %}
-                            {% endfor %}
-                        {% endfor %}
+                        {# For each hole, track who was leading #}
+                        {% for hole in range(1, 19) %}  {# Max 18 holes in golf #}
+                            {% set hole_totals = [] %}
 
-                        {# Track who led after each hole #}
-                        {% for hole_number in range(1, max_hole + 1) %}
-                            {% set all_have_score = true %}
-                            {% set current_scores = {} %}
-
-                            {# Collect scores for this hole #}
-                            {% for player_name, scores in hole_scores.items() %}
-                                {% if hole_number in scores %}
-                                    {% set _ = current_scores.update({player_name: scores[hole_number]}) %}
-                                {% else %}
-                                    {% set all_have_score = false %}
+                            {# Get cumulative scores up to this hole #}
+                            {% for player_game in game.players %}
+                                {% set cumulative = {'player': player_game.player.name, 'total': 0} %}
+                                {% for score in player_game.scores|sort(attribute='hole_number') %}
+                                    {% if score.hole_number <= hole %}
+                                        {% set cumulative = cumulative|update({'total': cumulative.total + score.strokes}) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if player_game.scores|selectattr('hole_number', 'le', hole)|list|length == hole %}
+                                    {% set _ = hole_totals.append(cumulative) %}
                                 {% endif %}
                             {% endfor %}
 
-                            {# If all players have a score, determine leader(s) #}
-                            {% if all_have_score and current_scores %}
-                                {% set min_score = current_scores.values()|min %}
-                                {% for player_name, score in current_scores.items() %}
-                                    {% if score == min_score %}
-                                        {% if player_name not in player_leads %}
-                                            {% set _ = player_leads.update({
-                                                player_name: {
-                                                    'holes_led': 1,
-                                                    'game_code': game.game_code
-                                                }
-                                            }) %}
+                            {# If all players have scores for this hole, determine leader #}
+                            {% if hole_totals|length == game.players|length %}
+                                {% set min_score = hole_totals|map(attribute='total')|min %}
+                                {% for score in hole_totals %}
+                                    {% if score.total == min_score %}
+                                        {% if score.player not in leading_players %}
+                                            {% set _ = leading_players.update({score.player: 1}) %}
                                         {% else %}
-                                            {% set _ = player_leads[player_name].update({
-                                                'holes_led': player_leads[player_name].holes_led + 1,
-                                                'game_code': game.game_code
+                                            {% set _ = leading_players.update({
+                                                score.player: leading_players[score.player] + 1
                                             }) %}
                                         {% endif %}
                                     {% endif %}
                                 {% endfor %}
                             {% endif %}
                         {% endfor %}
-                    {% endfor %}
 
-                    {# Display the player who led the most but didn't win #}
-                    {% if player_leads %}
-                        {% set max_holes_led = 0 %}
-                        {% set premature_leader = '' %}
-                        {% set leader_game = '' %}
-                        {% for player_name, data in player_leads.items() %}
-                            {% if player_name != final_winner.name and data.holes_led > max_holes_led %}
-                                {% set max_holes_led = data.holes_led %}
-                                {% set premature_leader = player_name %}
-                                {% set leader_game = data.game_code %}
+                        {# Record the player who led most but didn't win #}
+                        {% for player, holes_led in leading_players.items() %}
+                            {% if player != final_winner.name %}
+                                {% if not premature_leader_stats or holes_led > premature_leader_stats.holes_led %}
+                                    {% set premature_leader_stats = {
+                                        'name': player,
+                                        'holes_led': holes_led,
+                                        'game_code': game.game_code
+                                    } %}
+                                {% endif %}
                             {% endif %}
                         {% endfor %}
+                    {% endfor %}
 
-                        {% if premature_leader %}
-                            <tr>
-                                <td>A Little Premature!</td>
-                                <td>The player who led the game the longest but didn't win</td>
-                                <td>{{ premature_leader }} (led for {{ max_holes_led }} holes in game {{ leader_game }})</td>
-                            </tr>
-                        {% endif %}
+                    {% if premature_leader_stats %}
+                        <tr>
+                            <td>A Little Premature!</td>
+                            <td>The player who led the game the longest but didn't win</td>
+                            <td>
+                                {{ premature_leader_stats.name }} 
+                                (led for {{ premature_leader_stats.holes_led }} holes in game {{ premature_leader_stats.game_code }})
+                            </td>
+                        </tr>
                     {% endif %}
 
                 </tbody>
