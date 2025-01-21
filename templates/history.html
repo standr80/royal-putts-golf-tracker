@@ -204,17 +204,19 @@
                         {% endfor %}
                     {% endif %}
 
-                    {% if all_achievements.albatrosses %}
-                        {% set max_albatrosses = all_achievements.albatrosses.values()|map(attribute='count')|max %}
-                        {% for player_name, data in all_achievements.albatrosses.items() %}
-                            {% if data.count == max_albatrosses %}
-                                <tr>
-                                    <td>Most Albatrosses</td>
-                                    <td>{{ player_name }}</td>
-                                    <td>{{ player_name }} scored {{ data.count }} albatrosses on holes {{ data.holes|join(', ') }}!</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
+                    {% if player_albatrosses %}
+                        {% set max_albatrosses = player_albatrosses.values()|map(attribute='count')|max %}
+                        <tr>
+                            <td>{{ get_localized_text('StatAlbertTitle', 'Uncle Albert') }}</td>
+                            <td>{{ get_localized_text('StatAlbertDescription', 'The player with the most holes putted with an Albatross (three under par)') }}</td>
+                            <td>
+                                {% for player_name, data in player_albatrosses.items() %}
+                                    {% if data.count == max_albatrosses %}
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatAlbertInfo', 'albatrosses') }})<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
                     {% endif %}
 
                     {% if all_achievements.condors %}
@@ -553,12 +555,12 @@
                     {% if player_albatrosses %}
                         {% set max_albatrosses = player_albatrosses.values()|map(attribute='count')|max %}
                         <tr>
-                            <td>Uncle Albert</td>
-                            <td>The player with the most holes putted with an Albatross (three under par)</td>
+                            <td>{{ get_localized_text('StatAlbertTitle', 'Uncle Albert') }}</td>
+                            <td>{{ get_localized_text('StatAlbertDescription', 'The player with the most holes putted with an Albatross (three under par)') }}</td>
                             <td>
                                 {% for player_name, data in player_albatrosses.items() %}
                                     {% if data.count == max_albatrosses %}
-                                        {{ player_name }} ({{ data.count }} albatrosses)<br>
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatAlbertInfo', 'albatrosses') }})<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
