@@ -46,211 +46,7 @@
             </table>
         </div>
 
-        <!-- Outstanding Achievements Section -->
-        <h3 class="mt-5 mb-4">{{ get_localized_text('OutstandingAchievementsTableTitle', 'Outstanding Achievements') }}</h3>
-        <div class="table-responsive">
-            <table class="table table-dark table-hover">
-                <thead>
-                    <tr>
-                        <th>{{ get_localized_text('OutstandingAchievementsTableCol1', 'Achievement') }}</th>
-                        <th>{{ get_localized_text('OutstandingAchievementsTableCol2', 'Player') }}</th>
-                        <th>{{ get_localized_text('OutstandingAchievementsTableCol3', 'Details') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% set all_achievements = {
-                        'holes_in_one': {},
-                        'birdies': {},
-                        'eagles': {},
-                        'albatrosses': {},
-                        'condors': {},
-                        'holes_in_par': {}
-                    } %}
-
-                    {% for game in games %}
-                        {% for player_game in game.players %}
-                            {% set achievements = {
-                                'holes_in_one': [],
-                                'birdies': [],
-                                'eagles': [],
-                                'albatrosses': [],
-                                'condors': [],
-                                'holes_in_par': []
-                            } %}
-
-                            {% for score in player_game.scores %}
-                                {% set hole = game.course.holes|sort(attribute='name')|list %}
-                                {% if score.hole_number <= hole|length %}
-                                    {% set current_hole = hole[score.hole_number - 1] %}
-
-                                    {% if score.strokes == 1 %}
-                                        {% set _ = achievements.holes_in_one.append(score.hole_number) %}
-                                    {% endif %}
-
-                                    {% if score.strokes == current_hole.par - 1 %}
-                                        {% set _ = achievements.birdies.append(score.hole_number) %}
-                                    {% endif %}
-
-                                    {% if score.strokes == current_hole.par - 2 %}
-                                        {% set _ = achievements.eagles.append(score.hole_number) %}
-                                    {% endif %}
-
-                                    {% if score.strokes == current_hole.par - 3 %}
-                                        {% set _ = achievements.albatrosses.append(score.hole_number) %}
-                                    {% endif %}
-
-                                    {% if score.strokes == current_hole.par - 4 %}
-                                        {% set _ = achievements.condors.append(score.hole_number) %}
-                                    {% endif %}
-
-                                    {% if score.strokes == current_hole.par %}
-                                        {% set _ = achievements.holes_in_par.append(score.hole_number) %}
-                                    {% endif %}
-                                {% endif %}
-                            {% endfor %}
-
-                            {% if achievements.holes_in_one %}
-                                {% set _ = all_achievements.holes_in_one.update({
-                                    player_game.player.name: {
-                                        'count': achievements.holes_in_one|length,
-                                        'holes': achievements.holes_in_one|sort
-                                    }
-                                }) %}
-                            {% endif %}
-
-                            {% if achievements.birdies %}
-                                {% set _ = all_achievements.birdies.update({
-                                    player_game.player.name: {
-                                        'count': achievements.birdies|length,
-                                        'holes': achievements.birdies|sort
-                                    }
-                                }) %}
-                            {% endif %}
-
-                            {% if achievements.eagles %}
-                                {% set _ = all_achievements.eagles.update({
-                                    player_game.player.name: {
-                                        'count': achievements.eagles|length,
-                                        'holes': achievements.eagles|sort
-                                    }
-                                }) %}
-                            {% endif %}
-
-                            {% if achievements.albatrosses %}
-                                {% set _ = all_achievements.albatrosses.update({
-                                    player_game.player.name: {
-                                        'count': achievements.albatrosses|length,
-                                        'holes': achievements.albatrosses|sort
-                                    }
-                                }) %}
-                            {% endif %}
-
-                            {% if achievements.condors %}
-                                {% set _ = all_achievements.condors.update({
-                                    player_game.player.name: {
-                                        'count': achievements.condors|length,
-                                        'holes': achievements.condors|sort
-                                    }
-                                }) %}
-                            {% endif %}
-
-                            {% if achievements.holes_in_par %}
-                                {% set _ = all_achievements.holes_in_par.update({
-                                    player_game.player.name: {
-                                        'count': achievements.holes_in_par|length,
-                                        'holes': achievements.holes_in_par|sort
-                                    }
-                                }) %}
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
-
-                    {% if all_achievements.holes_in_one %}
-                        {% set max_holes_in_one = all_achievements.holes_in_one.values()|map(attribute='count')|max %}
-                        {% for player_name, data in all_achievements.holes_in_one.items() %}
-                            {% if data.count == max_holes_in_one %}
-                                <tr>
-                                    <td>Most Holes in One</td>
-                                    <td>{{ player_name }}</td>
-                                    <td>{{ player_name }} scored {{ data.count }} holes in one on holes {{ data.holes|join(', ') }}!</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-
-                    {% if all_achievements.birdies %}
-                        {% set max_birdies = all_achievements.birdies.values()|map(attribute='count')|max %}
-                        {% for player_name, data in all_achievements.birdies.items() %}
-                            {% if data.count == max_birdies %}
-                                <tr>
-                                    <td>Most Birdies</td>
-                                    <td>{{ player_name }}</td>
-                                    <td>{{ player_name }} scored {{ data.count }} birdies on holes {{ data.holes|join(', ') }}!</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-
-                    {% if all_achievements.eagles %}
-                        {% set max_eagles = all_achievements.eagles.values()|map(attribute='count')|max %}
-                        {% for player_name, data in all_achievements.eagles.items() %}
-                            {% if data.count == max_eagles %}
-                                <tr>
-                                    <td>Most Eagles</td>
-                                    <td>{{ player_name }}</td>
-                                    <td>{{ player_name }} scored {{ data.count }} eagles on holes {{ data.holes|join(', ') }}!</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-
-                    {% if player_albatrosses %}
-                        {% set max_albatrosses = player_albatrosses.values()|map(attribute='count')|max %}
-                        <tr>
-                            <td>{{ get_localized_text('StatAlbertTitle', 'Uncle Albert') }}</td>
-                            <td>{{ get_localized_text('StatAlbertDescription', 'The player with the most holes putted with an Albatross (three under par)') }}</td>
-                            <td>
-                                {% for player_name, data in player_albatrosses.items() %}
-                                    {% if data.count == max_albatrosses %}
-                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatAlbertInfo', 'albatrosses') }})<br>
-                                    {% endif %}
-                                {% endfor %}
-                            </td>
-                        </tr>
-                    {% endif %}
-
-                    {% if player_condors %}
-                        {% set max_condors = player_condors.values()|map(attribute='count')|max %}
-                        <tr>
-                            <td>{{ get_localized_text('StatCondorTitle', 'Ah Condor...') }}</td>
-                            <td>{{ get_localized_text('StatCondorDescription', 'The player with the most holes putted with a Condor (four under par)') }}</td>
-                            <td>
-                                {% for player_name, data in player_condors.items() %}
-                                    {% if data.count == max_condors %}
-                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatCondorInfo', 'condors') }})<br>
-                                    {% endif %}
-                                {% endfor %}
-                            </td>
-                        </tr>
-                    {% endif %}
-
-                    {% if all_achievements.holes_in_par %}
-                        {% set max_holes_in_par = all_achievements.holes_in_par.values()|map(attribute='count')|max %}
-                        {% for player_name, data in all_achievements.holes_in_par.items() %}
-                            {% if data.count == max_holes_in_par %}
-                                <tr>
-                                    <td>Most Holes in Par</td>
-                                    <td>{{ player_name }}</td>
-                                    <td>{{ player_name }} scored {{ data.count }} holes in par on holes {{ data.holes|join(', ') }}!</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Player Stats - the Highs and Lows Section -->
+        <!-- Player Stats Section -->
         <h3 class="mt-5 mb-4">{{ get_localized_text('PlayerStatsTitle', 'Player Stats - the Highs and Lows!') }}</h3>
         <div class="table-responsive">
             <table class="table table-dark table-hover">
@@ -313,19 +109,15 @@
                         </tr>
                     {% endif %}
 
-                    {# Track Holes in One #}
                     {% set player_aces = {} %}
-
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set ace_holes = [] %}
-
                             {% for score in player_game.scores %}
                                 {% if score.strokes == 1 %}
                                     {% set _ = ace_holes.append(score.hole_number) %}
                                 {% endif %}
                             {% endfor %}
-
                             {% if player_game.player.name not in player_aces %}
                                 {% set _ = player_aces.update({
                                     player_game.player.name: {
@@ -345,7 +137,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
-
                     {% if player_aces %}
                         {% set max_aces = player_aces.values()|map(attribute='count')|max %}
                         <tr>
@@ -360,14 +151,10 @@
                             </td>
                         </tr>
                     {% endif %}
-
-                    {# Track Holes in Par #}
                     {% set player_pars = {} %}
-
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set par_holes = [] %}
-
                             {% for score in player_game.scores %}
                                 {% set hole = game.course.holes|sort(attribute='name')|list %}
                                 {% if score.hole_number <= hole|length %}
@@ -377,7 +164,6 @@
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
-
                             {% if player_game.player.name not in player_pars %}
                                 {% set _ = player_pars.update({
                                     player_game.player.name: {
@@ -397,7 +183,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
-
                     {% if player_pars %}
                         {% set max_pars = player_pars.values()|map(attribute='count')|max %}
                         <tr>
@@ -412,14 +197,10 @@
                             </td>
                         </tr>
                     {% endif %}
-
-                    {# Track Birdies #}
                     {% set player_birdies = {} %}
-
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set birdie_holes = [] %}
-
                             {% for score in player_game.scores %}
                                 {% set hole = game.course.holes|sort(attribute='name')|list %}
                                 {% if score.hole_number <= hole|length %}
@@ -429,7 +210,6 @@
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
-
                             {% if player_game.player.name not in player_birdies %}
                                 {% set _ = player_birdies.update({
                                     player_game.player.name: {
@@ -449,7 +229,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
-
                     {% if player_birdies %}
                         {% set max_birdies = player_birdies.values()|map(attribute='count')|max %}
                         <tr>
@@ -464,14 +243,10 @@
                             </td>
                         </tr>
                     {% endif %}
-
-                    {# Track Eagles #}
                     {% set player_eagles = {} %}
-
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set eagle_holes = [] %}
-
                             {% for score in player_game.scores %}
                                 {% set hole = game.course.holes|sort(attribute='name')|list %}
                                 {% if score.hole_number <= hole|length %}
@@ -481,7 +256,6 @@
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
-
                             {% if player_game.player.name not in player_eagles %}
                                 {% set _ = player_eagles.update({
                                     player_game.player.name: {
@@ -501,7 +275,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
-
                     {% if player_eagles %}
                         {% set max_eagles = player_eagles.values()|map(attribute='count')|max %}
                         <tr>
@@ -516,14 +289,10 @@
                             </td>
                         </tr>
                     {% endif %}
-
-                    {# Track Albatrosses #}
                     {% set player_albatrosses = {} %}
-
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set albatross_holes = [] %}
-
                             {% for score in player_game.scores %}
                                 {% set hole = game.course.holes|sort(attribute='name')|list %}
                                 {% if score.hole_number <= hole|length %}
@@ -533,7 +302,6 @@
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
-
                             {% if player_game.player.name not in player_albatrosses %}
                                 {% set _ = player_albatrosses.update({
                                     player_game.player.name: {
@@ -553,7 +321,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
-
                     {% if player_albatrosses %}
                         {% set max_albatrosses = player_albatrosses.values()|map(attribute='count')|max %}
                         <tr>
@@ -568,14 +335,10 @@
                             </td>
                         </tr>
                     {% endif %}
-
-                    {# Track Condors #}
                     {% set player_condors = {} %}
-
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set condor_holes = [] %}
-
                             {% for score in player_game.scores %}
                                 {% set hole = game.course.holes|sort(attribute='name')|list %}
                                 {% if score.hole_number <= hole|length %}
@@ -585,7 +348,6 @@
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
-
                             {% if player_game.player.name not in player_condors %}
                                 {% set _ = player_condors.update({
                                     player_game.player.name: {
@@ -605,7 +367,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
-
                     {% if player_condors %}
                         {% set max_condors = player_condors.values()|map(attribute='count')|max %}
                         <tr>
@@ -620,14 +381,10 @@
                             </td>
                         </tr>
                     {% endif %}
-
-                    {# Track Maximum Strokes on a Single Hole #}
                     {% set player_max_strokes = {} %}
-
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set max_stroke_hole = {'strokes': 0, 'hole': 0} %}
-
                             {% for score in player_game.scores %}
                                 {% if score.strokes > max_stroke_hole.strokes %}
                                     {% set _ = max_stroke_hole.update({
@@ -636,7 +393,6 @@
                                     }) %}
                                 {% endif %}
                             {% endfor %}
-
                             {% if player_game.player.name not in player_max_strokes %}
                                 {% set _ = player_max_strokes.update({
                                     player_game.player.name: max_stroke_hole
@@ -650,7 +406,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
-
                     {% if player_max_strokes %}
                         {% set overall_max_strokes = player_max_strokes.values()|map(attribute='strokes')|max %}
                         <tr>
@@ -665,14 +420,10 @@
                             </td>
                         </tr>
                     {% endif %}
-
-                    {# Track Under Par Holes #}
                     {% set player_under_par = {} %}
-
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set under_par_holes = [] %}
-
                             {% for score in player_game.scores %}
                                 {% set hole = game.course.holes|sort(attribute='name')|list %}
                                 {% if score.hole_number <= hole|length %}
@@ -682,7 +433,6 @@
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
-
                             {% if player_game.player.name not in player_under_par %}
                                 {% set _ = player_under_par.update({
                                     player_game.player.name: {
@@ -702,7 +452,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
-
                     {% if player_under_par %}
                         {% set max_under_par = player_under_par.values()|map(attribute='count')|max %}
                         <tr>
@@ -717,15 +466,11 @@
                             </td>
                         </tr>
                     {% endif %}
-
-                    {# Track Consecutive Under Par Holes (Streak) #}
                     {% set player_streaks = {} %}
-
                     {% for game in games %}
                         {% for player_game in game.players %}
                             {% set current_streak = {'count': 0, 'holes': []} %}
                             {% set max_streak = {'count': 0, 'holes': []} %}
-
                             {% for score in player_game.scores %}
                                 {% set hole = game.course.holes|sort(attribute='name')|list %}
                                 {% if score.hole_number <= hole|length %}
@@ -733,7 +478,6 @@
                                     {% if score.strokes < current_hole.par %}
                                         {% set _ = current_streak.update({'count': current_streak.count + 1}) %}
                                         {% set _ = current_streak.holes.append(score.hole_number) %}
-
                                         {% if current_streak.count > max_streak.count %}
                                             {% set _ = max_streak.update({
                                                 'count': current_streak.count,
@@ -745,7 +489,6 @@
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
-
                             {% if player_game.player.name not in player_streaks %}
                                 {% set _ = player_streaks.update({
                                     player_game.player.name: max_streak
@@ -759,7 +502,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
-
                     {% if player_streaks %}
                         {% set max_streak_count = player_streaks.values()|map(attribute='count')|max %}
                         <tr>
@@ -777,11 +519,9 @@
                 </tbody>
             </table>
         </div>
-
         {% else %}
         <div class="alert alert-info">
-            <i data-feather="info"></i> No games recorded yet. 
-            <a href="{{ url_for('game') }}" class="alert-link">Start a new game</a>
+            <i data-feather="info"></i> No game history available yet.
         </div>
         {% endif %}
     </div>
