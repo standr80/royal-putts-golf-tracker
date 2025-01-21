@@ -356,6 +356,58 @@
                             </td>
                         </tr>
                     {% endif %}
+
+                    {# Track Holes in Par #}
+                    {% set player_pars = {} %}
+
+                    {% for game in games %}
+                        {% for player_game in game.players %}
+                            {% set par_holes = [] %}
+
+                            {% for score in player_game.scores %}
+                                {% set hole = game.course.holes|sort(attribute='name')|list %}
+                                {% if score.hole_number <= hole|length %}
+                                    {% set current_hole = hole[score.hole_number - 1] %}
+                                    {% if score.strokes == current_hole.par %}
+                                        {% set _ = par_holes.append(score.hole_number) %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if player_game.player.name not in player_pars %}
+                                {% set _ = player_pars.update({
+                                    player_game.player.name: {
+                                        'count': par_holes|length,
+                                        'holes': par_holes|sort
+                                    }
+                                }) %}
+                            {% else %}
+                                {% set existing_count = player_pars[player_game.player.name]['count'] %}
+                                {% set existing_holes = player_pars[player_game.player.name]['holes']|list %}
+                                {% set _ = player_pars.update({
+                                    player_game.player.name: {
+                                        'count': existing_count + par_holes|length,
+                                        'holes': (existing_holes + par_holes)|sort|unique|list
+                                    }
+                                }) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% if player_pars %}
+                        {% set max_pars = player_pars.values()|map(attribute='count')|max %}
+                        <tr>
+                            <td>Par-boiled!</td>
+                            <td>The player with the most holes putted in par</td>
+                            <td>
+                                {% for player_name, data in player_pars.items() %}
+                                    {% if data.count == max_pars %}
+                                        {{ player_name }} ({{ data.count }} holes in par)<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
