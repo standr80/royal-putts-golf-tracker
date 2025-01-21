@@ -298,7 +298,7 @@
                         {% set max_over_par = player_over_par_counts.values()|map(attribute='count')|max %}
                         <tr>
                             <td>{{ get_localized_text('StatBogeyMasterTitle', 'The Bogey Master') }}</td>
-                            <td>The player with the most holes played over par</td>
+                            <td>{{ get_localized_text('StatBogeyMasterDescription', 'The player with the most holes played over par') }}</td>
                             <td>
                                 {% for player_name, data in player_over_par_counts.items() %}
                                     {% if data.count == max_over_par %}
