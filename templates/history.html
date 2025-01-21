@@ -260,7 +260,50 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Stats will be added here -->
+                    {% set player_over_par_counts = {} %}
+
+                    {% for game in games %}
+                        {% for player_game in game.players %}
+                            {% set over_par_count = 0 %}
+
+                            {% for score in player_game.scores %}
+                                {% set hole = game.course.holes|sort(attribute='name')|list %}
+                                {% if score.hole_number <= hole|length %}
+                                    {% set current_hole = hole[score.hole_number - 1] %}
+                                    {% if score.strokes > current_hole.par %}
+                                        {% set over_par_count = over_par_count + 1 %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if over_par_count > 0 %}
+                                {% if player_game.player.name in player_over_par_counts %}
+                                    {% set _ = player_over_par_counts.update({
+                                        player_game.player.name: player_over_par_counts[player_game.player.name] + over_par_count
+                                    }) %}
+                                {% else %}
+                                    {% set _ = player_over_par_counts.update({
+                                        player_game.player.name: over_par_count
+                                    }) %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% if player_over_par_counts %}
+                        {% set max_over_par = player_over_par_counts.values()|list|max %}
+                        <tr>
+                            <td>The Bogey Master</td>
+                            <td>The player with the most holes played over par</td>
+                            <td>
+                                {% for player_name, count in player_over_par_counts.items() %}
+                                    {% if count == max_over_par %}
+                                        {{ player_name }} ({{ count }} holes over par)<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
