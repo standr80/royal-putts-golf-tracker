@@ -302,7 +302,7 @@
                             <td>
                                 {% for player_name, data in player_over_par_counts.items() %}
                                     {% if data.count == max_over_par %}
-                                        {{ player_name }} ({{ data.count }} holes over par: {{ data.holes|join(', ') }})<br>
+                                        {{ player_name }} ({{ data.count }} holes over par)<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
@@ -350,7 +350,7 @@
                             <td>
                                 {% for player_name, data in player_aces.items() %}
                                     {% if data.count == max_aces %}
-                                        {{ player_name }} ({{ data.count }} holes in one: {{ data.holes|join(', ') }})<br>
+                                        {{ player_name }} ({{ data.count }} holes in one)<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
