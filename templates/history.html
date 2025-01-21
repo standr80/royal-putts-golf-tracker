@@ -501,12 +501,12 @@
                     {% if player_eagles %}
                         {% set max_eagles = player_eagles.values()|map(attribute='count')|max %}
                         <tr>
-                            <td>Eagles Away!</td>
-                            <td>The player with the most holes putted with an Eagle (two under par)</td>
+                            <td>{{ get_localized_text('StatEaglesTitle', 'Eagles Away!') }}</td>
+                            <td>{{ get_localized_text('StatEaglesDescription', 'The player with the most holes putted with an Eagle (two under par)') }}</td>
                             <td>
                                 {% for player_name, data in player_eagles.items() %}
                                     {% if data.count == max_eagles %}
-                                        {{ player_name }} ({{ data.count }} eagles)<br>
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatEaglesInfo', 'eagles') }})<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
