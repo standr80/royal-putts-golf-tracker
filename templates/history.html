@@ -242,6 +242,57 @@
                             {% endif %}
                         {% endfor %}
                     {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Player Stats - the Highs and Lows Section -->
+        <h3 class="mt-5 mb-4">Player Stats - the Highs and Lows!</h3>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th>Stat</th>
+                        <th>Description</th>
+                        <th>Player</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set player_over_par_counts = {} %}
+
+                    {% for game in games %}
+                        {% for player_game in game.players %}
+                            {% set over_par_holes = [] %}
+
+                            {% for score in player_game.scores %}
+                                {% set hole = game.course.holes|sort(attribute='name')|list %}
+                                {% if score.hole_number <= hole|length %}
+                                    {% set current_hole = hole[score.hole_number - 1] %}
+                                    {% if score.strokes > current_hole.par %}
+                                        {% set _ = over_par_holes.append(score.hole_number) %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if player_game.player.name not in player_over_par_counts %}
+                                {% set _ = player_over_par_counts.update({
+                                    player_game.player.name: {
+                                        'count': over_par_holes|length,
+                                        'holes': over_par_holes|sort
+                                    }
+                                }) %}
+                            {% else %}
+                                {% set existing_count = player_over_par_counts[player_game.player.name]['count'] %}
+                                {% set existing_holes = player_over_par_counts[player_game.player.name]['holes'] %}
+                                {% set _ = player_over_par_counts.update({
+                                    player_game.player.name: {
+                                        'count': existing_count + over_par_holes|length,
+                                        'holes': (existing_holes + over_par_holes)|sort|unique
+                                    }
+                                }) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
 
                     {% if player_over_par_counts %}
                         {% set max_over_par = player_over_par_counts.values()|map(attribute='count')|max %}
@@ -252,21 +303,6 @@
                                 {% for player_name, data in player_over_par_counts.items() %}
                                     {% if data.count == max_over_par %}
                                         {{ player_name }} ({{ data.count }} holes over par: {{ data.holes|join(', ') }})<br>
-                                    {% endif %}
-                                {% endfor %}
-                            </td>
-                        </tr>
-                    {% endif %}
-
-                    {% if all_achievements.holes_in_one %}
-                        {% set max_holes_in_one = all_achievements.holes_in_one.values()|map(attribute='count')|max %}
-                        <tr>
-                            <td>The ACE!</td>
-                            <td>The player with the most holes in one</td>
-                            <td>
-                                {% for player_name, data in all_achievements.holes_in_one.items() %}
-                                    {% if data.count == max_holes_in_one %}
-                                        {{ player_name }} ({{ data.count }} holes in one on holes {{ data.holes|join(', ') }})<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
