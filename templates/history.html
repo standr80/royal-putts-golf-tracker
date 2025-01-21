@@ -367,15 +367,15 @@
                         </tr>
                     {% endif %}
 
-                    {% if player_worst_hole %}
-                        {% set max_strokes = player_worst_hole.values()|map(attribute='count')|max %}
+                    {% if player_max_strokes %}
+                        {% set overall_max_strokes = player_max_strokes.values()|map(attribute='strokes')|max %}
                         <tr>
                             <td>{{ get_localized_text('StatMrBeanTitle', 'Mr Bean') }}</td>
                             <td>{{ get_localized_text('StatMrBeanDescription', 'The player with the most strokes on a single hole') }}</td>
                             <td>
-                                {% for player_name, data in player_worst_hole.items() %}
-                                    {% if data.count == max_strokes %}
-                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatMrBeanInfo', 'putts on hole') }} {{ data.holes|join(', ') }})<br>
+                                {% for player_name, data in player_max_strokes.items() %}
+                                    {% if data.strokes == overall_max_strokes %}
+                                        {{ player_name }} ({{ data.strokes }} {{ get_localized_text('StatMrBeanInfo', 'putts on hole') }} {{ data.hole }})<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
