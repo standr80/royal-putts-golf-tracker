@@ -1,6 +1,68 @@
 document.addEventListener('DOMContentLoaded', function() {
     let playerCount = 1;
 
+    // Function to update leaderboard
+    function updateLeaderboard() {
+        const leaderboardRows = Array.from(document.querySelectorAll('.leaderboard-row'));
+
+        // Sort rows based on scores
+        leaderboardRows.sort((a, b) => {
+            const scoreA = parseInt(a.querySelector('.score').textContent);
+            const scoreB = parseInt(b.querySelector('.score').textContent);
+            return scoreA - scoreB;
+        });
+
+        // Update ranks and apply animations
+        leaderboardRows.forEach((row, index) => {
+            const currentRank = parseInt(row.querySelector('.rank').textContent);
+            const newRank = index + 1;
+
+            // Add transition class for smooth animation
+            row.style.transition = 'transform 0.5s ease-in-out';
+
+            // Update rank
+            row.querySelector('.rank').textContent = newRank;
+
+            // Calculate and apply the transform
+            const rowHeight = row.offsetHeight;
+            const movement = (newRank - currentRank) * rowHeight;
+            row.style.transform = `translateY(${movement}px)`;
+
+            // Reset transform after animation
+            setTimeout(() => {
+                row.style.transition = 'none';
+                row.style.transform = 'none';
+                // Reorder in DOM
+                row.parentNode.appendChild(row);
+            }, 500);
+        });
+    }
+
+    // Handle score input changes
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('score-input')) {
+            const value = e.target.value;
+            const playerGameId = e.target.dataset.playerGameId;
+
+            if (value && !isNaN(value) && value >= 1 && value <= 20) {
+                // Update the score in the leaderboard
+                const leaderboardRow = document.querySelector(`.leaderboard-row[data-player-id="${playerGameId}"]`);
+                if (leaderboardRow) {
+                    let totalScore = 0;
+                    document.querySelectorAll(`[data-player-game-id="${playerGameId}"]`).forEach(input => {
+                        if (input.value) {
+                            totalScore += parseInt(input.value);
+                        }
+                    });
+                    leaderboardRow.querySelector('.score').textContent = totalScore;
+
+                    // Update leaderboard positions
+                    updateLeaderboard();
+                }
+            }
+        }
+    });
+
     // Copy game code to clipboard
     document.getElementById('copy-game-code')?.addEventListener('click', function() {
         const gameCode = this.getAttribute('data-game-code');
@@ -56,17 +118,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return total;
     }
 
-    // Input validation for scores
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('score-input')) {
-            const value = e.target.value;
-            if (value && (isNaN(value) || value < 1 || value > 20)) {
-                e.target.classList.add('is-invalid');
-            } else {
-                e.target.classList.remove('is-invalid');
-            }
-        }
-    });
 
     // Initialize charts if on stats page
     const statsChart = document.getElementById('statsChart');
@@ -94,4 +145,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    // Initialize Feather icons
+    feather.replace();
 });
