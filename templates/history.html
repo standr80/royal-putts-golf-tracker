@@ -244,60 +244,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endif %}
-
-                    {% set bogey_counts = {} %}
-                    {% for game in games %}
-                        {% for player_game in game.players %}
-                            {% set over_par_count = 0 %}
-                            {% for score in player_game.scores %}
-                                {% set hole = game.course.holes|sort(attribute='name')|list %}
-                                {% if score.hole_number <= hole|length %}
-                                    {% set current_hole = hole[score.hole_number - 1] %}
-                                    {% if score.strokes > current_hole.par %}
-                                        {% set over_par_count = over_par_count + 1 %}
-                                    {% endif %}
-                                {% endif %}
-                            {% endfor %}
-
-                            {% if player_game.player.name not in bogey_counts %}
-                                {% set _ = bogey_counts.update({player_game.player.name: over_par_count}) %}
-                            {% else %}
-                                {% set _ = bogey_counts.update({
-                                    player_game.player.name: bogey_counts[player_game.player.name] + over_par_count
-                                }) %}
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
-
-                    {% if bogey_counts %}
-                        {% set max_bogeys = bogey_counts.values()|max %}
-                        {% for player_name, count in bogey_counts.items() %}
-                            {% if count == max_bogeys %}
-                                <tr>
-                                    <td>The Bogey Master</td>
-                                    <td>The player with the most holes played over par</td>
-                                    <td>{{ player_name }} ({{ count }} holes over par)</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Player Stats Section -->
-        <h3 class="mt-5 mb-4">Player Stats - the Highs and Lows!</h3>
-        <div class="table-responsive">
-            <table class="table table-dark table-hover">
-                <thead>
-                    <tr>
-                        <th>Stat</th>
-                        <th>Description</th>
-                        <th>Player</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Stats will be added here -->
                 </tbody>
             </table>
         </div>

@@ -2,39 +2,7 @@
 
 {% block content %}
 <div class="row">
-    <!-- Leaderboard Section -->
-    <div class="col-md-4">
-        <div class="card bg-dark mb-4">
-            <div class="card-header">
-                <h4 class="mb-0">{{ get_localized_text('LeaderboardTitle', 'Live Leaderboard') }}</h4>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover mb-0" id="leaderboardTable">
-                        <thead>
-                            <tr>
-                                <th>{{ get_localized_text('LeaderboardRank', 'Rank') }}</th>
-                                <th>{{ get_localized_text('LeaderboardPlayer', 'Player') }}</th>
-                                <th>{{ get_localized_text('LeaderboardScore', 'Score') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for player_game in game.players %}
-                            <tr class="leaderboard-row" data-player-id="{{ player_game.id }}">
-                                <td class="rank">{{ loop.index }}</td>
-                                <td>{{ player_game.player.name }}</td>
-                                <td class="score">{{ cumulative_scores[player_game.id] }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Existing Scoring Content -->
-    <div class="col-md-8">
+    <div class="col-md-8 mx-auto">
         <div class="d-flex justify-content-between align-items-center mb-4">
             {% if current_hole_info %}
             <h2>
