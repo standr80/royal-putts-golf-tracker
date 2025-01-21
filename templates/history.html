@@ -616,6 +616,51 @@
                             </td>
                         </tr>
                     {% endif %}
+
+                    {# Track Maximum Strokes on a Single Hole #}
+                    {% set player_max_strokes = {} %}
+
+                    {% for game in games %}
+                        {% for player_game in game.players %}
+                            {% set max_stroke_hole = {'strokes': 0, 'hole': 0} %}
+
+                            {% for score in player_game.scores %}
+                                {% if score.strokes > max_stroke_hole.strokes %}
+                                    {% set _ = max_stroke_hole.update({
+                                        'strokes': score.strokes,
+                                        'hole': score.hole_number
+                                    }) %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if player_game.player.name not in player_max_strokes %}
+                                {% set _ = player_max_strokes.update({
+                                    player_game.player.name: max_stroke_hole
+                                }) %}
+                            {% else %}
+                                {% if max_stroke_hole.strokes > player_max_strokes[player_game.player.name].strokes %}
+                                    {% set _ = player_max_strokes.update({
+                                        player_game.player.name: max_stroke_hole
+                                    }) %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% if player_max_strokes %}
+                        {% set overall_max_strokes = player_max_strokes.values()|map(attribute='strokes')|max %}
+                        <tr>
+                            <td>Mr Bean</td>
+                            <td>The player with the most strokes on a single hole</td>
+                            <td>
+                                {% for player_name, data in player_max_strokes.items() %}
+                                    {% if data.strokes == overall_max_strokes %}
+                                        {{ player_name }} ({{ data.strokes }} putts on hole {{ data.hole }})<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
