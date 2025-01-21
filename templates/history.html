@@ -63,7 +63,8 @@
                         'birdies': {},
                         'eagles': {},
                         'albatrosses': {},
-                        'condors': {}
+                        'condors': {},
+                        'holes_in_par': {}
                     } %}
 
                     {% for game in games %}
@@ -73,7 +74,8 @@
                                 'birdies': [],
                                 'eagles': [],
                                 'albatrosses': [],
-                                'condors': []
+                                'condors': [],
+                                'holes_in_par': []
                             } %}
 
                             {% for score in player_game.scores %}
@@ -99,6 +101,10 @@
 
                                     {% if score.strokes == current_hole.par - 4 %}
                                         {% set _ = achievements.condors.append(score.hole_number) %}
+                                    {% endif %}
+
+                                    {% if score.strokes == current_hole.par %}
+                                        {% set _ = achievements.holes_in_par.append(score.hole_number) %}
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -145,6 +151,15 @@
                                     player_game.player.name: {
                                         'count': achievements.condors|length,
                                         'holes': achievements.condors|sort
+                                    }
+                                }) %}
+                            {% endif %}
+
+                            {% if achievements.holes_in_par %}
+                                {% set _ = all_achievements.holes_in_par.update({
+                                    player_game.player.name: {
+                                        'count': achievements.holes_in_par|length,
+                                        'holes': achievements.holes_in_par|sort
                                     }
                                 }) %}
                             {% endif %}
@@ -212,6 +227,19 @@
                                     <td>Most Condors</td>
                                     <td>{{ player_name }}</td>
                                     <td>{{ player_name }} scored {{ data.count }} condors on holes {{ data.holes|join(', ') }}!</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if all_achievements.holes_in_par %}
+                        {% set max_holes_in_par = all_achievements.holes_in_par.values()|map(attribute='count')|max %}
+                        {% for player_name, data in all_achievements.holes_in_par.items() %}
+                            {% if data.count == max_holes_in_par %}
+                                <tr>
+                                    <td>Most Holes in Par</td>
+                                    <td>{{ player_name }}</td>
+                                    <td>{{ player_name }} scored {{ data.count }} holes in par on holes {{ data.holes|join(', ') }}!</td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
