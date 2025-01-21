@@ -308,6 +308,54 @@
                             </td>
                         </tr>
                     {% endif %}
+
+                    {# Track Holes in One #}
+                    {% set player_aces = {} %}
+
+                    {% for game in games %}
+                        {% for player_game in game.players %}
+                            {% set ace_holes = [] %}
+
+                            {% for score in player_game.scores %}
+                                {% if score.strokes == 1 %}
+                                    {% set _ = ace_holes.append(score.hole_number) %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if player_game.player.name not in player_aces %}
+                                {% set _ = player_aces.update({
+                                    player_game.player.name: {
+                                        'count': ace_holes|length,
+                                        'holes': ace_holes|sort
+                                    }
+                                }) %}
+                            {% else %}
+                                {% set existing_count = player_aces[player_game.player.name]['count'] %}
+                                {% set existing_holes = player_aces[player_game.player.name]['holes']|list %}
+                                {% set _ = player_aces.update({
+                                    player_game.player.name: {
+                                        'count': existing_count + ace_holes|length,
+                                        'holes': (existing_holes + ace_holes)|sort|unique|list
+                                    }
+                                }) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% if player_aces %}
+                        {% set max_aces = player_aces.values()|map(attribute='count')|max %}
+                        <tr>
+                            <td>The ACE!</td>
+                            <td>The player with the most holes in one</td>
+                            <td>
+                                {% for player_name, data in player_aces.items() %}
+                                    {% if data.count == max_aces %}
+                                        {{ player_name }} ({{ data.count }} holes in one: {{ data.holes|join(', ') }})<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
