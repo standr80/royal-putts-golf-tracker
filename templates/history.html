@@ -449,12 +449,12 @@
                     {% if player_birdies %}
                         {% set max_birdies = player_birdies.values()|map(attribute='count')|max %}
                         <tr>
-                            <td>Birdy Song!</td>
-                            <td>The player with the most holes putted with a Birdy (one under par)</td>
+                            <td>{{ get_localized_text('StatBirdyTitle', 'Birdy Song!') }}</td>
+                            <td>{{ get_localized_text('StatBirdyDescription', 'The player with the most holes putted with a Birdy (one under par)') }}</td>
                             <td>
                                 {% for player_name, data in player_birdies.items() %}
                                     {% if data.count == max_birdies %}
-                                        {{ player_name }} ({{ data.count }} birdies)<br>
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatBirdyInfo', 'birdies') }})<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
