@@ -62,7 +62,8 @@
                         'holes_in_one': {},
                         'birdies': {},
                         'eagles': {},
-                        'albatrosses': {}
+                        'albatrosses': {},
+                        'condors': {}
                     } %}
 
                     {% for game in games %}
@@ -71,7 +72,8 @@
                                 'holes_in_one': [],
                                 'birdies': [],
                                 'eagles': [],
-                                'albatrosses': []
+                                'albatrosses': [],
+                                'condors': []
                             } %}
 
                             {% for score in player_game.scores %}
@@ -93,6 +95,10 @@
 
                                     {% if score.strokes == current_hole.par - 3 %}
                                         {% set _ = achievements.albatrosses.append(score.hole_number) %}
+                                    {% endif %}
+
+                                    {% if score.strokes == current_hole.par - 4 %}
+                                        {% set _ = achievements.condors.append(score.hole_number) %}
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -130,6 +136,15 @@
                                     player_game.player.name: {
                                         'count': achievements.albatrosses|length,
                                         'holes': achievements.albatrosses|sort
+                                    }
+                                }) %}
+                            {% endif %}
+
+                            {% if achievements.condors %}
+                                {% set _ = all_achievements.condors.update({
+                                    player_game.player.name: {
+                                        'count': achievements.condors|length,
+                                        'holes': achievements.condors|sort
                                     }
                                 }) %}
                             {% endif %}
@@ -184,6 +199,19 @@
                                     <td>Most Albatrosses</td>
                                     <td>{{ player_name }}</td>
                                     <td>{{ player_name }} scored {{ data.count }} albatrosses on holes {{ data.holes|join(', ') }}!</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if all_achievements.condors %}
+                        {% set max_condors = all_achievements.condors.values()|map(attribute='count')|max %}
+                        {% for player_name, data in all_achievements.condors.items() %}
+                            {% if data.count == max_condors %}
+                                <tr>
+                                    <td>Most Condors</td>
+                                    <td>{{ player_name }}</td>
+                                    <td>{{ player_name }} scored {{ data.count }} condors on holes {{ data.holes|join(', ') }}!</td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
