@@ -397,12 +397,12 @@
                     {% if player_pars %}
                         {% set max_pars = player_pars.values()|map(attribute='count')|max %}
                         <tr>
-                            <td>Par-boiled!</td>
-                            <td>The player with the most holes putted in par</td>
+                            <td>{{ get_localized_text('StatParBoiledTitle', 'Par-boiled!') }}</td>
+                            <td>{{ get_localized_text('StatParBoiledDescription', 'The player with the most holes putted in par') }}</td>
                             <td>
                                 {% for player_name, data in player_pars.items() %}
                                     {% if data.count == max_pars %}
-                                        {{ player_name }} ({{ data.count }} holes in par)<br>
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatParBoiledInfo', 'holes in par') }})<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
