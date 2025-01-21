@@ -460,6 +460,58 @@
                             </td>
                         </tr>
                     {% endif %}
+
+                    {# Track Eagles #}
+                    {% set player_eagles = {} %}
+
+                    {% for game in games %}
+                        {% for player_game in game.players %}
+                            {% set eagle_holes = [] %}
+
+                            {% for score in player_game.scores %}
+                                {% set hole = game.course.holes|sort(attribute='name')|list %}
+                                {% if score.hole_number <= hole|length %}
+                                    {% set current_hole = hole[score.hole_number - 1] %}
+                                    {% if score.strokes == current_hole.par - 2 %}
+                                        {% set _ = eagle_holes.append(score.hole_number) %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if player_game.player.name not in player_eagles %}
+                                {% set _ = player_eagles.update({
+                                    player_game.player.name: {
+                                        'count': eagle_holes|length,
+                                        'holes': eagle_holes|sort
+                                    }
+                                }) %}
+                            {% else %}
+                                {% set existing_count = player_eagles[player_game.player.name]['count'] %}
+                                {% set existing_holes = player_eagles[player_game.player.name]['holes']|list %}
+                                {% set _ = player_eagles.update({
+                                    player_game.player.name: {
+                                        'count': existing_count + eagle_holes|length,
+                                        'holes': (existing_holes + eagle_holes)|sort|unique|list
+                                    }
+                                }) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% if player_eagles %}
+                        {% set max_eagles = player_eagles.values()|map(attribute='count')|max %}
+                        <tr>
+                            <td>Eagles Away!</td>
+                            <td>The player with the most holes putted with an Eagle (two under par)</td>
+                            <td>
+                                {% for player_name, data in player_eagles.items() %}
+                                    {% if data.count == max_eagles %}
+                                        {{ player_name }} ({{ data.count }} eagles)<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
