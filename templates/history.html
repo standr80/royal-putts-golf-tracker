@@ -283,11 +283,11 @@
                                 }) %}
                             {% else %}
                                 {% set existing_count = player_over_par_counts[player_game.player.name]['count'] %}
-                                {% set existing_holes = player_over_par_counts[player_game.player.name]['holes'] %}
+                                {% set existing_holes = player_over_par_counts[player_game.player.name]['holes']|list %}
                                 {% set _ = player_over_par_counts.update({
                                     player_game.player.name: {
                                         'count': existing_count + over_par_holes|length,
-                                        'holes': (existing_holes + over_par_holes)|sort|unique
+                                        'holes': (existing_holes + over_par_holes)|sort|unique|list
                                     }
                                 }) %}
                             {% endif %}
