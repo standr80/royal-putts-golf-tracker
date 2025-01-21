@@ -706,12 +706,12 @@
                     {% if player_under_par %}
                         {% set max_under_par = player_under_par.values()|map(attribute='count')|max %}
                         <tr>
-                            <td>Under Par</td>
-                            <td>The player with the most holes played under par</td>
+                            <td>{{ get_localized_text('StatUnderParTitle', 'Under Par') }}</td>
+                            <td>{{ get_localized_text('StatUnderParDescription', 'The player with the most holes played under par') }}</td>
                             <td>
                                 {% for player_name, data in player_under_par.items() %}
                                     {% if data.count == max_under_par %}
-                                        {{ player_name }} ({{ data.count }} holes under par)<br>
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatUnderParInfo', 'holes under par') }})<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
@@ -764,7 +764,7 @@
                         {% set max_streak_count = player_streaks.values()|map(attribute='count')|max %}
                         <tr>
                             <td>Steaker!</td>
-                            <td>The player who went under par for the most consecutive holes</td>
+                            <td>The player who went underpar for the most consecutive holes</td>
                             <td>
                                 {% for player_name, data in player_streaks.items() %}
                                     {% if data.count == max_streak_count %}
