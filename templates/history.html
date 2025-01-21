@@ -715,20 +715,30 @@
                     {% endif %}
 
                     {# Track Leading but Lost Players #}
-                    {% set player_leads = {} %}
-                    {% set hole_leaders = {} %}
+                    {% set player_max_lead_streaks = {} %}
 
                     {% for game in games %}
                         {# Initialize tracking for this game #}
-                        {% set game_hole_leaders = {} %}
-                        {% set player_scores = {} %}
+                        {% set current_streak = {'player': None, 'count': 0} %}
+                        {% set game_streaks = {} %}
                         {% set final_winner = {'name': '', 'score': 999999} %}
 
-                        {# Calculate cumulative scores and track leaders for each hole #}
+                        {# First determine the winner of the game #}
+                        {% for player_game in game.players %}
+                            {% set total_score = 0 %}
+                            {% for score in player_game.scores %}
+                                {% set total_score = total_score + score.strokes %}
+                            {% endfor %}
+                            {% if total_score < final_winner.score %}
+                                {% set _ = final_winner.update({'name': player_game.player.name, 'score': total_score}) %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {# Track leads hole by hole #}
                         {% for hole_num in range(1, game.course.holes|length + 1) %}
                             {% set hole_scores = {} %}
 
-                            {# Calculate scores up to this hole #}
+                            {# Calculate cumulative scores up to this hole #}
                             {% for player_game in game.players %}
                                 {% set cumulative = 0 %}
                                 {% for score in player_game.scores %}
@@ -737,59 +747,65 @@
                                     {% endif %}
                                 {% endfor %}
                                 {% set _ = hole_scores.update({player_game.player.name: cumulative}) %}
-
-                                {# Track final scores for determining winner #}
-                                {% if hole_num == game.course.holes|length %}
-                                    {% if cumulative < final_winner.score %}
-                                        {% set _ = final_winner.update({'name': player_game.player.name, 'score': cumulative}) %}
-                                    {% endif %}
-                                {% endif %}
                             {% endfor %}
 
                             {# Determine leader for this hole #}
                             {% set min_score = hole_scores.values()|min %}
+                            {% set current_leader = None %}
                             {% for player, score in hole_scores.items() %}
                                 {% if score == min_score %}
-                                    {% set _ = game_hole_leaders.update({hole_num: player}) %}
+                                    {% set current_leader = player %}
+                                    {% break %}
                                 {% endif %}
                             {% endfor %}
-                        {% endfor %}
 
-                        {# Count consecutive holes led by each player who didn't win #}
-                        {% set player_hole_counts = {} %}
-                        {% for hole_num, leader in game_hole_leaders.items() %}
-                            {% if leader != final_winner.name %}
-                                {% if leader not in player_hole_counts %}
-                                    {% set _ = player_hole_counts.update({leader: 1}) %}
+                            {# Update streak counting #}
+                            {% if current_leader != final_winner.name %}  {# Only track non-winners #}
+                                {% if current_leader == current_streak.player %}
+                                    {% set _ = current_streak.update({'count': current_streak.count + 1}) %}
                                 {% else %}
-                                    {% set _ = player_hole_counts.update({
-                                        leader: player_hole_counts[leader] + 1
-                                    }) %}
+                                    {# Save previous streak if it exists #}
+                                    {% if current_streak.player and current_streak.count > 0 %}
+                                        {% if current_streak.player not in game_streaks %}
+                                            {% set _ = game_streaks.update({current_streak.player: current_streak.count}) %}
+                                        {% elif current_streak.count > game_streaks[current_streak.player] %}
+                                            {% set _ = game_streaks.update({current_streak.player: current_streak.count}) %}
+                                        {% endif %}
+                                    {% endif %}
+                                    {# Start new streak #}
+                                    {% set _ = current_streak.update({'player': current_leader, 'count': 1}) %}
                                 {% endif %}
                             {% endif %}
                         {% endfor %}
 
-                        {# Update overall tracking #}
-                        {% for player, count in player_hole_counts.items() %}
-                            {% if player not in player_leads %}
-                                {% set _ = player_leads.update({player: count}) %}
-                            {% else %}
-                                {% set _ = player_leads.update({
-                                    player: player_leads[player] + count
-                                }) %}
+                        {# Save final streak of the game if exists #}
+                        {% if current_streak.player and current_streak.count > 0 %}
+                            {% if current_streak.player not in game_streaks %}
+                                {% set _ = game_streaks.update({current_streak.player: current_streak.count}) %}
+                            {% elif current_streak.count > game_streaks[current_streak.player] %}
+                                {% set _ = game_streaks.update({current_streak.player: current_streak.count}) %}
+                            {% endif %}
+                        {% endif %}
+
+                        {# Update overall tracking with longest streak from this game #}
+                        {% for player, streak in game_streaks.items() %}
+                            {% if player not in player_max_lead_streaks %}
+                                {% set _ = player_max_lead_streaks.update({player: streak}) %}
+                            {% elif streak > player_maxlead_streaks[player] %}
+                                {% set _ = player_max_lead_streaks.update({player: streak}) %}
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
 
-                    {% if player_leads %}
-                        {% set max_leads = player_leads.values()|max %}
+                    {% if player_max_lead_streaks %}
+                        {% set max_streak = player_max_lead_streaks.values()|max %}
                         <tr>
                             <td>Peaked too Soon!</td>
-                            <td>Player who led for the most holes but didn't win</td>
+                            <td>Player who led for the most consecutive holes but didn't win</td>
                             <td>
-                                {% for player_name, lead_count in player_leads.items() %}
-                                    {% if lead_count == max_leads %}
-                                        {{ player_name }} (led for {{ lead_count }} holes)<br>
+                                {% for player_name, streak in player_max_lead_streaks.items() %}
+                                    {% if streak == max_streak %}
+                                        {{ player_name }} (led for {{ streak }} consecutive holes)<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
