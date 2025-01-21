@@ -736,45 +736,55 @@
                             {% endfor %}
                         {% endfor %}
 
-                        {# Track who led after each hole #}
-                        {% for hole_number in range(1, game.course.holes|length + 1) %}
-                            {% set all_have_score = true %}
-                            {% set lowest_score = 999999 %}
-                            {% set leaders = [] %}
+                        {# Find max hole number with scores #}
+                        {% set max_hole = 0 %}
+                        {% for player_game in game.players %}
+                            {% for score in player_game.scores %}
+                                {% if score.hole_number > max_hole %}
+                                    {% set max_hole = score.hole_number %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
 
-                            {# Check if all players have a score for this hole #}
-                            {% for player_name in hole_scores %}
-                                {% if hole_number not in hole_scores[player_name] %}
+                        {# Track who led after each hole #}
+                        {% for hole_number in range(1, max_hole + 1) %}
+                            {% set all_have_score = true %}
+                            {% set current_scores = {} %}
+
+                            {# Collect scores for this hole #}
+                            {% for player_name, scores in hole_scores.items() %}
+                                {% if hole_number in scores %}
+                                    {% set _ = current_scores.update({player_name: scores[hole_number]}) %}
+                                {% else %}
                                     {% set all_have_score = false %}
                                 {% endif %}
                             {% endfor %}
 
-                            {% if all_have_score %}
-                                {# Find lowest score for this hole #}
-                                {% for player_name, scores in hole_scores.items() %}
-                                    {% if scores[hole_number] < lowest_score %}
-                                        {% set lowest_score = scores[hole_number] %}
-                                        {% set leaders = [player_name] %}
-                                    {% elif scores[hole_number] == lowest_score %}
-                                        {% set _ = leaders.append(player_name) %}
-                                    {% endif %}
-                                {% endfor %}
-
-                                {# Record leaders for this hole #}
-                                {% for leader in leaders %}
-                                    {% if leader not in player_leads %}
-                                        {% set _ = player_leads.update({leader: {'holes_led': 1, 'game_code': game.game_code}}) %}
-                                    {% else %}
-                                        {% set _ = player_leads[leader].update({
-                                            'holes_led': player_leads[leader].holes_led + 1,
-                                            'game_code': game.game_code
-                                        }) %}
+                            {# If all players have a score, determine leader(s) #}
+                            {% if all_have_score and current_scores %}
+                                {% set min_score = current_scores.values()|min %}
+                                {% for player_name, score in current_scores.items() %}
+                                    {% if score == min_score %}
+                                        {% if player_name not in player_leads %}
+                                            {% set _ = player_leads.update({
+                                                player_name: {
+                                                    'holes_led': 1,
+                                                    'game_code': game.game_code
+                                                }
+                                            }) %}
+                                        {% else %}
+                                            {% set _ = player_leads[player_name].update({
+                                                'holes_led': player_leads[player_name].holes_led + 1,
+                                                'game_code': game.game_code
+                                            }) %}
+                                        {% endif %}
                                     {% endif %}
                                 {% endfor %}
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
 
+                    {# Display the player who led the most but didn't win #}
                     {% if player_leads %}
                         {% set max_holes_led = 0 %}
                         {% set premature_leader = '' %}
