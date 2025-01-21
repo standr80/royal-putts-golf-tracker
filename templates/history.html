@@ -713,6 +713,88 @@
                             </td>
                         </tr>
                     {% endif %}
+
+                    {# Track Leading but Lost Players #}
+                    {% set player_leads = {} %}
+                    {% set hole_leaders = {} %}
+
+                    {% for game in games %}
+                        {# Initialize tracking for this game #}
+                        {% set game_hole_leaders = {} %}
+                        {% set player_scores = {} %}
+                        {% set final_winner = {'name': '', 'score': 999999} %}
+
+                        {# Calculate cumulative scores and track leaders for each hole #}
+                        {% for hole_num in range(1, game.course.holes|length + 1) %}
+                            {% set hole_scores = {} %}
+
+                            {# Calculate scores up to this hole #}
+                            {% for player_game in game.players %}
+                                {% set cumulative = 0 %}
+                                {% for score in player_game.scores %}
+                                    {% if score.hole_number <= hole_num %}
+                                        {% set cumulative = cumulative + score.strokes %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set _ = hole_scores.update({player_game.player.name: cumulative}) %}
+
+                                {# Track final scores for determining winner #}
+                                {% if hole_num == game.course.holes|length %}
+                                    {% if cumulative < final_winner.score %}
+                                        {% set _ = final_winner.update({'name': player_game.player.name, 'score': cumulative}) %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {# Determine leader for this hole #}
+                            {% set min_score = hole_scores.values()|min %}
+                            {% for player, score in hole_scores.items() %}
+                                {% if score == min_score %}
+                                    {% set _ = game_hole_leaders.update({hole_num: player}) %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+
+                        {# Count consecutive holes led by each player who didn't win #}
+                        {% set player_hole_counts = {} %}
+                        {% for hole_num, leader in game_hole_leaders.items() %}
+                            {% if leader != final_winner.name %}
+                                {% if leader not in player_hole_counts %}
+                                    {% set _ = player_hole_counts.update({leader: 1}) %}
+                                {% else %}
+                                    {% set _ = player_hole_counts.update({
+                                        leader: player_hole_counts[leader] + 1
+                                    }) %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {# Update overall tracking #}
+                        {% for player, count in player_hole_counts.items() %}
+                            {% if player not in player_leads %}
+                                {% set _ = player_leads.update({player: count}) %}
+                            {% else %}
+                                {% set _ = player_leads.update({
+                                    player: player_leads[player] + count
+                                }) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% if player_leads %}
+                        {% set max_leads = player_leads.values()|max %}
+                        <tr>
+                            <td>Peaked too Soon!</td>
+                            <td>Player who led for the most holes but didn't win</td>
+                            <td>
+                                {% for player_name, lead_count in player_leads.items() %}
+                                    {% if lead_count == max_leads %}
+                                        {{ player_name }} (led for {{ lead_count }} holes)<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
