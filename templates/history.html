@@ -730,10 +730,17 @@
                             {# Initialize cumulative scores for each player #}
                             {% set _ = player_scores.update({
                                 player_game.player.name: {
-                                    'cumulative_scores': [],
-                                    'holes_led': 0
+                                    'holes_led': 0,
+                                    'scores_by_hole': {}
                                 }
                             }) %}
+
+                            {# Store individual hole scores #}
+                            {% for score in player_game.scores %}
+                                {% set _ = player_scores[player_game.player.name].scores_by_hole.update({
+                                    score.hole_number: score.strokes
+                                }) %}
+                            {% endfor %}
                         {% endfor %}
 
                         {# Calculate cumulative scores and track leaders for each hole #}
@@ -741,28 +748,35 @@
                         {% for hole_num in range(1, max_holes + 1) %}
                             {% set current_scores = {} %}
 
-                            {# Calculate cumulative scores up to this hole for each player #}
-                            {% for player_game in game.players %}
+                            {# Calculate cumulative scores up to this hole #}
+                            {% for player_name, data in player_scores.items() %}
                                 {% set cumulative = 0 %}
-                                {% for score in player_game.scores %}
-                                    {% if score.hole_number <= hole_num %}
-                                        {% set cumulative = cumulative + score.strokes %}
+                                {% for h in range(1, hole_num + 1) %}
+                                    {% if h in data.scores_by_hole %}
+                                        {% set cumulative = cumulative + data.scores_by_hole[h] %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set _ = current_scores.update({player_name: cumulative}) %}
+                            {% endfor %}
+
+                            {# Determine leader(s) for this hole #}
+                            {% if current_scores %}
+                                {% set min_score = current_scores.values()|min %}
+                                {% set leaders_this_hole = [] %}
+                                {% for player_name, score in current_scores.items() %}
+                                    {% if score == min_score %}
+                                        {% set _ = leaders_this_hole.append(player_name) %}
                                     {% endif %}
                                 {% endfor %}
 
-                                {% set _ = current_scores.update({player_game.player.name: cumulative}) %}
-                                {% set _ = player_scores[player_game.player.name].cumulative_scores.append(cumulative) %}
-                            {% endfor %}
-
-                            {# Determine leader for this hole #}
-                            {% set min_score = current_scores.values()|min %}
-                            {% for player_name, score in current_scores.items() %}
-                                {% if score == min_score %}
-                                    {% set _ = player_scores[player_name].update({
-                                        'holes_led': player_scores[player_name].holes_led + 1
+                                {# If there's a single leader, increment their count #}
+                                {% if leaders_this_hole|length == 1 %}
+                                    {% set leader = leaders_this_hole[0] %}
+                                    {% set _ = player_scores[leader].update({
+                                        'holes_led': player_scores[leader].holes_led + 1
                                     }) %}
                                 {% endif %}
-                            {% endfor %}
+                            {% endif %}
                         {% endfor %}
 
                         {# Find player who led the most but didn't win #}
