@@ -219,17 +219,19 @@
                         </tr>
                     {% endif %}
 
-                    {% if all_achievements.condors %}
-                        {% set max_condors = all_achievements.condors.values()|map(attribute='count')|max %}
-                        {% for player_name, data in all_achievements.condors.items() %}
-                            {% if data.count == max_condors %}
-                                <tr>
-                                    <td>Most Condors</td>
-                                    <td>{{ player_name }}</td>
-                                    <td>{{ player_name }} scored {{ data.count }} condors on holes {{ data.holes|join(', ') }}!</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
+                    {% if player_condors %}
+                        {% set max_condors = player_condors.values()|map(attribute='count')|max %}
+                        <tr>
+                            <td>{{ get_localized_text('StatCondorTitle', 'Ah Condor...') }}</td>
+                            <td>{{ get_localized_text('StatCondorDescription', 'The player with the most holes putted with a Condor (four under par)') }}</td>
+                            <td>
+                                {% for player_name, data in player_condors.items() %}
+                                    {% if data.count == max_condors %}
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatCondorInfo', 'condors') }})<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
                     {% endif %}
 
                     {% if all_achievements.holes_in_par %}
@@ -607,12 +609,12 @@
                     {% if player_condors %}
                         {% set max_condors = player_condors.values()|map(attribute='count')|max %}
                         <tr>
-                            <td>Ah Condor...</td>
-                            <td>The player with the most holes putted with a Condor (four under par)</td>
+                            <td>{{ get_localized_text('StatCondorTitle', 'Ah Condor...') }}</td>
+                            <td>{{ get_localized_text('StatCondorDescription', 'The player with the most holes putted with a Condor (four under par)') }}</td>
                             <td>
                                 {% for player_name, data in player_condors.items() %}
                                     {% if data.count == max_condors %}
-                                        {{ player_name }} ({{ data.count }} condors)<br>
+                                        {{ player_name }} ({{ data.count }} {{ get_localized_text('StatCondorInfo', 'condors') }})<br>
                                     {% endif %}
                                 {% endfor %}
                             </td>
@@ -766,8 +768,7 @@
                             <td>
                                 {% for player_name, data in player_streaks.items() %}
                                     {% if data.count == max_streak_count %}
-                                        {{ player_name }} ({{ data.count }} consecutive holes under par: holes {{ data.holes|join(', ') }})<br>
-                                    {% endif %}
+                                        {{ player_name }} ({{ data.count }} consecutive holes under par: holes {{ data.holes|join(', ') }})<br>                                    {% endif %}
                                 {% endfor %}
                             </td>
                         </tr>
