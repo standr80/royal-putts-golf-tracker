@@ -752,123 +752,44 @@ def register_routes(app):
             file_path = os.path.join(upload_dir, filename)
 
             try:
-                file.save(file_path)
                 from app import db
-                hole.image_url = f"/static/hole_images/{filename}"
+                file.save(file_path)
+                hole.image_path = os.path.join('hole_images', filename)
                 db.session.commit()
                 flash('Image uploaded successfully', 'success')
             except Exception as e:
                 db.session.rollback()
                 flash(f'Error uploading image: {str(e)}', 'danger')
 
-        return redirect(url_for('course_settings', course_id=course_id))
-
-    @app.route('/admin/course/<int:course_id>/hole/<int:hole_id>/update-notes', methods=['POST'])
-    def update_hole_notes(course_id, hole_id):
-        """Update notes for a specific hole"""
-        hole = Hole.query.filter_by(id=hole_id, course_id=course_id).first_or_404()
-
-        notes = request.form.get('hole_notes', '').strip()
-        from app import db
-        try:
-            hole.notes = notes
-            db.session.commit()
-            flash('Hole notes updated successfully', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error updating hole notes: {str(e)}', 'danger')
-
-        return redirect(url_for('course_settings', course_id=course_id))
-
-    @app.route('/scoring/<game_code>/save-score', methods=['POST'])
-    def save_score(game_code):
-        """Save a single score via AJAX"""
-        game = Game.query.filter_by(game_code=game_code).first_or_404()
-
-        try:
-            player_game_id = request.form.get('player_game_id', type=int)
-            hole_number = request.form.get('hole_number', type=int)
-            strokes = request.form.get('strokes', type=int)
-
-            if not all([player_game_id, hole_number, strokes]):
-                return jsonify({'error': 'Missing required fields'}), 400
-
-            if not (1 <= strokes <= 20):
-                return jsonify({'error': 'Invalid score value'}), 400
-
-            existing_score = Score.query.filter_by(
-                player_game_id=player_game_id,
-                hole_number=hole_number
-            ).first()
-
-            from app import db
-            if existing_score:
-                existing_score.strokes = strokes
-            else:
-                score = Score(
-                    player_game_id=player_game_id,
-                    hole_number=hole_number,
-                    strokes=strokes
-                )
-                db.session.add(score)
-
-            db.session.commit()
-            return jsonify({'success': True})
-
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'error': str(e)}), 500
-    @app.route('/admin/stats-setup', methods=['GET', 'POST'])
-    def stats_setup():
-        """Admin page for statistics setup and configuration"""
-        if request.method == 'POST':
-            # Handle achievement save
-            achievement_name = request.form.get('achievement_name')
-            achievement_logic = request.form.get('achievement_logic')
-            display = request.form.get('display', 'N')
-
-            if achievement_name and achievement_logic:
-                try:
-                    from app import db
-                    achievement = Achievement(
-                        name=achievement_name,
-                        logic=achievement_logic,
-                        display=display
-                    )
-                    db.session.add(achievement)
-                    db.session.commit()
-                    flash('Achievement saved successfully!', 'success')
-                except Exception as e:
-                    db.session.rollback()
-                    flash(f'Error saving achievement: {str(e)}', 'danger')
-            else:
-                flash('Please provide both name and logic for the achievement', 'danger')
-
-        # Get all achievements for display
-        achievements = Achievement.query.order_by(Achievement.created_at.desc()).all()
-        return render_template('admin/stats_setup.html', achievements=achievements)
+            return redirect(url_for('course_settings', course_id=course_id))
 
     @app.route('/download-backup')
     def download_backup():
-        """Download the database backup file"""
-        import os
-        from flask import send_file
-
-        backup_file = 'backup.sql.gz'
-        if not os.path.exists(backup_file):
-            flash('Backup file not found', 'danger')
-            return redirect(url_for('home'))
-
+        """Download database backup"""
         try:
-            return send_file(
-                backup_file,
-                as_attachment=True,
-                download_name='golf_tracker_backup.sql.gz',
-                mimetype='application/gzip'
-            )
+            # Create backup file
+            backup_file = 'backup.sql.gz'
+            os.system(f'pg_dump $DATABASE_URL | gzip > {backup_file}')
+
+            if os.path.exists(backup_file):
+                return send_file(
+                    backup_file,
+                    as_attachment=True,
+                    download_name='backup.sql.gz',
+                    mimetype='application/gzip'
+                )
+            else:
+                flash('Backup file not found', 'danger')
+                return redirect(url_for('home'))
         except Exception as e:
             flash(f'Error downloading backup: {str(e)}', 'danger')
             return redirect(url_for('home'))
+
+    @app.route('/admin/stats-settings', methods=['GET', 'POST'])
+    def stats_setup():
+        """Remove stats setup page as it's no longer needed"""
+        return redirect(url_for('admin'))
+
     @app.route('/file-manager')
     def file_manager():
         """Simple file manager interface"""
