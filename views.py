@@ -214,7 +214,7 @@ def register_routes(app):
                     return redirect(url_for('scoring', game_code=game_code, hole=current_hole + 1))
                 else:
                     flash('Game scores saved successfully!', 'success')
-                    return redirect(url_for('history', game_code=game.game_code))
+                    return redirect(url_for('history', game_code=game_code))
 
             except Exception as e:
                 db.session.rollback()
@@ -754,7 +754,7 @@ def register_routes(app):
             try:
                 from app import db
                 file.save(file_path)
-                hole.imagepath = os.path.join('hole_images', filename)
+                hole.image_path = os.path.join('hole_images', filename)
                 db.session.commit()
                 flash('Image uploaded successfully', 'success')
             except Exception as e:
@@ -829,74 +829,3 @@ def register_routes(app):
         except Exception as e:
             flash(f'Error downloading file: {str(e)}', 'danger')
             return redirect(url_for('file_manager'))
-    
-    @app.route('/admin/course-stats')
-    def course_stats():
-        """Display statistics for all courses"""
-        from app import db
-        from sqlalchemy import func
-        import logging
-
-        logging.basicConfig(level=logging.DEBUG)
-        logger = logging.getLogger(__name__)
-
-        courses = Course.query.all()
-
-        for course in courses:
-            # Get total games count
-            course.total_games = db.session.query(Game).filter(
-                Game.course_id == course.id
-            ).count()
-
-            # Get overall course statistics if there are games
-            if course.total_games > 0:
-                score_stats = db.session.query(
-                    func.avg(Score.strokes).label('avg_score'),
-                    func.min(Score.strokes).label('best_score')
-                ).join(
-                    PlayerGame, PlayerGame.id == Score.player_game_id
-                ).join(
-                    Game, Game.id == PlayerGame.game_id
-                ).filter(
-                    Game.course_id == course.id
-                ).first()
-
-                course.avg_score = score_stats.avg_score
-                course.best_score = score_stats.best_score
-
-                # Calculate hole statistics
-                for hole in course.holes:
-                    # Get all scores for this specific hole name
-                    hole_stats = db.session.query(
-                        func.avg(Score.strokes).label('avg_score'),
-                        func.min(Score.strokes).label('best_score'),
-                        func.count(Score.strokes).label('times_played')
-                    ).join(
-                        PlayerGame, PlayerGame.id == Score.player_game_id
-                    ).join(
-                        Game, Game.id == PlayerGame.game_id
-                    ).filter(
-                        Game.course_id == course.id,
-                        Score.hole_number == hole.id  # Match scores to specific hole
-                    ).group_by(
-                        Score.hole_number  # Group by hole number to get per-hole stats
-                    ).first()
-
-                    if hole_stats and hole_stats.times_played > 0:
-                        hole.avg_score = float(hole_stats.avg_score)
-                        hole.best_score = hole_stats.best_score
-                        hole.times_played = hole_stats.times_played
-                    else:
-                        hole.avg_score = None
-                        hole.best_score = None
-                        hole.times_played = 0
-
-            else:
-                course.avg_score = None
-                course.best_score = None
-                for hole in course.holes:
-                    hole.avg_score = None
-                    hole.best_score = None
-                    hole.times_played = 0
-
-        return render_template('admin/course_stats.html', courses=courses)
