@@ -169,10 +169,10 @@
                     this.classList.add('is-invalid');
                     this.classList.remove('is-valid');
                     return;
-                } else {
-                    this.classList.remove('is-invalid');
-                    this.classList.add('is-valid');
                 }
+
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
 
                 // Clear any existing timeout for this input
                 if (saveTimeouts[playerGameId]) {
