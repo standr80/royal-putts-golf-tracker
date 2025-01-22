@@ -868,15 +868,14 @@ def register_routes(app):
 
                 # Calculate hole statistics
                 for hole in course.holes:
-                    hole_scores = db.session.query(
-                        Score.strokes
-                    ).join(
+                    # Query scores for this specific hole
+                    hole_scores = Score.query.join(
                         PlayerGame, PlayerGame.id == Score.player_game_id
                     ).join(
                         Game, Game.id == PlayerGame.game_id
                     ).filter(
                         Game.course_id == course.id,
-                        Score.hole_number == int(hole.name)
+                        Score.hole_number == hole.id  # Use hole.id instead of parsing hole.name
                     ).all()
 
                     if hole_scores:
