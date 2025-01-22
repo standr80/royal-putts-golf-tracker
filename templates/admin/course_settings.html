@@ -147,7 +147,7 @@
                                                         {% if hole.image_url %}
                                                         <div class="mb-3">
                                                             <p>Current Image:</p>
-                                                            <img src="/static/{{ hole.image_url }}" 
+                                                            <img src="{{ url_for('static', filename='uploads/holes/' + hole.image_url) }}" 
                                                                  class="img-fluid mb-3" 
                                                                  alt="Hole image">
                                                         </div>

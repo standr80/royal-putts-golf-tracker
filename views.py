@@ -59,7 +59,7 @@ def register_routes(app):
 
                 # Delete old image if it exists
                 if hole.image_url:
-                    old_path = os.path.join(app.static_folder, hole.image_url.lstrip('/static/'))
+                    old_path = os.path.join(app.static_folder, 'uploads', 'holes', hole.image_url)
                     try:
                         if os.path.exists(old_path):
                             os.remove(old_path)
@@ -69,8 +69,8 @@ def register_routes(app):
                 # Save the new file
                 file.save(file_path)
 
-                # Update database with relative path from static folder
-                hole.image_url = f"uploads/holes/{filename}"
+                # Store just the filename in the database
+                hole.image_url = filename
                 from app import db
                 db.session.commit()
 
