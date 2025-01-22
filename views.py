@@ -1,5 +1,5 @@
 import os
-from flask import render_template, request, redirect, url_for, flash, abort, g, jsonify
+from flask import render_template, request, redirect, url_for, flash, abort, g, jsonify, send_file
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings, Achievement
 from datetime import datetime
 
@@ -847,3 +847,25 @@ def register_routes(app):
         # Get all achievements for display
         achievements = Achievement.query.order_by(Achievement.created_at.desc()).all()
         return render_template('admin/stats_setup.html', achievements=achievements)
+
+    @app.route('/download-backup')
+    def download_backup():
+        """Download the database backup file"""
+        import os
+        from flask import send_file
+
+        backup_file = 'backup.sql.gz'
+        if not os.path.exists(backup_file):
+            flash('Backup file not found', 'danger')
+            return redirect(url_for('home'))
+
+        try:
+            return send_file(
+                backup_file,
+                as_attachment=True,
+                download_name='golf_tracker_backup.sql.gz',
+                mimetype='application/gzip'
+            )
+        except Exception as e:
+            flash(f'Error downloading backup: {str(e)}', 'danger')
+            return redirect(url_for('home'))
