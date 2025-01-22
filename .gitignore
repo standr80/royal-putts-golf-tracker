@@ -51,3 +51,30 @@ replit.nix
 # Environment variables
 .env
 *.env
+
+# Flask specific
+instance/
+.webassets-cache
+flask_session/
+
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Backup files
+*.bak
+*~
+*.swp
+*.swo
+
+# Local development
+local_settings.py
+db.sqlite3-journal
