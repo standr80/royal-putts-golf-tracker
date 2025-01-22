@@ -176,8 +176,9 @@
                                                     </div>
                                                     <div class="modal-body">
                                                         <form method="POST" 
-                                                              action="{{ url_for('update_hole_notes', course_id=course.id, hole_id=hole.id) }}">
-                                                            <div class="mb-3">
+                                                              action="{{ url_for('update_hole', course_id=course.id, hole_id=hole.id) }}"
+                                                              class="d-flex gap-2">
+                                                            <div class="mb-3 w-100">
                                                                 <label for="hole_notes{{ hole.id }}" class="form-label">Hole Notes</label>
                                                                 <textarea class="form-control" 
                                                                           id="hole_notes{{ hole.id }}" 
