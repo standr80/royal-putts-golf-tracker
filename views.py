@@ -782,21 +782,25 @@ def register_routes(app):
             os.makedirs(upload_dir, exist_ok=True)
 
             # Generate unique filename using hole ID and timestamp
-            filename = f"hole_{hole_id}_{int(datetime.now().timestamp())}_{secure_filename(file.filename)}"
+            timestamp = int(datetime.now().timestamp())
+            original_filename = secure_filename(file.filename)
+            filename = f"hole_{hole_id}_{timestamp}_{original_filename}"
             file_path = os.path.join(upload_dir, filename)
 
             # Save the file
             file.save(file_path)
 
             # Update the hole's image URL in the database
+            # Store only the relative path from static directory
             from app import db
-            hole.image_url = os.path.join('hole_images', filename)
+            hole.image_url = f"hole_images/{filename}"
             db.session.commit()
 
             flash('Image uploaded successfully', 'success')
         except Exception as e:
             db.session.rollback()
             flash(f'Error uploading image: {str(e)}', 'danger')
+            app.logger.error(f"Image upload error for hole {hole_id}: {str(e)}")
 
         return redirect(url_for('course_settings', course_id=course_id))
 
