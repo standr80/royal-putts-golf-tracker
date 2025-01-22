@@ -54,9 +54,9 @@
                                 <tr>
                                     <th>Hole</th>
                                     <th>Par</th>
+                                    <th>Times Played</th>
                                     <th>Average Score</th>
                                     <th>Best Score</th>
-                                    <th>Times Played</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -64,9 +64,9 @@
                                 <tr>
                                     <td>{{ hole.name }}</td>
                                     <td>{{ hole.par }}</td>
+                                    <td>{{ hole.times_played }}</td>
                                     <td>{{ "%.1f"|format(hole.avg_score) if hole.avg_score else 'N/A' }}</td>
                                     <td>{{ hole.best_score if hole.best_score else 'N/A' }}</td>
-                                    <td>{{ hole.times_played }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

@@ -214,7 +214,7 @@ def register_routes(app):
                     return redirect(url_for('scoring', game_code=game_code, hole=current_hole + 1))
                 else:
                     flash('Game scores saved successfully!', 'success')
-                    return redirect(url_for('history', game_code=game_code))
+                    return redirect(url_for('history', game_code=game.game_code))
 
             except Exception as e:
                 db.session.rollback()
@@ -754,7 +754,7 @@ def register_routes(app):
             try:
                 from app import db
                 file.save(file_path)
-                hole.image_path = os.path.join('hole_images', filename)
+                hole.imagepath = os.path.join('hole_images', filename)
                 db.session.commit()
                 flash('Image uploaded successfully', 'success')
             except Exception as e:
@@ -835,62 +835,60 @@ def register_routes(app):
         """Display statistics for all courses"""
         from app import db
         from sqlalchemy import func
+        import logging
+
+        logging.basicConfig(level=logging.DEBUG)
+        logger = logging.getLogger(__name__)
 
         courses = Course.query.all()
 
         for course in courses:
-            # Get all games played on this course
-            games_query = Game.query.filter_by(course_id=course.id)
-            course.total_games = games_query.count()
+            # Get total games count
+            course.total_games = db.session.query(Game).filter(
+                Game.course_id == course.id
+            ).count()
 
-            # Calculate course-wide statistics
+            # Get overall course statistics if there are games
             if course.total_games > 0:
-                # Get all scores for games played on this course
-                scores_subq = db.session.query(
-                    Score.strokes,
-                    PlayerGame.game_id
+                score_stats = db.session.query(
+                    func.avg(Score.strokes).label('avg_score'),
+                    func.min(Score.strokes).label('best_score')
                 ).join(
                     PlayerGame, PlayerGame.id == Score.player_game_id
                 ).join(
                     Game, Game.id == PlayerGame.game_id
                 ).filter(
                     Game.course_id == course.id
-                ).subquery()
-
-                # Calculate average and best scores
-                score_stats = db.session.query(
-                    func.avg(scores_subq.c.strokes).label('avg_score'),
-                    func.min(scores_subq.c.strokes).label('best_score')
                 ).first()
 
-                course.avg_score = float(score_stats.avg_score) if score_stats.avg_score else None
+                course.avg_score = score_stats.avg_score
                 course.best_score = score_stats.best_score
 
                 # Calculate hole statistics
                 for hole in course.holes:
-                    # Query scores for this specific hole
-                    hole_scores = Score.query.join(
+                    # Get all scores for this specific hole name
+                    hole_scores = db.session.query(Score.strokes).join(
                         PlayerGame, PlayerGame.id == Score.player_game_id
                     ).join(
                         Game, Game.id == PlayerGame.game_id
                     ).filter(
                         Game.course_id == course.id,
-                        Score.hole_number == hole.id  # Use hole.id instead of parsing hole.name
+                        Score.hole_number.between(1, 18)  # Ensure valid hole numbers
                     ).all()
 
-                    if hole_scores:
-                        scores = [score.strokes for score in hole_scores]
-                        hole.avg_score = sum(scores) / len(scores)
-                        hole.best_score = min(scores)
-                        hole.times_played = len(scores)
+                    valid_scores = [s[0] for s in hole_scores if s[0] is not None]
+                    if valid_scores:
+                        hole.avg_score = sum(valid_scores) / len(valid_scores)
+                        hole.best_score = min(valid_scores)
+                        hole.times_played = len(valid_scores)
                     else:
                         hole.avg_score = None
                         hole.best_score = None
                         hole.times_played = 0
+
             else:
                 course.avg_score = None
                 course.best_score = None
-
                 for hole in course.holes:
                     hole.avg_score = None
                     hole.best_score = None
