@@ -1,9 +1,9 @@
-import os
 from flask import render_template, request, redirect, url_for, flash, abort, g, jsonify, send_file
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings, Achievement
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from app import app
+import os
+import logging
 
 # Define allowed file extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg'}
@@ -30,6 +30,61 @@ def get_localized_text(code, default=''):
     return string.english_text or default
 
 def register_routes(app):
+    """Register all routes with the Flask app"""
+    logger = logging.getLogger(__name__)
+
+    @app.route('/admin/course/<int:course_id>/hole/<int:hole_id>/upload-image', methods=['POST'])
+    def upload_hole_image(course_id, hole_id):
+        """Upload an image for a hole"""
+        hole = Hole.query.filter_by(id=hole_id, course_id=course_id).first_or_404()
+
+        if 'hole_image' not in request.files:
+            flash('No file uploaded', 'danger')
+            return redirect(url_for('course_settings', course_id=course_id))
+
+        file = request.files['hole_image']
+        if file.filename == '':
+            flash('No file selected', 'danger')
+            return redirect(url_for('course_settings', course_id=course_id))
+
+        if file and allowed_file(file.filename):
+            try:
+                # Create the upload directory if it doesn't exist
+                upload_dir = os.path.join(app.static_folder, 'uploads', 'holes')
+                os.makedirs(upload_dir, exist_ok=True)
+
+                # Generate a secure filename with timestamp
+                filename = secure_filename(f"hole_{hole.id}_{int(datetime.now().timestamp())}_{file.filename}")
+                file_path = os.path.join(upload_dir, filename)
+
+                # Delete old image if it exists
+                if hole.image_url:
+                    old_path = os.path.join(app.static_folder, hole.image_url.lstrip('/static/'))
+                    try:
+                        if os.path.exists(old_path):
+                            os.remove(old_path)
+                    except Exception as e:
+                        app.logger.error(f"Error removing old image: {str(e)}")
+
+                # Save the new file
+                file.save(file_path)
+
+                # Update database with relative path from static folder
+                hole.image_url = f"uploads/holes/{filename}"
+                from app import db
+                db.session.commit()
+
+                flash('Image uploaded successfully', 'success')
+                app.logger.info(f"Successfully uploaded image for hole {hole.id}: {filename}")
+            except Exception as e:
+                app.logger.error(f"Error uploading image: {str(e)}")
+                flash('Error uploading image', 'danger')
+
+            return redirect(url_for('course_settings', course_id=course_id))
+
+        flash('Invalid file type', 'danger')
+        return redirect(url_for('course_settings', course_id=course_id))
+
     @app.route('/')
     def home():
         title = get_localized_text('HomePageTitleLine1', 'Royal Putts Thetford')
@@ -759,55 +814,6 @@ def register_routes(app):
 
         return redirect(url_for('localisations'))
 
-    @app.route('/admin/course/<int:course_id>/hole/<int:hole_id>/upload-image', methods=['POST'])
-    def upload_hole_image(course_id, hole_id):
-        """Upload an image for a hole"""
-        hole = Hole.query.filter_by(id=hole_id, course_id=course_id).first_or_404()
-
-        if 'hole_image' not in request.files:
-            flash('No file uploaded', 'danger')
-            return redirect(url_for('course_settings', course_id=course_id))
-
-        file = request.files['hole_image']
-        if file.filename == '':
-            flash('No file selected', 'danger')
-            return redirect(url_for('course_settings', course_id=course_id))
-
-        if file and allowed_file(file.filename):
-            # Create the upload directory if it doesn't exist
-            upload_dir = os.path.join(app.static_folder, 'uploads', 'holes')
-            os.makedirs(upload_dir, exist_ok=True)
-
-            # Generate a secure filename with timestamp
-            filename = secure_filename(f"{hole.id}_{int(datetime.now().timestamp())}_{file.filename}")
-            file_path = os.path.join(upload_dir, filename)
-
-            # Delete old image if it exists
-            if hole.image_url:
-                old_path = os.path.join(app.static_folder, hole.image_url.lstrip('/static/'))
-                try:
-                    if os.path.exists(old_path):
-                        os.remove(old_path)
-                except Exception as e:
-                    app.logger.error(f"Error removing old image: {str(e)}")
-
-            try:
-                # Save the new file
-                file.save(file_path)
-                # Update database with relative path from static folder
-                hole.image_url = f"/uploads/holes/{filename}"
-                from app import db
-                db.session.commit()
-                flash('Image uploaded successfully', 'success')
-            except Exception as e:
-                app.logger.error(f"Error saving image: {str(e)}")
-                flash('Error uploading image', 'danger')
-
-            return redirect(url_for('course_settings', course_id=course_id))
-
-        flash('Invalid file type', 'danger')
-        return redirect(url_for('course_settings', course_id=course_id))
-
     @app.route('/download-backup')
     def download_backup():
         """Download database backup"""
@@ -874,5 +880,3 @@ def register_routes(app):
         except Exception as e:
             flash(f'Error downloading file: {str(e)}', 'danger')
             return redirect(url_for('file_manager'))
-
-    return register_routes

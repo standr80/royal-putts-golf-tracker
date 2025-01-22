@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, abort, g
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, g, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_mail import Mail, Message
@@ -33,6 +33,14 @@ def create_app():
         "pool_pre_ping": True,
     }
 
+    # Configure static file serving
+    app.static_folder = 'static'
+    app.static_url_path = '/static'
+
+    # Create upload directories
+    upload_dir = os.path.join(app.static_folder, 'uploads', 'holes')
+    os.makedirs(upload_dir, exist_ok=True)
+
     # Enable SQLAlchemy logging
     app.config["SQLALCHEMY_ECHO"] = True
 
@@ -66,6 +74,8 @@ def create_app():
     @app.template_filter('ordinal_date')
     def ordinal_date(dt):
         """Format date as '3rd January 2025'"""
+        if not dt:
+            return ""
         day = dt.day
         if 10 <= day % 100 <= 20:
             suffix = 'th'
