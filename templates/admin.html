@@ -38,7 +38,7 @@
                     {% endif %}
                 </form>
                 <!-- Games per page selector moved here -->
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 justify-content-end">
                     <label for="per_page" class="form-label mb-0">Games per page:</label>
                     <select id="per_page" class="form-select" style="width: auto;" onchange="changePageSize(this.value)">
                         {% for size in allowed_per_page %}
