@@ -163,14 +163,21 @@
                 const value = parseInt(this.value);
                 const playerGameId = this.dataset.playerGameId;
                 const holeNumber = this.dataset.holeNumber;
+                const savingIndicator = this.parentElement.querySelector('.saving-indicator');
+                const saveIndicator = this.parentElement.querySelector('.save-indicator');
+
+                // Clear visual indicators
+                savingIndicator.style.display = 'none';
+                saveIndicator.style.display = 'none';
 
                 // Validate input
-                if (!value || value < 1 || value > 20) {
+                if (isNaN(value) || value < 1 || value > 20) {
                     this.classList.add('is-invalid');
                     this.classList.remove('is-valid');
                     return;
                 }
 
+                // Input is valid
                 this.classList.remove('is-invalid');
                 this.classList.add('is-valid');
 
@@ -180,10 +187,7 @@
                 }
 
                 // Show saving indicator
-                const savingIndicator = this.parentElement.querySelector('.saving-indicator');
-                const saveIndicator = this.parentElement.querySelector('.save-indicator');
                 savingIndicator.style.display = 'block';
-                saveIndicator.style.display = 'none';
 
                 // Set a new timeout to save after 500ms of no input
                 saveTimeouts[playerGameId] = setTimeout(() => {
