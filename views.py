@@ -869,3 +869,42 @@ def register_routes(app):
         except Exception as e:
             flash(f'Error downloading backup: {str(e)}', 'danger')
             return redirect(url_for('home'))
+    @app.route('/file-manager')
+    def file_manager():
+        """Simple file manager interface"""
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        files = []
+        for filename in os.listdir(base_dir):
+            if os.path.isfile(os.path.join(base_dir, filename)):
+                size = os.path.getsize(os.path.join(base_dir, filename))
+                modified = datetime.fromtimestamp(os.path.getmtime(os.path.join(base_dir, filename)))
+                files.append({
+                    'name': filename,
+                    'size': size,
+                    'modified': modified
+                })
+        return render_template('file_manager.html', files=files)
+
+    @app.route('/download-file/<filename>')
+    def download_file(filename):
+        """Download a specific file"""
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(base_dir, filename)
+
+        # Security check to prevent directory traversal
+        if not os.path.normpath(file_path).startswith(base_dir):
+            abort(404)
+
+        if not os.path.exists(file_path) or not os.path.isfile(file_path):
+            flash('File not found', 'danger')
+            return redirect(url_for('file_manager'))
+
+        try:
+            return send_file(
+                file_path,
+                as_attachment=True,
+                download_name=filename
+            )
+        except Exception as e:
+            flash(f'Error downloading file: {str(e)}', 'danger')
+            return redirect(url_for('file_manager'))
