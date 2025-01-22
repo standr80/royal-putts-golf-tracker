@@ -15,7 +15,7 @@
         <div class="alert alert-success mb-4">
             <div class="text-center mb-3">
                 {% if current_hole_info.image_url %}
-                <img src="{{ current_hole_info.image_url }}" 
+                <img src="{{ url_for('static', filename='uploads/holes/' + current_hole_info.image_url) }}" 
                      alt="Hole {{ current_hole }} layout" 
                      class="img-fluid rounded" 
                      style="max-height: 200px;">
