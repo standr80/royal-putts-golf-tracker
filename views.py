@@ -867,20 +867,25 @@ def register_routes(app):
                 # Calculate hole statistics
                 for hole in course.holes:
                     # Get all scores for this specific hole name
-                    hole_scores = db.session.query(Score.strokes).join(
+                    hole_stats = db.session.query(
+                        func.avg(Score.strokes).label('avg_score'),
+                        func.min(Score.strokes).label('best_score'),
+                        func.count(Score.strokes).label('times_played')
+                    ).join(
                         PlayerGame, PlayerGame.id == Score.player_game_id
                     ).join(
                         Game, Game.id == PlayerGame.game_id
                     ).filter(
                         Game.course_id == course.id,
-                        Score.hole_number.between(1, 18)  # Ensure valid hole numbers
-                    ).all()
+                        Score.hole_number == hole.id  # Match scores to specific hole
+                    ).group_by(
+                        Score.hole_number  # Group by hole number to get per-hole stats
+                    ).first()
 
-                    valid_scores = [s[0] for s in hole_scores if s[0] is not None]
-                    if valid_scores:
-                        hole.avg_score = sum(valid_scores) / len(valid_scores)
-                        hole.best_score = min(valid_scores)
-                        hole.times_played = len(valid_scores)
+                    if hole_stats and hole_stats.times_played > 0:
+                        hole.avg_score = float(hole_stats.avg_score)
+                        hole.best_score = hole_stats.best_score
+                        hole.times_played = hole_stats.times_played
                     else:
                         hole.avg_score = None
                         hole.best_score = None
