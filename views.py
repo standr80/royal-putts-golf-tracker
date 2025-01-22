@@ -2,6 +2,7 @@ import os
 from flask import render_template, request, redirect, url_for, flash, abort, g, jsonify, send_file
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings, Achievement
 from datetime import datetime
+from werkzeug.utils import secure_filename #added import for secure_filename
 
 def get_localized_text(code, default=''):
     """Get localized text based on store language setting"""
@@ -751,13 +752,14 @@ def register_routes(app):
             os.makedirs(upload_dir, exist_ok=True)
 
             # Generate unique filename
-            filename = f"hole_{hole_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{os.path.splitext(file.filename)[1]}"
+            filename = f"{hole.id}_{secure_filename(file.filename)}"
             file_path = os.path.join(upload_dir, filename)
 
             try:
                 from app import db
                 file.save(file_path)
-                hole.image_url = f"/static/hole_images/{filename}"  # Changed from image_path to image_url
+                # Store relative path from static directory
+                hole.image_url = f"hole_images/{filename}"
                 db.session.commit()
                 flash('Image uploaded successfully', 'success')
             except Exception as e:

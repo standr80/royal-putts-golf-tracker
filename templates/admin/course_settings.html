@@ -144,6 +144,14 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <div class="modal-body">
+                                                        {% if hole.image_url %}
+                                                        <div class="mb-3">
+                                                            <p>Current Image:</p>
+                                                            <img src="{{ url_for('static', filename=hole.image_url) }}" 
+                                                                 class="img-fluid mb-3" 
+                                                                 alt="Hole image">
+                                                        </div>
+                                                        {% endif %}
                                                         <form method="POST" 
                                                               action="{{ url_for('upload_hole_image', course_id=course.id, hole_id=hole.id) }}"
                                                               enctype="multipart/form-data">
