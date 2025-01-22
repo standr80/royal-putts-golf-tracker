@@ -368,6 +368,7 @@ def register_routes(app):
 
         hole_name = request.form.get('hole_name', '').strip()
         hole_par = request.form.get('hole_par', type=int)
+        hole_notes = request.form.get('hole_notes', '').strip()
 
         from app import db
         try:
@@ -375,8 +376,10 @@ def register_routes(app):
                 hole.name = hole_name
             if hole_par is not None:
                 hole.par = hole_par
+            if hole_notes is not None:  # Update notes if provided
+                hole.notes = hole_notes
             db.session.commit()
-            flash(f'Hole updated successfully.', 'success')
+            flash('Hole updated successfully.', 'success')
         except Exception as e:
             db.session.rollback()
             flash(f'Error updating hole: {str(e)}', 'danger')
@@ -754,14 +757,14 @@ def register_routes(app):
             try:
                 from app import db
                 file.save(file_path)
-                hole.image_path = os.path.join('hole_images', filename)
+                hole.image_url = f"/static/hole_images/{filename}"  # Changed from image_path to image_url
                 db.session.commit()
                 flash('Image uploaded successfully', 'success')
             except Exception as e:
                 db.session.rollback()
                 flash(f'Error uploading image: {str(e)}', 'danger')
 
-            return redirect(url_for('course_settings', course_id=course_id))
+        return redirect(url_for('course_settings', course_id=course_id))
 
     @app.route('/download-backup')
     def download_backup():
