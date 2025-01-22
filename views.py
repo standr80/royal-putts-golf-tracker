@@ -2,7 +2,14 @@ import os
 from flask import render_template, request, redirect, url_for, flash, abort, g, jsonify, send_file
 from models import Game, Player, PlayerGame, Score, Course, Hole, ModuleSettings, PurchaseDetails, LocalisationString, StoreSettings, Achievement
 from datetime import datetime
-from werkzeug.utils import secure_filename #added import for secure_filename
+from werkzeug.utils import secure_filename
+
+# Define allowed file extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg'}
+
+def allowed_file(filename):
+    """Check if the file extension is allowed"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_localized_text(code, default=''):
     """Get localized text based on store language setting"""
@@ -758,32 +765,38 @@ def register_routes(app):
 
         if 'hole_image' not in request.files:
             flash('No image file provided', 'danger')
-            return redirect(url_for('course_settings', courseid=course_id))
+            return redirect(url_for('course_settings', course_id=course_id))
 
         file = request.files['hole_image']
         if file.filename == '':
             flash('No selected file', 'danger')
             return redirect(url_for('course_settings', course_id=course_id))
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = os.path.join('static', 'hole_images', filename)
+        if not allowed_file(file.filename):
+            flash('Invalid file type. Allowed types are: png, jpg, jpeg, gif, svg', 'danger')
+            return redirect(url_for('course_settings', course_id=course_id))
 
-            # Ensure the directory exists
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        try:
+            # Create upload directory if it doesn't exist
+            upload_dir = os.path.join('static', 'hole_images')
+            os.makedirs(upload_dir, exist_ok=True)
+
+            # Generate unique filename using hole ID and timestamp
+            filename = f"hole_{hole_id}_{int(datetime.now().timestamp())}_{secure_filename(file.filename)}"
+            file_path = os.path.join(upload_dir, filename)
 
             # Save the file
             file.save(file_path)
 
-            # Update the hole's image URL
+            # Update the hole's image URL in the database
             from app import db
-            try:
-                hole.image_url = os.path.join('hole_images', filename)
-                db.session.commit()
-                flash('Image uploaded successfully', 'success')
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Error saving image URL: {str(e)}', 'danger')
+            hole.image_url = os.path.join('hole_images', filename)
+            db.session.commit()
+
+            flash('Image uploaded successfully', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error uploading image: {str(e)}', 'danger')
 
         return redirect(url_for('course_settings', course_id=course_id))
 
