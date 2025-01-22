@@ -829,3 +829,72 @@ def register_routes(app):
         except Exception as e:
             flash(f'Error downloading file: {str(e)}', 'danger')
             return redirect(url_for('file_manager'))
+    
+    @app.route('/admin/course-stats')
+    def course_stats():
+        """Display statistics for all courses"""
+        from app import db
+        from sqlalchemy import func
+
+        courses = Course.query.all()
+
+        for course in courses:
+            # Get all games played on this course
+            games_query = Game.query.filter_by(course_id=course.id)
+            course.total_games = games_query.count()
+
+            # Calculate course-wide statistics
+            if course.total_games > 0:
+                # Get all scores for games played on this course
+                scores_subq = db.session.query(
+                    Score.strokes,
+                    PlayerGame.game_id
+                ).join(
+                    PlayerGame, PlayerGame.id == Score.player_game_id
+                ).join(
+                    Game, Game.id == PlayerGame.game_id
+                ).filter(
+                    Game.course_id == course.id
+                ).subquery()
+
+                # Calculate average and best scores
+                score_stats = db.session.query(
+                    func.avg(scores_subq.c.strokes).label('avg_score'),
+                    func.min(scores_subq.c.strokes).label('best_score')
+                ).first()
+
+                course.avg_score = float(score_stats.avg_score) if score_stats.avg_score else None
+                course.best_score = score_stats.best_score
+
+                # Calculate hole statistics
+                for hole in course.holes:
+                    hole_scores = db.session.query(
+                        Score.strokes
+                    ).join(
+                        PlayerGame, PlayerGame.id == Score.player_game_id
+                    ).join(
+                        Game, Game.id == PlayerGame.game_id
+                    ).filter(
+                        Game.course_id == course.id,
+                        Score.hole_number == int(hole.name)
+                    ).all()
+
+                    if hole_scores:
+                        scores = [score.strokes for score in hole_scores]
+                        hole.avg_score = sum(scores) / len(scores)
+                        hole.best_score = min(scores)
+                        hole.times_played = len(scores)
+                    else:
+                        hole.avg_score = None
+                        hole.best_score = None
+                        hole.times_played = 0
+            else:
+                course.avg_score = None
+                course.best_score = None
+
+                for hole in course.holes:
+                    hole.avg_score = None
+                    hole.best_score = None
+                    hole.times_played = 0
+
+        return render_template('admin/course_stats.html', courses=courses)

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Course Statistics</h2>
+            <a href="{{ url_for('admin') }}" class="btn btn-secondary">
+                <i data-feather="arrow-left"></i> Back to Admin
+            </a>
+        </div>
+
+        {% if courses %}
+            {% for course in courses %}
+            <div class="card bg-dark mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ course.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Course Statistics -->
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-secondary">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2">Total Games Played</h6>
+                                    <h3 class="card-title mb-0">{{ course.total_games }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-secondary">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2">Average Score</h6>
+                                    <h3 class="card-title mb-0">{{ "%.1f"|format(course.avg_score) if course.avg_score else 'N/A' }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-secondary">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2">Best Score</h6>
+                                    <h3 class="card-title mb-0">{{ course.best_score if course.best_score else 'N/A' }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hole Statistics -->
+                    {% if course.holes %}
+                    <h5 class="mt-4 mb-3">Hole Statistics</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Hole</th>
+                                    <th>Par</th>
+                                    <th>Average Score</th>
+                                    <th>Best Score</th>
+                                    <th>Times Played</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hole in course.holes|sort(attribute='name') %}
+                                <tr>
+                                    <td>{{ hole.name }}</td>
+                                    <td>{{ hole.par }}</td>
+                                    <td>{{ "%.1f"|format(hole.avg_score) if hole.avg_score else 'N/A' }}</td>
+                                    <td>{{ hole.best_score if hole.best_score else 'N/A' }}</td>
+                                    <td>{{ hole.times_played }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mt-3">
+                        <i data-feather="info"></i> No holes configured for this course yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="alert alert-info">
+            <i data-feather="info"></i> No courses found. 
+            <a href="{{ url_for('course_setup') }}" class="alert-link">Add a course</a> to view statistics.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
