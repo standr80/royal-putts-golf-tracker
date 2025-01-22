@@ -75,6 +75,10 @@ coverage.xml
 *.swp
 *.swo
 
+# Database backups
+backup.sql
+*.sql
+
 # Local development
 local_settings.py
 db.sqlite3-journal
