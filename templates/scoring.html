@@ -164,6 +164,23 @@
                 savingIndicator.style.display = 'none';
                 saveIndicator.style.display = 'none';
 
+                // Update par difference immediately
+                if (!isNaN(value)) {
+                    const parCell = this.closest('tr').querySelector('td:nth-child(3)');
+                    const holePar = {{ current_hole_info.par }};
+                    const parDiff = value - holePar;
+
+                    let parText;
+                    if (parDiff === 0) {
+                        parText = 'E';
+                    } else if (parDiff > 0) {
+                        parText = `+${parDiff}`;
+                    } else {
+                        parText = parDiff.toString();
+                    }
+                    parCell.textContent = parText;
+                }
+
                 // Clear any existing timeout for this input
                 if (saveTimeouts[playerGameId]) {
                     clearTimeout(saveTimeouts[playerGameId]);
@@ -191,21 +208,6 @@
                             setTimeout(() => {
                                 saveIndicator.style.display = 'none';
                             }, 2000);
-
-                            // Update par difference
-                            const parCell = this.closest('tr').querySelector('td:nth-child(3)');
-                            const holePar = {{ current_hole_info.par }};
-                            const parDiff = value - holePar;
-
-                            let parText;
-                            if (parDiff === 0) {
-                                parText = 'E';
-                            } else if (parDiff > 0) {
-                                parText = `+${parDiff}`;
-                            } else {
-                                parText = parDiff.toString();
-                            }
-                            parCell.textContent = parText;
                         }
                     })
                     .catch(error => {
@@ -213,6 +215,7 @@
                         savingIndicator.style.display = 'none';
                     });
                 }, 500);
+
             });
         });
     });
