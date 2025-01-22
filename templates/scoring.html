@@ -29,7 +29,7 @@
 
         <div class="card bg-dark mb-4">
             <div class="card-body">
-                <form method="POST" id="scoreForm" novalidate>
+                <form method="POST" id="scoreForm">
                     <div class="table-responsive">
                         <table class="table table-dark">
                             <thead>
@@ -65,9 +65,6 @@
                                                        data-player-game-id="{{ player_game.id }}"
                                                        data-hole-number="{{ current_hole }}"
                                                        inputmode="numeric"
-                                                       min="1"
-                                                       max="20"
-                                                       required
                                                        value="{{ current_hole_scores.get(player_game.id, '') }}"
                                                        style="background: var(--bs-dark); 
                                                               color: var(--bs-light); 
@@ -75,9 +72,6 @@
                                                               box-shadow: none !important;
                                                               width: 100%;
                                                               padding-right: 2.5rem !important;">
-                                                <div class="invalid-feedback">
-                                                    {{ get_localized_text('ErrorNotZero', 'Please enter a score between 1 and 20.') }}
-                                                </div>
                                                 <div class="position-absolute top-50 end-0 translate-middle-y pe-2 save-indicator" style="display: none;">
                                                     <i data-feather="check-circle" class="text-success"></i>
                                                 </div>
@@ -152,7 +146,7 @@
         // Initialize Feather icons
         feather.replace();
 
-        // Add input validation and auto-save for score fields
+        // Add auto-save for score fields
         const form = document.getElementById('scoreForm');
         const inputs = form.querySelectorAll('.score-input');
 
@@ -169,17 +163,6 @@
                 // Clear visual indicators
                 savingIndicator.style.display = 'none';
                 saveIndicator.style.display = 'none';
-
-                // Validate input
-                if (isNaN(value) || value < 1 || value > 20) {
-                    this.classList.add('is-invalid');
-                    this.classList.remove('is-valid');
-                    return;
-                }
-
-                // Input is valid
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
 
                 // Clear any existing timeout for this input
                 if (saveTimeouts[playerGameId]) {
@@ -223,15 +206,11 @@
                                 parText = parDiff.toString();
                             }
                             parCell.textContent = parText;
-                        } else {
-                            this.classList.add('is-invalid');
-                            throw new Error(data.error || 'Failed to save score');
                         }
                     })
                     .catch(error => {
                         console.error('Error saving score:', error);
                         savingIndicator.style.display = 'none';
-                        this.classList.add('is-invalid');
                     });
                 }, 500);
             });
