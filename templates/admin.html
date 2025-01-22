@@ -13,21 +13,13 @@
                 <a href="{{ url_for('course_setup') }}" class="btn btn-success">
                     <i data-feather="settings"></i> Course Setup
                 </a>
-                <div class="d-flex align-items-center gap-2">
-                    <label for="per_page" class="form-label mb-0">Games per page:</label>
-                    <select id="per_page" class="form-select" style="width: auto;" onchange="changePageSize(this.value)">
-                        {% for size in allowed_per_page %}
-                            <option value="{{ size }}" {% if size == per_page %}selected{% endif %}>{{ size }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
             </div>
         </div>
 
         <!-- Search Form -->
         <div class="card bg-dark mb-4">
             <div class="card-body">
-                <form method="GET" class="d-flex gap-2">
+                <form method="GET" class="d-flex gap-2 mb-3">
                     <input type="text" 
                            name="search" 
                            class="form-control" 
@@ -45,6 +37,15 @@
                     </a>
                     {% endif %}
                 </form>
+                <!-- Games per page selector moved here -->
+                <div class="d-flex align-items-center gap-2">
+                    <label for="per_page" class="form-label mb-0">Games per page:</label>
+                    <select id="per_page" class="form-select" style="width: auto;" onchange="changePageSize(this.value)">
+                        {% for size in allowed_per_page %}
+                            <option value="{{ size }}" {% if size == per_page %}selected{% endif %}>{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
 
