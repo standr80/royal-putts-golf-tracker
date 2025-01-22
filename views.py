@@ -466,6 +466,15 @@ def register_routes(app):
         course = Course.query.get_or_404(course_id)
         from app import db
         try:
+            # First, update any games associated with this course to have null course_id
+            games = Game.query.filter_by(course_id=course_id).all()
+            for game in games:
+                game.course_id = None
+
+            # Delete all holes associated with this course
+            Hole.query.filter_by(course_id=course_id).delete()
+
+            # Now delete the course
             db.session.delete(course)
             db.session.commit()
             flash(f'Course "{course.name}" has been deleted successfully.', 'success')
