@@ -754,36 +754,36 @@ def register_routes(app):
     @app.route('/admin/course/<int:course_id>/hole/<int:hole_id>/upload-image', methods=['POST'])
     def upload_hole_image(course_id, hole_id):
         """Upload an image for a specific hole"""
-        hole = Hole.query.filter_by(id=holeid, course_id=course_id).first_or_404()
+        hole = Hole.query.filter_by(id=hole_id, course_id=course_id).first_or_404()
 
         if 'hole_image' not in request.files:
             flash('No image file provided', 'danger')
-            return redirect(url_for('course_settings', course_id=course_id))
+            return redirect(url_for('course_settings', courseid=course_id))
 
         file = request.files['hole_image']
         if file.filename == '':
             flash('No selected file', 'danger')
             return redirect(url_for('course_settings', course_id=course_id))
 
-        if file:
-            # Create upload directory if it doesn't exist
-            upload_dir = os.path.join('static', 'hole_images')
-            os.makedirs(upload_dir, exist_ok=True)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join('static', 'hole_images', filename)
 
-            # Generate unique filename
-            filename = f"{hole.id}_{secure_filename(file.filename)}"
-            file_path = os.path.join(upload_dir, filename)
+            # Ensure the directory exists
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
+            # Save the file
+            file.save(file_path)
+
+            # Update the hole's image URL
+            from app import db
             try:
-                from app import db
-                file.save(file_path)
-                # Store relative path from static directory
-                hole.image_url = f"hole_images/{filename}"
+                hole.image_url = os.path.join('hole_images', filename)
                 db.session.commit()
                 flash('Image uploaded successfully', 'success')
             except Exception as e:
                 db.session.rollback()
-                flash(f'Error uploading image: {str(e)}', 'danger')
+                flash(f'Error saving image URL: {str(e)}', 'danger')
 
         return redirect(url_for('course_settings', course_id=course_id))
 
