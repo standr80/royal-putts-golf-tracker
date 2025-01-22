@@ -463,34 +463,29 @@ def register_routes(app):
     @app.route('/admin/course/<int:course_id>/delete', methods=['POST'])
     def delete_course(course_id):
         """Delete a course and all its related data"""
-        course = Course.query.get_or_404(course_id)
         from app import db
 
-        # Start transaction
         try:
-            # First, get all related games and holes for logging
-            games = Game.query.filter_by(course_id=course_id).all()
-            holes = Hole.query.filter_by(course_id=course_id).all()
+            # Get the course first
+            course = Course.query.get_or_404(course_id)
+            course_name = course.name  # Store name for flash message
 
-            # Begin transaction explicitly
-            db.session.begin()
+            # Clear any existing transaction
+            db.session.rollback()
 
-            # Update games to remove course reference
-            if games:
-                Game.query.filter_by(course_id=course_id).update({Game.course_id: None})
-                db.session.flush()
+            # Update games to remove course reference first
+            Game.query.filter_by(course_id=course_id).update({Game.course_id: None})
 
-            # Delete all holes
-            if holes:
-                Hole.query.filter_by(course_id=course_id).delete()
-                db.session.flush()
+            # Delete all holes associated with this course
+            Hole.query.filter_by(course_id=course_id).delete()
 
-            # Finally delete the course
+            # Now delete the course itself
             db.session.delete(course)
 
-            # Commit all changes
+            # Commit the changes
             db.session.commit()
-            flash(f'Course "{course.name}" and all related data have been deleted successfully.', 'success')
+
+            flash(f'Course "{course_name}" has been deleted successfully.', 'success')
 
         except Exception as e:
             db.session.rollback()
